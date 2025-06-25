@@ -18,9 +18,9 @@ export default function Introduction() {
             kvalitu života ve své komunitě.
           </p>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
-            Jeho dlouholeté zkušenosti jako rodiče čtyř dětí ho vedly k zaměření na řešení problémů, jež ovlivňují
-            každodenní život obyvatel městské části Praha 4. Pavel rozumí výzvám, kterým čelí rodiny, senioři i další
-            skupiny obyvatel, a přináší praktická řešení založená na skutečných potřebách komunity.
+            Moje dlouholeté zkušenosti jako rodiče čtyř dětí mě vedly k zaměření na řešení problémů, jež ovlivňují
+            každodenní život obyvatel městské části Praha 4. Dobře rozumím výzvám, kterým čelí rodiny, senioři i další
+            skupiny obyvatel, a přináším praktická řešení založená na skutečných potřebách komunity.
           </p>
           <div className="quote max-w-2xl mx-auto">
             "Mým cílem je vytvořit z Prahy 4 místo, kde se všichni obyvatelé cítí bezpečně, kde mají děti prostor pro

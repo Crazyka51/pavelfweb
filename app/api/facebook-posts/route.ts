@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 export async function GET(request: NextRequest) {
   try {
@@ -6,6 +7,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '6'
     const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID || '61574874071299'
     const accessToken = process.env.FACEBOOK_ACCESS_TOKEN
+    const appSecret = process.env.FACEBOOK_APP_SECRET
 
     // Pokud je nastaveno používání mock dat nebo chybí access token
     if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !accessToken) {
@@ -45,9 +47,23 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Generování app_secret_proof pro bezpečnost
+    let appSecretProof = ''
+    if (appSecret && accessToken) {
+      appSecretProof = crypto
+        .createHmac('sha256', appSecret)
+        .update(accessToken)
+        .digest('hex')
+    }
+
     // Produkční API volání
     const fields = "id,message,story,created_time,permalink_url,full_picture,type,reactions.summary(total_count),comments.summary(total_count),shares"
-    const url = `https://graph.facebook.com/v18.0/${pageId}/posts?fields=${fields}&access_token=${accessToken}&limit=${limit}`
+    
+    // Sestavení URL s app_secret_proof
+    let url = `https://graph.facebook.com/v18.0/${pageId}/posts?fields=${fields}&access_token=${accessToken}&limit=${limit}`
+    if (appSecretProof) {
+      url += `&appsecret_proof=${appSecretProof}`
+    }
     
     const response = await fetch(url, {
       next: { revalidate: 300 } // Cache na 5 minut
