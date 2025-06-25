@@ -66,35 +66,6 @@ const projects = {
         "Kurzy pomohly více než 200 seniorům zlepšit jejich digitální dovednosti, naučit se používat internet, komunikovat s rodinou online a využívat digitální služby.",
     },
   ],
-  Bezpečnost: [
-    {
-      id: 7,
-      title: "Bezpečnější sídliště",
-      description: "Komplexní program pro zvýšení bezpečnosti na sídlištích v Praze 4.",
-      status: "Probíhá",
-      icon: <Building className="h-6 w-6" />,
-      details:
-        "Program zahrnuje zlepšení osvětlení, instalaci bezpečnostních kamer, pravidelné hlídky městské policie a zapojení obyvatel do dohledu nad bezpečností v jejich okolí.",
-    },
-    {
-      id: 8,
-      title: "Prevence kriminality",
-      description: "Vzdělávací a preventivní programy zaměřené na snížení kriminality.",
-      status: "Probíhá",
-      icon: <CheckCircle className="h-6 w-6" />,
-      details:
-        "Programy jsou zaměřeny na různé věkové skupiny a zahrnují přednášky, workshopy a praktické ukázky, jak předcházet kriminalitě a jak se chovat v rizikových situacích.",
-    },
-    {
-      id: 9,
-      title: "Modernizace veřejného osvětlení",
-      description: "Projekt zaměřený na zlepšení osvětlení v problémových lokalitách.",
-      status: "Plánováno",
-      icon: <Calendar className="h-6 w-6" />,
-      details:
-        "Projekt počítá s instalací moderního LED osvětlení, které zlepší viditelnost a sníží energetickou náročnost. Prioritou jsou lokality s vyšším výskytem kriminality a frekventované pěší trasy, zejména v okolí škol, parků a stanic MHD.",
-    },
-  ],
   Infrastruktura: [
     {
       id: 10,

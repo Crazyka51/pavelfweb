@@ -19,7 +19,7 @@ export default function Marquee() {
                 WebkitTextStroke: "1px rgb(255, 255, 255)", // white stroke
               }}
             >
-              Praha 4
+              MČ Praha 4
             </span>
           </div>
         ))}
