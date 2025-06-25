@@ -60,7 +60,7 @@ export default function Hero() {
         >
           <div className="relative">
             <img
-              src="/placeholder.svg?height=600&width=600"
+              src="/pf.png?height=600&width=600"
               alt="Pavel Fišer"
               width={600}
               height={600}

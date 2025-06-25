@@ -54,10 +54,9 @@
     @apply border-border;
   }
   body {
-      background-color: hsl(var(--background));
-      color: hsl(var(--foreground));
-      font-feature-settings: "rlig" 1, "calt" 1;
-    }
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
 .apple-button {
@@ -111,4 +110,3 @@
 .quote {
   @apply italic text-lg border-l-4 border-blue-500 pl-4 my-4;
 }
-

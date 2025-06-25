@@ -72,9 +72,19 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <Link href="/privacy-policy" className="text-blue-200 hover:text-white transition-colors">
                   Ochrana osobních údajů
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms-of-service" className="text-blue-200 hover:text-white transition-colors">
+                  Podmínky použití
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-deletion" className="text-blue-200 hover:text-white transition-colors">
+                  Smazání údajů
+                </Link>
               </li>
             </ul>
           </div>
@@ -84,7 +94,12 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Bc. Pavel Fišer. Všechna práva vyhrazena.
           </p>
           <div className="flex space-x-6">
-            <a href="#" className="text-blue-300 hover:text-white">
+            <a 
+              href="https://www.facebook.com/profile.php?id=61574874071299" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-300 hover:text-white"
+            >
               <span className="sr-only">Facebook</span>
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path

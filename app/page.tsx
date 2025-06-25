@@ -6,6 +6,7 @@ import Timeline from "./components/Timeline"
 import Projects from "./components/Projects"
 import Testimonials from "./components/Testimonials"
 import Marquee from "./components/Marquee"
+import FacebookPosts from "./components/FacebookPosts"
 import ContactForm from "./components/ContactForm"
 import NewsletterSubscribe from "./components/NewsletterSubscribe"
 
@@ -19,6 +20,7 @@ export default function Home() {
       <Projects />
       <Timeline />
       <Testimonials />
+      <FacebookPosts />
       <Marquee />
       <ContactForm />
       <NewsletterSubscribe />

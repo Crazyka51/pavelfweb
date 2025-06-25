@@ -50,7 +50,7 @@
     "input-otp": "1.4.1",
     "lodash": "latest",
     "lucide-react": "^0.454.0",
-    "next": "15.1.0",
+    "next": "14",
     "next-themes": "latest",
     "react": "^19",
     "react-day-picker": "8.10.1",
@@ -65,16 +65,18 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
     "postcss": "^8",
-    "tailwindcss": "latest",
+    "tailwindcss": "3.4.0",
     "typescript": "^5"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
       "sharp"
     ]
   }
