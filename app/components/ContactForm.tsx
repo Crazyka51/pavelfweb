@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Jméno musí mít alespoň 2 znaky." }),
@@ -20,6 +20,10 @@ const formSchema = z.object({
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,15 +35,42 @@ export default function ContactForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
+    setSubmitStatus({ type: null, message: '' })
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: result.message || 'Zpráva byla úspěšně odeslána!'
+        })
+        form.reset()
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: result.error || 'Došlo k chybě při odesílání zprávy.'
+        })
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Došlo k neočekávané chybě. Zkuste to prosím později.'
+      })
+      console.error('Chyba při odesílání formuláře:', error)
+    } finally {
       setIsSubmitting(false)
-      form.reset()
-      alert("Děkuji za Vaši zprávu. Ozvu se Vám co nejdříve!")
-    }, 2000)
+    }
   }
 
   return (
@@ -154,6 +185,28 @@ export default function ContactForm() {
           >
             <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
               <h3 className="text-2xl font-bold text-blue-700 mb-6">Napište mi</h3>
+              
+              {/* Status zprávy */}
+              {submitStatus.type && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+                    submitStatus.type === 'success'
+                      ? 'bg-green-50 text-green-800 border border-green-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                  }`}
+                >
+                  {submitStatus.type === 'success' ? (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  )}
+                  <p className="text-sm">{submitStatus.message}</p>
+                </motion.div>
+              )}
+              
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
