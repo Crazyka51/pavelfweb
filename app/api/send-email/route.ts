@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-    const toEmail = process.env.RESEND_TO_EMAIL || 'pavel.fiser@praha4.cz'
+    const toEmail = process.env.RESEND_TO_EMAIL || 'matejhrabak@gmail.com'
 
     // Příprava HTML obsahu e-mailu
     const htmlContent = `
