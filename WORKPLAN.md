@@ -12,8 +12,11 @@
 - [x] ✅ **Přidat admina "Crazyk"** s heslem kILhQO9h3@NY
 - [x] ✅ **Aktualizovat login systém** pro více adminů
 - [x] ✅ **Vygenerovat správný bcrypt hash** pro nové heslo
+- [x] ✅ **Opravit CookiePreferences.tsx** (byl prázdný, způsoboval onClick chyby)
+- [x] ✅ **Ověřit produkční build** (lokálně úspěšný)
 - [ ] 🟡 **Testovat přihlášení obou adminů** v prohlížeči
 - [ ] 🟡 **Zobrazit aktuálně přihlášeného admina** v admin panelu
+- [ ] 🟡 **Deploy na produkci** a otestovat
 
 ### 2. NEWSLETTER MANAGEMENT SYSTEM
 - [ ] ❌ **Vytvořit Newsletter component** (/admin/newsletter)
