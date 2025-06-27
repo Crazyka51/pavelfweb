@@ -45,7 +45,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const loadArticles = async () => {
     try {
       const token = localStorage.getItem('admin_token')
-      const response = await fetch('/api/articles', {
+      const response = await fetch('/api/admin/articles', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -66,7 +66,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
     try {
       const token = localStorage.getItem('admin_token')
       const method = editingArticle ? 'PUT' : 'POST'
-      const url = editingArticle ? `/api/articles/${editingArticle.id}` : '/api/articles'
+      const url = editingArticle ? `/api/admin/articles/${editingArticle.id}` : '/api/admin/articles'
       
       const response = await fetch(url, {
         method,
@@ -96,7 +96,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
 
     try {
       const token = localStorage.getItem('admin_token')
-      const response = await fetch(`/api/articles/${id}`, {
+      const response = await fetch(`/api/admin/articles/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -118,7 +118,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
   const handleTogglePublish = async (article: Article) => {
     try {
       const token = localStorage.getItem('admin_token')
-      const response = await fetch(`/api/articles/${article.id}`, {
+      const response = await fetch(`/api/admin/articles/${article.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         imageUrl: article.imageUrl
       }
 
-      const response = await fetch('/api/articles', {
+      const response = await fetch('/api/admin/articles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

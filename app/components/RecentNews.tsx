@@ -34,15 +34,15 @@ export default function RecentNews() {
 
   const loadRecentArticles = async () => {
     try {
-      // Načti nejnovější 3 publikované články přes proxy endpoint
-      const response = await fetch('/api/cms-articles?limit=3')
+      // Načti nejnovější 3 publikované články z admin API
+      const response = await fetch('/api/admin/public/articles')
       
       if (!response.ok) {
         throw new Error('Chyba při načítání článků')
       }
       
-      const data: ApiResponse = await response.json()
-      setArticles(data.articles)
+      const articles: Article[] = await response.json()
+      setArticles(articles.slice(0, 3)) // Vezmi pouze první 3 články
     } catch (error) {
       console.error('Error loading articles:', error)
       setError('Nepodařilo se načíst nejnovější články')
