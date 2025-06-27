@@ -7,6 +7,7 @@ import Projects from "./components/Projects"
 import Testimonials from "./components/Testimonials"
 import Marquee from "./components/Marquee"
 import FacebookPosts from "./components/FacebookPosts"
+import RecentNews from "./components/RecentNews"
 import ContactForm from "./components/ContactForm"
 import NewsletterSubscribe from "./components/NewsletterSubscribe"
 
@@ -22,6 +23,7 @@ export default function Home() {
       <Testimonials />
       <FacebookPosts />
       <Marquee />
+      <RecentNews />
       <ContactForm />
       <NewsletterSubscribe />
     </>

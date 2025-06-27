@@ -34,6 +34,12 @@ export default function Header() {
             Priority
           </Link>
           <Link
+            href="/aktuality"
+            className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+          >
+            Novinky
+          </Link>
+          <Link
             href="#about"
             className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
           >

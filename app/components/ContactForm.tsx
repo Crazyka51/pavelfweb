@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { trackEvent } from "./GoogleAnalytics"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Jméno musí mít alespoň 2 znaky." }),
@@ -35,9 +36,12 @@ export default function ContactForm() {
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true)
     setSubmitStatus({ type: null, message: '' })
+
+    // Track form submission attempt
+    trackEvent('form_submit_attempt', 'contact', 'contact_form')
 
     try {
       const response = await fetch('/api/send-email', {
@@ -51,18 +55,27 @@ export default function ContactForm() {
       const result = await response.json()
 
       if (response.ok) {
+        // Track successful form submission
+        trackEvent('form_submit_success', 'contact', 'contact_form')
+        
         setSubmitStatus({
           type: 'success',
           message: result.message || 'Zpráva byla úspěšně odeslána!'
         })
         form.reset()
       } else {
+        // Track form submission error
+        trackEvent('form_submit_error', 'contact', 'contact_form')
+        
         setSubmitStatus({
           type: 'error',
           message: result.error || 'Došlo k chybě při odesílání zprávy.'
         })
       }
     } catch (error) {
+      // Track form submission failure
+      trackEvent('form_submit_failure', 'contact', 'contact_form')
+      
       setSubmitStatus({
         type: 'error',
         message: 'Došlo k neočekávané chybě. Zkuste to prosím později.'

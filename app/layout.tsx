@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
+import { GoogleAnalytics } from "./components/GoogleAnalytics"
 import type React from "react"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -28,6 +29,7 @@ export default function RootLayout({
         <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground`}>
+        <GoogleAnalytics />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header />
           <main>{children}</main>
