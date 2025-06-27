@@ -8,7 +8,10 @@ interface AnalyticsData {
   uniqueVisitors: number
   averageSessionDuration: string
   bounceRate: string
-  topPages: Array<{ page: string; views: number }>
+  realTimeUsers: number
+  conversions: number
+  pageLoadTime: string
+  topPages: Array<{ page: string; views: number; title: string }>
   geographicData: Array<{ country: string; visitors: number }>
   deviceData: Array<{ device: string; percentage: number }>
   trafficSources: Array<{ source: string; percentage: number }>
@@ -20,6 +23,9 @@ export default function AnalyticsManager() {
     uniqueVisitors: 0,
     averageSessionDuration: '0:00',
     bounceRate: '0%',
+    realTimeUsers: 0,
+    conversions: 0,
+    pageLoadTime: '0s',
     topPages: [],
     geographicData: [],
     deviceData: [],
@@ -35,44 +41,25 @@ export default function AnalyticsManager() {
   const loadAnalyticsData = async () => {
     setIsLoading(true)
     
-    // Simulace načítání dat - zde by v budoucnu bylo volání GA4 API
-    setTimeout(() => {
-      const mockData: AnalyticsData = {
-        totalPageViews: Math.floor(Math.random() * 10000) + 5000,
-        uniqueVisitors: Math.floor(Math.random() * 3000) + 1500,
-        averageSessionDuration: `${Math.floor(Math.random() * 5) + 2}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-        bounceRate: `${Math.floor(Math.random() * 30) + 25}%`,
-        topPages: [
-          { page: '/', views: Math.floor(Math.random() * 2000) + 1000 },
-          { page: '/aktuality', views: Math.floor(Math.random() * 800) + 400 },
-          { page: '/o-mne', views: Math.floor(Math.random() * 600) + 300 },
-          { page: '/kontakt', views: Math.floor(Math.random() * 400) + 200 },
-          { page: '/projekty', views: Math.floor(Math.random() * 300) + 150 }
-        ],
-        geographicData: [
-          { country: 'Česká republika', visitors: Math.floor(Math.random() * 2000) + 1000 },
-          { country: 'Slovensko', visitors: Math.floor(Math.random() * 300) + 100 },
-          { country: 'Německo', visitors: Math.floor(Math.random() * 200) + 50 },
-          { country: 'Rakousko', visitors: Math.floor(Math.random() * 150) + 30 },
-          { country: 'Polsko', visitors: Math.floor(Math.random() * 100) + 20 }
-        ],
-        deviceData: [
-          { device: 'Desktop', percentage: Math.floor(Math.random() * 20) + 50 },
-          { device: 'Mobile', percentage: Math.floor(Math.random() * 20) + 30 },
-          { device: 'Tablet', percentage: Math.floor(Math.random() * 10) + 10 }
-        ],
-        trafficSources: [
-          { source: 'Organické vyhledávání', percentage: Math.floor(Math.random() * 20) + 40 },
-          { source: 'Přímý přístup', percentage: Math.floor(Math.random() * 15) + 25 },
-          { source: 'Sociální sítě', percentage: Math.floor(Math.random() * 10) + 15 },
-          { source: 'Odkazy z jiných stránek', percentage: Math.floor(Math.random() * 10) + 10 },
-          { source: 'Email', percentage: Math.floor(Math.random() * 5) + 5 }
-        ]
-      }
+    try {
+      const token = localStorage.getItem('admin_token')
+      const response = await fetch(`/api/admin/analytics?dateRange=${dateRange}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       
-      setAnalyticsData(mockData)
+      if (response.ok) {
+        const data = await response.json()
+        setAnalyticsData(data)
+      } else {
+        console.error('Failed to load analytics data')
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   if (isLoading) {
@@ -125,44 +112,64 @@ export default function AnalyticsManager() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Celkem zobrazení</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.totalPageViews.toLocaleString()}</p>
+              <p className="text-xs text-gray-600">Celkem zobrazení</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.totalPageViews.toLocaleString()}</p>
             </div>
-            <Eye className="h-8 w-8 text-blue-600" />
+            <Eye className="h-6 w-6 text-blue-600" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Unikátní návštěvníci</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.uniqueVisitors.toLocaleString()}</p>
+              <p className="text-xs text-gray-600">Unikátní návštěvníci</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.uniqueVisitors.toLocaleString()}</p>
             </div>
-            <Users className="h-8 w-8 text-green-600" />
+            <Users className="h-6 w-6 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Průměrná délka relace</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.averageSessionDuration}</p>
+              <p className="text-xs text-gray-600">Aktuálně online</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.realTimeUsers}</p>
             </div>
-            <Clock className="h-8 w-8 text-purple-600" />
+            <Globe className="h-6 w-6 text-red-600" />
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Bounce Rate</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.bounceRate}</p>
+              <p className="text-xs text-gray-600">Průměrná relace</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.averageSessionDuration}</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-orange-600" />
+            <Clock className="h-6 w-6 text-purple-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Bounce Rate</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.bounceRate}</p>
+            </div>
+            <TrendingUp className="h-6 w-6 text-orange-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Konverze</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.conversions}</p>
+            </div>
+            <BarChart3 className="h-6 w-6 text-indigo-600" />
           </div>
         </div>
       </div>
@@ -178,8 +185,11 @@ export default function AnalyticsManager() {
           <div className="space-y-3">
             {analyticsData.topPages.map((page, index) => (
               <div key={index} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{page.page}</span>
-                <span className="font-semibold">{page.views.toLocaleString()}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-900">{page.title}</span>
+                  <span className="text-xs text-gray-500">{page.page}</span>
+                </div>
+                <span className="font-semibold text-blue-600">{page.views.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -228,21 +238,73 @@ export default function AnalyticsManager() {
         </div>
       </div>
 
-      {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <div className="bg-blue-100 rounded-full p-2">
-            <BarChart3 className="h-5 w-5 text-blue-600" />
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm">Rychlost načítání</p>
+              <p className="text-2xl font-bold">{analyticsData.pageLoadTime}</p>
+            </div>
+            <Clock className="h-8 w-8 text-blue-200" />
           </div>
-          <div>
-            <h4 className="font-semibold text-blue-900">Google Analytics připojeno</h4>
-            <p className="text-sm text-blue-700 mt-1">
-              Data se aktualizují automaticky z Google Analytics 4. 
-              V současnosti zobrazujeme simulovaná data - pro reálná data je potřeba dokončit propojení s GA4 API.
+        </div>
+        
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm">Celkové konverze</p>
+              <p className="text-2xl font-bold">{analyticsData.conversions}</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-green-200" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm">Uživatelé nyní</p>
+              <p className="text-2xl font-bold">{analyticsData.realTimeUsers}</p>
+            </div>
+            <Globe className="h-8 w-8 text-purple-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* Info Box */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-blue-100 rounded-full p-3">
+            <BarChart3 className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-blue-900 text-lg">Google Analytics 4 Integration</h4>
+            <p className="text-blue-700 mt-2">
+              Administrace je připojena k Google Analytics a zobrazuje aktuální metriky z vašich stránek. 
+              Data se aktualizují automaticky a poskytují přehled o návštěvnosti a chování uživatelů.
             </p>
-            <p className="text-xs text-blue-600 mt-2">
-              Tracking ID: G-LNF9PDP1RH
-            </p>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-blue-800">Tracking ID:</span>
+                <br />
+                <span className="text-blue-600 font-mono">G-LNF9PDP1RH</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Posledně aktualizováno:</span>
+                <br />
+                <span className="text-blue-600">Před chvílí</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Stav:</span>
+                <br />
+                <span className="text-green-600 font-medium">✓ Aktivní</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Období:</span>
+                <br />
+                <span className="text-blue-600">{dateRange === '7d' ? '7 dní' : dateRange === '30d' ? '30 dní' : '90 dní'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

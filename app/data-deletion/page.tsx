@@ -6,6 +6,28 @@ export const metadata: Metadata = {
   title: 'Žádost o smazání údajů | Pavel Fišer - Zastupitel Praha 4',
   description: 'Jednoduchý způsob, jak požádat o smazání vašich osobních údajů v souladu s GDPR a zásadami Meta/Facebook.',
   robots: 'index, follow',
+  openGraph: {
+    title: 'Žádost o smazání údajů | Pavel Fišer',
+    description: 'Jednoduchý způsob, jak požádat o smazání vašich osobních údajů v souladu s GDPR a zásadami Meta/Facebook.',
+    url: 'https://fiserpavel.cz/data-deletion',
+    siteName: 'Pavel Fišer - Zastupitel MČ Praha 4',
+    images: [
+      {
+        url: '/og-data-deletion.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Žádost o smazání údajů - Pavel Fišer',
+      },
+    ],
+    locale: 'cs_CZ',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Žádost o smazání údajů | Pavel Fišer',
+    description: 'Jednoduchý způsob, jak požádat o smazání vašich osobních údajů v souladu s GDPR a zásadami Meta/Facebook.',
+    images: ['/og-data-deletion.svg'],
+  },
 }
 
 export default function DataDeletionPage() {

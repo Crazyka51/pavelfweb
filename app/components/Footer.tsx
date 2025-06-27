@@ -1,3 +1,5 @@
+'use client'
+
 import Link from "next/link"
 
 export default function Footer() {
@@ -85,6 +87,17 @@ export default function Footer() {
                 <Link href="/data-deletion" className="text-blue-200 hover:text-white transition-colors">
                   Smazání údajů
                 </Link>
+              </li>
+              <li>
+                <button 
+                  onClick={() => {
+                    // Dispatch custom event to open cookie preferences
+                    window.dispatchEvent(new CustomEvent('openCookiePreferences'))
+                  }}
+                  className="text-blue-200 hover:text-white transition-colors text-left"
+                >
+                  Nastavení cookies
+                </button>
               </li>
             </ul>
           </div>

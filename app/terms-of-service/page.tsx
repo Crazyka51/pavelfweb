@@ -6,6 +6,28 @@ export const metadata: Metadata = {
   title: 'Podmínky použití | Pavel Fišer - Zastupitel Praha 4',
   description: 'Podmínky použití webových stránek a služeb Pavla Fišera, zastupitele Prahy 4.',
   robots: 'index, follow',
+  openGraph: {
+    title: 'Podmínky použití | Pavel Fišer',
+    description: 'Podmínky použití webových stránek a služeb Pavla Fišera, zastupitele Prahy 4.',
+    url: 'https://fiserpavel.cz/terms-of-service',
+    siteName: 'Pavel Fišer - Zastupitel MČ Praha 4',
+    images: [
+      {
+        url: '/og-terms.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Podmínky použití - Pavel Fišer',
+      },
+    ],
+    locale: 'cs_CZ',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Podmínky použití | Pavel Fišer',
+    description: 'Podmínky použití webových stránek a služeb Pavla Fišera, zastupitele Prahy 4.',
+    images: ['/og-terms.svg'],
+  },
 }
 
 export default function TermsOfServicePage() {

@@ -139,7 +139,7 @@ export default function DraftManager({ onLoadDraft, onClose }: DraftManagerProps
                     <div className="flex items-center gap-2 ml-4">
                       <button
                         onClick={() => handleLoadDraft(draft)}
-                        className="flex items-center gap-1 px-3 py-1 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         <Download className="w-3 h-3" />
                         Načíst

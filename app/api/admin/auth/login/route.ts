@@ -5,8 +5,20 @@ import jwt from 'jsonwebtoken'
 // Force dynamic rendering pro API autentifikaci
 export const dynamic = 'force-dynamic'
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'pavel'
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$Ua30vjJV8WvSARr8JtrGdekdEGyFNKke3H5PhCt8NjbPCIdlpKGeO' // test123
+// Administrátoři systému
+const ADMINS = [
+  {
+    username: 'pavel',
+    passwordHash: '$2b$10$Ua30vjJV8WvSARr8JtrGdekdEGyFNKke3H5PhCt8NjbPCIdlpKGeO', // test123
+    role: 'admin'
+  },
+  {
+    username: 'Crazyk',
+    passwordHash: '$2b$10$RqADi2XQr6vpuQ1629KYieO3p/dRRCV8eklStzL0PJMIjRiatuNS.', // kILhQO9h3@NY
+    role: 'admin'
+  }
+]
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 export async function POST(request: NextRequest) {
@@ -20,14 +32,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (username !== ADMIN_USERNAME) {
+    // Najdi admina podle username
+    const admin = ADMINS.find(a => a.username === username)
+    if (!admin) {
       return NextResponse.json(
         { message: 'Neplatné přihlašovací údaje' },
         { status: 401 }
       )
     }
 
-    const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH)
+    const isValidPassword = await bcrypt.compare(password, admin.passwordHash)
     if (!isValidPassword) {
       return NextResponse.json(
         { message: 'Neplatné přihlašovací údaje' },
@@ -36,12 +50,16 @@ export async function POST(request: NextRequest) {
     }
 
     const token = jwt.sign(
-      { username: ADMIN_USERNAME, role: 'admin' },
+      { username: admin.username, role: admin.role },
       JWT_SECRET,
       { expiresIn: '24h' }
     )
 
-    return NextResponse.json({ token, message: 'Přihlášení úspěšné' })
+    return NextResponse.json({ 
+      token, 
+      message: 'Přihlášení úspěšné',
+      user: { username: admin.username, role: admin.role }
+    })
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(

@@ -25,7 +25,7 @@ export default function SeoPreview({ title, excerpt, url = 'pavelfiser.cz/aktual
             onClick={() => setDevice('desktop')}
             className={`p-2 flex items-center gap-1 text-xs ${
               device === 'desktop' 
-                ? 'bg-primary-50 text-primary-600 border-primary-200' 
+                ? 'bg-blue-50 text-blue-600 border-blue-200' 
                 : 'bg-white text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -36,7 +36,7 @@ export default function SeoPreview({ title, excerpt, url = 'pavelfiser.cz/aktual
             onClick={() => setDevice('mobile')}
             className={`p-2 flex items-center gap-1 text-xs border-l ${
               device === 'mobile' 
-                ? 'bg-primary-50 text-primary-600 border-primary-200' 
+                ? 'bg-blue-50 text-blue-600 border-blue-200' 
                 : 'bg-white text-gray-600 hover:bg-gray-50'
             }`}
           >

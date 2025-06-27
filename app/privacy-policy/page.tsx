@@ -1,16 +1,49 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, Shield, Eye, Lock, Share, Globe, Mail, Calendar, Database, Users, AlertTriangle, Trash2 } from 'lucide-react'
+import StructuredData from '../components/StructuredData'
 
 export const metadata: Metadata = {
   title: 'Zásady ochrany osobních údajů | Pavel Fišer - Zastupitel Praha 4',
   description: 'Zásady ochrany osobních údajů pro webové stránky a služby Pavla Fišera, zastupitele Prahy 4. Informace o zpracování osobních údajů.',
   robots: 'index, follow',
+  openGraph: {
+    title: 'Zásady ochrany osobních údajů | Pavel Fišer',
+    description: 'Zásady ochrany osobních údajů pro webové stránky a služby Pavla Fišera, zastupitele Prahy 4.',
+    url: 'https://fiserpavel.cz/privacy-policy',
+    siteName: 'Pavel Fišer - Zastupitel MČ Praha 4',
+    images: [
+      {
+        url: '/og-privacy.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Zásady ochrany osobních údajů - Pavel Fišer',
+      },
+    ],
+    locale: 'cs_CZ',
+    type: 'article',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Zásady ochrany osobních údajů | Pavel Fišer',
+    description: 'Zásady ochrany osobních údajů pro webové stránky a služby Pavla Fišera, zastupitele Prahy 4.',
+    images: ['/og-privacy.svg'],
+  },
 }
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <>
+      <StructuredData 
+        type="article"
+        title="Zásady ochrany osobních údajů"
+        description="Zásady ochrany osobních údajů pro webové stránky a služby Pavla Fišera, zastupitele Prahy 4."
+        url="https://fiserpavel.cz/privacy-policy"
+        image="https://fiserpavel.cz/og-privacy.svg"
+        datePublished="2024-01-01T00:00:00Z"
+        dateModified={new Date().toISOString()}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -416,6 +449,7 @@ export default function PrivacyPolicyPage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   )
 }

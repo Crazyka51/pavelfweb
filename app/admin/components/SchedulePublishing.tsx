@@ -63,7 +63,7 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
                 setIsScheduled(false)
                 onScheduleChange(false)
               }}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
             <span className="ml-2 text-sm text-gray-900">Publikovat okamžitě</span>
           </label>
@@ -77,7 +77,7 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
                 setIsScheduled(false)
                 onScheduleChange(false)
               }}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
             <span className="ml-2 text-sm text-gray-900">Uložit jako koncept</span>
           </label>
@@ -88,7 +88,7 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
               name="publishing"
               checked={isScheduled}
               onChange={() => handleScheduleToggle(true)}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
             <span className="ml-2 text-sm text-gray-900">Naplánovat publikování</span>
           </label>

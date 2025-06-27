@@ -288,7 +288,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
                 setEditingArticle(null)
                 setCurrentView('edit')
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Nový článek
@@ -300,7 +300,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         <div className="bg-white rounded-lg shadow-sm border">
           {isLoading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Načítání článků...</p>
             </div>
           ) : filteredArticles.length === 0 ? (
