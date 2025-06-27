@@ -16,7 +16,8 @@ import {
   Upload,
   CheckSquare,
   Square,
-  RotateCcw
+  RotateCcw,
+  FileText
 } from 'lucide-react'
 
 interface Article {
@@ -36,9 +37,10 @@ interface Article {
 interface ArticleManagerProps {
   onEditArticle: (article: Article) => void
   onCreateNew: () => void
+  token: string
 }
 
-export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleManagerProps) {
+export default function ArticleManager({ onEditArticle, onCreateNew, token }: ArticleManagerProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,10 +64,17 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
 
   const loadArticles = async () => {
     try {
-      const response = await fetch('/api/admin/articles')
+      const response = await fetch('/api/admin/articles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setArticles(data)
+      } else if (response.status === 401) {
+        console.error('Unauthorized access - token may be invalid')
+        // Optionally redirect to login or show error
       }
     } catch (error) {
       console.error('Error loading articles:', error)
@@ -153,7 +162,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
       try {
         for (const articleId of selectedArticles) {
-          await fetch(`/api/admin/articles/${articleId}`, { method: 'DELETE' })
+          await fetch(`/api/admin/articles/${articleId}`, { 
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
         }
         await loadArticles()
         setSelectedArticles([])
@@ -174,7 +188,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ ...article, published: true, publishedAt: undefined })
           })
         }
@@ -197,7 +214,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ ...article, published: false, publishedAt: undefined })
           })
         }
@@ -214,7 +234,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm('Opravdu chcete smazat tento článek?')) {
       try {
-        await fetch(`/api/admin/articles/${articleId}`, { method: 'DELETE' })
+        await fetch(`/api/admin/articles/${articleId}`, { 
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         await loadArticles()
         alert('Článek byl úspěšně smazán')
       } catch (error) {
@@ -238,7 +263,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
       
       const response = await fetch('/api/admin/articles', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(newArticle)
       })
       

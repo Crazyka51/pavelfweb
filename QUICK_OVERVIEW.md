@@ -1,4 +1,8 @@
-# 🚀 - **URL (localhost):** http://localhost:3000/adminAVEL FIŠER WEB - QUICK OVERVIEW
+# ## � ADMIN PŘÍSTUPY
+- **Pavel:** username: `pavel`, heslo: `test123`
+- **Crazyk:** username: `Crazyk`, heslo: `kILhQO9h3@NY`
+- **URL (localhost):** http://localhost:3000/admin
+- **URL (production):** https://pavelfiserv12-crazyka51-crazyka51s-projects.vercel.app/admin**URL (localhost):** http://localhost:3000/adminAVEL FIŠER WEB - QUICK OVERVIEW
 
 ## 👥 ADMIN PŘÍSTUPY
 - **Pavel:** username: `pavel`, heslo: `test123`

@@ -22,7 +22,7 @@ export default function HomePage() {
     const token = localStorage.getItem('admin_token')
     if (token) {
       // Verify token with server
-      fetch('/api/auth/verify', {
+      fetch('/api/admin/auth/verify', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -73,8 +73,8 @@ export default function HomePage() {
   const handleSaveArticle = async (articleData: any) => {
     try {
       const url = editingArticle 
-        ? `/api/articles/${editingArticle.id}`
-        : '/api/articles'
+        ? `/api/admin/articles/${editingArticle.id}`
+        : '/api/admin/articles'
       
       const response = await fetch(url, {
         method: editingArticle ? 'PUT' : 'POST',
@@ -117,6 +117,7 @@ export default function HomePage() {
           <ArticleManager
             onCreateNew={handleCreateNew}
             onEditArticle={handleEditArticle}
+            token={localStorage.getItem('admin_token') || ''}
           />
         )
       case 'editor':

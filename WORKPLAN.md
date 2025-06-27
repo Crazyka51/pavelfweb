@@ -14,9 +14,9 @@
 - [x] ✅ **Vygenerovat správný bcrypt hash** pro nové heslo
 - [x] ✅ **Opravit CookiePreferences.tsx** (byl prázdný, způsoboval onClick chyby)
 - [x] ✅ **Ověřit produkční build** (lokálně úspěšný)
-- [ ] 🟡 **Testovat přihlášení obou adminů** v prohlížeči
+- [x] ✅ **Deploy na produkci** a otestovat (URL: pavelfiserv12-crazyka51-crazyka51s-projects.vercel.app)
+- [x] ✅ **Testovat přihlášení obou adminů** v produkčním prostředí
 - [ ] 🟡 **Zobrazit aktuálně přihlášeného admina** v admin panelu
-- [ ] 🟡 **Deploy na produkci** a otestovat
 
 ### 2. NEWSLETTER MANAGEMENT SYSTEM
 - [ ] ❌ **Vytvořit Newsletter component** (/admin/newsletter)

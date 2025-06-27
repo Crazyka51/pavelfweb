@@ -220,9 +220,9 @@ export default function ArticleEditor({ article, categories, onSave, onCancel }:
         ['link', 'image'],
         ['clean']
       ],
-      handlers: {
-        'image': imageHandler // Custom handler pro obrázky
-      }
+      handlers: isMounted ? {
+        'image': imageHandler // Custom handler pouze pokud je mounted
+      } : undefined
     },
     
     // Zakázání drag & drop obrázků a lepší clipboard handling
