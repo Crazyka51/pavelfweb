@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
+// Force dynamic rendering pro API volání
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const searchParams = request.nextUrl.searchParams
     const limit = searchParams.get('limit') || '6'
     const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID || '61574874071299'
     const accessToken = process.env.FACEBOOK_ACCESS_TOKEN

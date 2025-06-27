@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
+// Force dynamic rendering pro API autentifikaci
+export const dynamic = 'force-dynamic'
+
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'pavel'
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2b$10$Ua30vjJV8WvSARr8JtrGdekdEGyFNKke3H5PhCt8NjbPCIdlpKGeO' // test123
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'

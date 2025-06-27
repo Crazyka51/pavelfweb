@@ -3,6 +3,9 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import jwt from 'jsonwebtoken'
 
+// Force dynamic rendering pro API články
+export const dynamic = 'force-dynamic'
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 const ARTICLES_FILE = path.join(process.cwd(), 'data', 'articles.json')
 

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 
+// Force dynamic rendering pro veřejné API článků
+export const dynamic = 'force-dynamic'
+
 const ARTICLES_FILE = path.join(process.cwd(), 'data', 'articles.json')
 
 interface Article {
