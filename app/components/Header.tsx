@@ -28,7 +28,7 @@ export default function Header() {
         </div>
         <div className="flex gap-x-12">
           <Link
-            href="#priority"
+            href="/#priority"
             className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
           >
             Priority
@@ -40,13 +40,13 @@ export default function Header() {
             Novinky
           </Link>
           <Link
-            href="#about"
+            href="/#about"
             className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
           >
             O mně
           </Link>
           <Link
-            href="#contact"
+            href="/#contact"
             className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
           >
             Kontakt
