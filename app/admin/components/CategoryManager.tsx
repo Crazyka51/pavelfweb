@@ -13,10 +13,10 @@ interface Category {
 }
 
 interface CategoryManagerProps {
-  // Pro budoucí rozšíření
+  token?: string
 }
 
-export default function CategoryManager({}: CategoryManagerProps) {
+export default function CategoryManager({ token }: CategoryManagerProps) {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -47,7 +47,12 @@ export default function CategoryManager({}: CategoryManagerProps) {
     setIsLoading(true)
     try {
       // Načteme všechny články pro počítání kategorií
-      const articlesResponse = await fetch('/api/admin/articles')
+      const authToken = token || localStorage.getItem('admin_token')
+      const articlesResponse = await fetch('/api/admin/articles', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      })
       const articles = await articlesResponse.json()
 
       // Výchozí kategorie (hardcoded pro jednoduchost)

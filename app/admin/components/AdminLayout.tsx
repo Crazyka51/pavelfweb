@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Mail
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -25,6 +26,7 @@ interface AdminLayoutProps {
   currentSection: string
   onSectionChange: (section: string) => void
   onLogout: () => void
+  currentUser: {username: string, displayName: string} | null
 }
 
 const menuItems = [
@@ -53,6 +55,12 @@ const menuItems = [
     description: 'Správa kategorií a štítků'
   },
   {
+    id: 'newsletter',
+    label: 'Newsletter',
+    icon: Mail,
+    description: 'Odběratelé a e-mailové kampaně'
+  },
+  {
     id: 'analytics',
     label: 'Statistiky',
     icon: BarChart3,
@@ -72,7 +80,7 @@ const menuItems = [
   }
 ]
 
-export default function AdminLayout({ children, currentSection, onSectionChange, onLogout }: AdminLayoutProps) {
+export default function AdminLayout({ children, currentSection, onSectionChange, onLogout, currentUser }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const currentMenuItem = menuItems.find(item => item.id === currentSection)
@@ -173,10 +181,12 @@ export default function AdminLayout({ children, currentSection, onSectionChange,
         <div className="px-4 py-4 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center mb-3">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              PF
+              {currentUser?.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="ml-3">
-              <div className="text-sm font-medium text-gray-900">Pavel Fišer</div>
+              <div className="text-sm font-medium text-gray-900">
+                {currentUser?.displayName || 'Neznámý uživatel'}
+              </div>
               <div className="text-xs text-gray-500">Administrator</div>
             </div>
           </div>
@@ -229,8 +239,13 @@ export default function AdminLayout({ children, currentSection, onSectionChange,
                     day: 'numeric' 
                   })}
                 </div>
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                  PF
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    {currentUser?.displayName || 'Neznámý uživatel'}
+                  </span>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {currentUser?.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}
+                  </div>
                 </div>
               </div>
             </div>

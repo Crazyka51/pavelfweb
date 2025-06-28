@@ -287,7 +287,7 @@ export default function AnalyticsManager() {
               <div>
                 <span className="font-medium text-blue-800">Tracking ID:</span>
                 <br />
-                <span className="text-blue-600 font-mono">G-LNF9PDP1RH</span>
+                <span className="text-blue-600 font-mono">G-Z5Y3C04P25</span>
               </div>
               <div>
                 <span className="font-medium text-blue-800">Posledně aktualizováno:</span>

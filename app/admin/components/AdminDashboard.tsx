@@ -72,8 +72,13 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
 
   const loadDashboardData = async () => {
     try {
-      // Load articles
-      const response = await fetch('/api/admin/articles')
+      // Load articles with authorization
+      const token = localStorage.getItem('admin_token')
+      const response = await fetch('/api/admin/articles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       if (response.ok) {
         const articles: Article[] = await response.json()
         

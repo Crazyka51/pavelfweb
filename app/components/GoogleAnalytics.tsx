@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Script from 'next/script'
 
-const GA_TRACKING_ID = 'G-LNF9PDP1RH'
+const GA_TRACKING_ID = 'G-Z5Y3C04P25'
 
 declare global {
   interface Window {

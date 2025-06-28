@@ -15,6 +15,7 @@ const formSchema = z.object({
 
 export default function NewsletterSubscribe() {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -23,15 +24,36 @@ export default function NewsletterSubscribe() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
+    setMessage(null)
+    
+    try {
+      const response = await fetch('/api/admin/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: values.email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ text: data.message, type: 'success' })
+        form.reset()
+      } else {
+        setMessage({ text: data.message, type: 'error' })
+      }
+    } catch (error) {
+      console.error('Newsletter subscription error:', error)
+      setMessage({ 
+        text: 'Chyba při přihlašování k odběru. Zkuste to prosím později.', 
+        type: 'error' 
+      })
+    } finally {
       setIsSubmitting(false)
-      form.reset()
-      alert("Děkuji za přihlášení k odběru novinek!")
-    }, 2000)
+    }
   }
 
   return (
@@ -50,6 +72,18 @@ export default function NewsletterSubscribe() {
           </p>
           <div className="bg-white rounded-lg p-8 shadow-lg max-w-md mx-auto">
             <h3 className="text-xl font-bold text-blue-700 mb-4">Odběr novinek</h3>
+            
+            {/* Success/Error message */}
+            {message && (
+              <div className={`mb-4 p-3 rounded-lg text-sm ${
+                message.type === 'success' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                {message.text}
+              </div>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField

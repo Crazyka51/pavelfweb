@@ -6,7 +6,7 @@ import { Calendar, Clock, Save } from 'lucide-react'
 interface SchedulePublishingProps {
   published: boolean
   publishedAt?: string
-  onScheduleChange: (scheduled: boolean, publishedAt?: string) => void
+  onScheduleChange: (scheduled: boolean, publishedAt?: string, publishNow?: boolean) => void
 }
 
 export default function SchedulePublishing({ published, publishedAt, onScheduleChange }: SchedulePublishingProps) {
@@ -19,16 +19,16 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
     setIsScheduled(scheduled)
     
     if (scheduled && scheduleDate) {
-      onScheduleChange(true, scheduleDate)
+      onScheduleChange(true, scheduleDate, false)
     } else {
-      onScheduleChange(false)
+      onScheduleChange(false, undefined, false)
     }
   }
 
   const handleDateChange = (date: string) => {
     setScheduleDate(date)
     if (isScheduled) {
-      onScheduleChange(true, date)
+      onScheduleChange(true, date, false)
     }
   }
 
@@ -58,10 +58,10 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
             <input
               type="radio"
               name="publishing"
-              checked={published}
+              checked={published && !isScheduled}
               onChange={() => {
                 setIsScheduled(false)
-                onScheduleChange(false)
+                onScheduleChange(false, undefined, true) // true = publish immediately
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
@@ -75,7 +75,7 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
               checked={!published && !isScheduled}
               onChange={() => {
                 setIsScheduled(false)
-                onScheduleChange(false)
+                onScheduleChange(false, undefined, false) // false = save as draft
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />

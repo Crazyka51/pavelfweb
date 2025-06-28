@@ -8,13 +8,15 @@ import AdminDashboard from './components/AdminDashboard'
 import ArticleEditor from './components/ArticleEditor'
 import ArticleManager from './components/ArticleManager'
 import CategoryManager from './components/CategoryManager'
+import NewsletterManager from './components/NewsletterManager'
 import SettingsManager from './components/SettingsManager'
 
 export default function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [currentView, setCurrentView] = useState<'dashboard' | 'articles' | 'editor' | 'categories' | 'analytics' | 'backup' | 'settings'>('dashboard')
+  const [currentView, setCurrentView] = useState<'dashboard' | 'articles' | 'editor' | 'categories' | 'newsletter' | 'analytics' | 'backup' | 'settings'>('dashboard')
   const [editingArticle, setEditingArticle] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<{username: string, displayName: string} | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -31,6 +33,13 @@ export default function HomePage() {
       .then(data => {
         if (data.valid) {
           setIsAuthenticated(true)
+          // Set user info based on username
+          const userInfo = {
+            username: data.username,
+            displayName: data.username === 'pavel' ? 'Pavel Fišer' : 
+                         data.username === 'Crazyk' ? 'Crazyk' : data.username
+          }
+          setCurrentUser(userInfo)
         } else {
           localStorage.removeItem('admin_token')
         }
@@ -45,14 +54,22 @@ export default function HomePage() {
     }
   }, [])
 
-  const handleLogin = (token: string) => {
+  const handleLogin = (token: string, username: string) => {
     localStorage.setItem('admin_token', token)
     setIsAuthenticated(true)
+    // Set user info based on username
+    const userInfo = {
+      username: username,
+      displayName: username === 'pavel' ? 'Pavel Fišer' : 
+                   username === 'Crazyk' ? 'Crazyk' : username
+    }
+    setCurrentUser(userInfo)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token')
     setIsAuthenticated(false)
+    setCurrentUser(null)
   }
 
   const handleNavigation = (view: string) => {
@@ -72,6 +89,16 @@ export default function HomePage() {
 
   const handleSaveArticle = async (articleData: any) => {
     try {
+      // Pokud je publishedAt nastaveno na aktuální čas a published je true, jedná se o okamžité publikování
+      if (articleData.published && articleData.publishedAt) {
+        const publishTime = new Date(articleData.publishedAt).getTime()
+        const now = new Date().getTime()
+        // Pokud je rozdíl menší než 5 minut, považujeme to za okamžité publikování
+        if (Math.abs(publishTime - now) < 5 * 60 * 1000) {
+          articleData.publishedAt = new Date().toISOString()
+        }
+      }
+
       const url = editingArticle 
         ? `/api/admin/articles/${editingArticle.id}`
         : '/api/admin/articles'
@@ -130,7 +157,13 @@ export default function HomePage() {
           />
         )
       case 'categories':
-        return <CategoryManager />
+        return <CategoryManager token={localStorage.getItem('admin_token') || ''} />
+      case 'newsletter':
+        return (
+          <NewsletterManager 
+            token={localStorage.getItem('admin_token') || ''}
+          />
+        )
       case 'analytics':
         return (
           <div className="p-8">
@@ -186,6 +219,7 @@ export default function HomePage() {
           currentSection={currentView}
           onSectionChange={handleNavigation}
           onLogout={handleLogout}
+          currentUser={currentUser}
         >
           {renderContent()}
         </AdminLayout>

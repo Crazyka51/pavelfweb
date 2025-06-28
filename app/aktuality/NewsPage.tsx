@@ -37,28 +37,47 @@ export default function NewsPage() {
 
   useEffect(() => {
     loadArticles()
-  }, [currentPage, selectedCategory])
+  }, [currentPage, selectedCategory, searchTerm])
 
   const loadArticles = async () => {
     setIsLoading(true)
     try {
-      const offset = (currentPage - 1) * articlesPerPage
-      const categoryParam = selectedCategory !== 'all' ? `&category=${selectedCategory}` : ''
-      
-      const response = await fetch(
-        `http://localhost:3002/api/public/articles?limit=${articlesPerPage}&offset=${offset}${categoryParam}`
-      )
+      // Použijeme správný API endpoint
+      const response = await fetch('/api/admin/public/articles')
       
       if (!response.ok) {
-        throw new Error('Chyba při načítání článků')
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
       
-      const data: ApiResponse = await response.json()
-      setArticles(data.articles)
-      setTotalArticles(data.total)
+      const articles: Article[] = await response.json()
+      
+      // Client-side filtering and pagination
+      let filteredArticles = articles
+      
+      // Filter by category
+      if (selectedCategory !== 'all') {
+        filteredArticles = filteredArticles.filter(article => article.category === selectedCategory)
+      }
+      
+      // Filter by search term
+      if (searchTerm) {
+        filteredArticles = filteredArticles.filter(article =>
+          article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+      }
+      
+      // Apply pagination - FIXED
+      const offset = (currentPage - 1) * articlesPerPage
+      const paginatedArticles = filteredArticles.slice(offset, offset + articlesPerPage)
+      
+      setArticles(paginatedArticles)
+      setTotalArticles(filteredArticles.length)
+      setError(null) // Clear any previous errors
     } catch (error) {
       console.error('Error loading articles:', error)
-      setError('Nepodařilo se načíst články')
+      setError('Nepodařilo se načíst články - používáme náhradní data')
       // Fallback mock data
       setArticles(getMockArticles())
       setTotalArticles(2)
@@ -93,12 +112,6 @@ export default function NewsPage() {
       imageUrl: '/placeholder.jpg'
     }
   ]
-
-  const filteredArticles = articles.filter(article =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
@@ -207,7 +220,7 @@ export default function NewsPage() {
           <>
             {/* Articles grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {filteredArticles.map((article) => (
+              {articles.map((article) => (
                 <article key={article.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow group">
                   {article.imageUrl && (
                     <div className="relative h-48 overflow-hidden rounded-t-lg">
@@ -261,7 +274,7 @@ export default function NewsPage() {
             </div>
 
             {/* No results */}
-            {filteredArticles.length === 0 && (
+            {articles.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-600">
                   {searchTerm ? 'Žádné články nevyhovují hledání.' : 'Zatím nejsou k dispozici žádné články.'}

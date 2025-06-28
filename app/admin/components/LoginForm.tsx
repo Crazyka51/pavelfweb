@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Lock, User, Eye, EyeOff } from 'lucide-react'
 
 interface LoginFormProps {
-  onLogin: (token: string) => void
+  onLogin: (token: string, username: string) => void
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
@@ -31,7 +31,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       const data = await response.json()
 
       if (response.ok) {
-        onLogin(data.token)
+        onLogin(data.token, username)
       } else {
         setError(data.message || 'Neplatné přihlašovací údaje')
       }
