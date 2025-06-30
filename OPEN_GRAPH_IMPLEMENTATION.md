@@ -25,7 +25,7 @@
 ### 4. Implementované stránky
 
 #### Hlavní stránka (layout.tsx)
-```typescript
+\`\`\`typescript
 metadataBase: new URL('https://fiserpavel.cz'),
 openGraph: {
   title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
@@ -36,7 +36,7 @@ openGraph: {
   locale: 'cs_CZ',
   type: 'website',
 }
-```
+\`\`\`
 
 #### Privacy Policy (/privacy-policy/page.tsx)
 - Specifické OG meta tagy pro GDPR stránku
@@ -99,13 +99,13 @@ openGraph: {
 
 ### Manuální test v HTML
 Zkontrolovat source code stránky - měly by být vidět meta tagy:
-```html
+\`\`\`html
 <meta property="og:title" content="...">
 <meta property="og:description" content="...">
 <meta property="og:image" content="...">
 <meta property="og:url" content="...">
 <meta property="og:type" content="...">
-```
+\`\`\`
 
 ## 📋 TODO pro produkci
 

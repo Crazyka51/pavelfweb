@@ -30,35 +30,35 @@ Jednoduché a bezpečné Content Management System pro správu novinek a článk
 ## Instalace a spuštění
 
 ### 1. Nainstalujte závislosti
-```bash
+\`\`\`bash
 npm install
 # nebo
 pnpm install
-```
+\`\`\`
 
 ### 2. Nastavte environment variables
 Zkopírujte `.env.example` do `.env.local` a upravte hodnoty:
 
-```bash
+\`\`\`bash
 cp .env.example .env.local
-```
+\`\`\`
 
 Upravte `.env.local`:
-```
+\`\`\`
 ADMIN_USERNAME=pavel
 ADMIN_PASSWORD=your_secure_password_here
 JWT_SECRET=your_super_secret_jwt_key_here
 NEXT_PUBLIC_APP_URL=http://localhost:3001
-```
+\`\`\`
 
 ⚠️ **DŮLEŽITÉ**: V produkci změňte výchozí heslo a JWT secret!
 
 ### 3. Spusťte development server
-```bash
+\`\`\`bash
 npm run dev
 # nebo
 pnpm dev
-```
+\`\`\`
 
 Aplikace bude dostupná na: http://localhost:3001
 
@@ -69,7 +69,7 @@ Aplikace bude dostupná na: http://localhost:3001
 
 ## Struktura projektu
 
-```
+\`\`\`
 cms-test/
 ├── app/                      # Next.js app directory
 │   ├── components/           # React komponenty
@@ -89,7 +89,7 @@ cms-test/
 ├── public/                   # Statické soubory
 ├── .env.example              # Příklad environment variables
 └── README.md                 # Tato dokumentace
-```
+\`\`\`
 
 ## API Endpoints
 
@@ -117,7 +117,7 @@ cms-test/
 
 ### Načítání článků do Next.js komponenty
 
-```javascript
+\`\`\`javascript
 // components/News.tsx
 import { useState, useEffect } from 'react'
 
@@ -169,11 +169,11 @@ export default function News() {
     </div>
   )
 }
-```
+\`\`\`
 
 ### Server-side rendering (SSG/SSR)
 
-```javascript
+\`\`\`javascript
 // pages/news/index.tsx nebo app/news/page.tsx
 export async function getStaticProps() {
   try {
@@ -194,7 +194,7 @@ export async function getStaticProps() {
     }
   }
 }
-```
+\`\`\`
 
 ## Kategorie článků
 
@@ -226,12 +226,12 @@ Aplikace používá JSON soubory pro jednoduchost:
 ## Produkční nasazení
 
 ### 1. Environment variables
-```
+\`\`\`
 ADMIN_USERNAME=pavel
 ADMIN_PASSWORD=very_secure_password_here
 JWT_SECRET=super_secret_random_string_at_least_32_chars
 NEXT_PUBLIC_APP_URL=https://your-cms-domain.com
-```
+\`\`\`
 
 ### 2. Doporučení
 - Nastavte silné heslo

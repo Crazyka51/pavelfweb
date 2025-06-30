@@ -6,9 +6,9 @@ Tato implementace používá Google Consent Mode v2 s pokročilými funkcemi pro
 ### Klíčové funkce implementované
 
 #### 1. setDefaultConsentState()
-```typescript
+\`\`\`typescript
 setDefaultConsentState() // Nastavuje výchozí stav odmítnutí pro všechny kategorie
-```
+\`\`\`
 
 **Implementované funkce:**
 - `ad_storage: 'denied'` - Odmítnutí reklamních cookies
@@ -22,9 +22,9 @@ setDefaultConsentState() // Nastavuje výchozí stav odmítnutí pro všechny ka
 - `region: ['CZ', 'EU']` - Aplikace pro ČR a EU
 
 #### 2. updateConsentState()
-```typescript
+\`\`\`typescript
 updateConsentState(preferences: ConsentSettings) // Granulární aktualizace souhlasu
-```
+\`\`\`
 
 **Granulární kategorize:**
 - **Necessary** (vždy povolené): `functionality_storage`, `security_storage`
@@ -33,9 +33,9 @@ updateConsentState(preferences: ConsentSettings) // Granulární aktualizace sou
 - **Personalization**: `ad_personalization`, `personalization_storage`
 
 #### 3. gtagSetAdsDataRedaction()
-```typescript
+\`\`\`typescript
 gtagSetAdsDataRedaction(preferences: ConsentSettings) // Redakce reklamních dat
-```
+\`\`\`
 
 **Privacy-first nastavení:**
 - `ads_data_redaction: true` pokud marketing consent = denied
@@ -46,34 +46,34 @@ gtagSetAdsDataRedaction(preferences: ConsentSettings) // Redakce reklamních dat
 ## Technická implementace
 
 ### Typy pro TypeScript
-```typescript
+\`\`\`typescript
 export interface ConsentSettings {
   necessary: boolean      // Vždy true
   analytics: boolean      // Google Analytics
   marketing: boolean      // Reklamní cookies
   personalization: boolean // Personalizační cookies
 }
-```
+\`\`\`
 
 ### Pokročilé funkce
 
 #### Consent-aware tracking
-```typescript
+\`\`\`typescript
 // Event tracking pouze s analytickým souhlasem
 trackEvent('action', 'category', 'label', value)
 
 // Page view tracking s consent kontrolou
 trackPageView(url, title)
-```
+\`\`\`
 
 #### Centralizovaná správa změn
-```typescript
+\`\`\`typescript
 handleConsentChange(newPreferences: ConsentSettings)
 // - Aktualizuje Google Consent Mode
 // - Uloží do localStorage
 // - Trackuje změny
 // - Spustí page view při povolení analytics
-```
+\`\`\`
 
 ### Uživatelské rozhraní
 
@@ -98,7 +98,7 @@ handleConsentChange(newPreferences: ConsentSettings)
 ## GDPR Compliance funkce
 
 ### Privacy by Default
-```typescript
+\`\`\`typescript
 // Výchozí odmítnutí všech nepovinných kategorií
 const defaultSettings = {
   necessary: true,        // Nelze změnit
@@ -106,15 +106,15 @@ const defaultSettings = {
   marketing: false,       // Odmítnuto  
   personalization: false  // Odmítnuto
 }
-```
+\`\`\`
 
 ### Anonymizace dat
-```typescript
+\`\`\`typescript
 // V Google Analytics vždy aktivní:
 'anonymize_ip': true,
 'restricted_data_processing': true, // Při odmítnutí marketing
 'allow_ad_personalization_signals': false, // Privacy default
-```
+\`\`\`
 
 ### Persistent preferences
 - **Uložení**: localStorage pro 2 roky
@@ -142,7 +142,7 @@ const defaultSettings = {
 ## API Reference
 
 ### Exportované funkce z GoogleAnalytics.tsx:
-```typescript
+\`\`\`typescript
 // Core Consent Mode functions
 setDefaultConsentState(): void
 updateConsentState(preferences: ConsentSettings): void  
@@ -156,7 +156,7 @@ shouldShowConsentBanner(): boolean
 // Privacy-aware tracking
 trackEvent(action: string, category: string, label?: string, value?: number): void
 trackPageView(url: string, title: string): void
-```
+\`\`\`
 
 ### Events pro monitoring:
 - `consent_update` - změna souhlasu

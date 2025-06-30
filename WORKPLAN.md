@@ -62,14 +62,14 @@
 - **Status:** ✅ VYŘEŠENO
 
 ### 🎨 **Současný Design System:**
-```
+\`\`\`
 🎭 UNIFIED COLOR THEME:
 ├── Header: #020917 (tmavě modrá) + bílý text
 ├── Main sections: Bílé pozadí + tmavý text  
 ├── Accents: Modrá (#3B82F6, #2563EB)
 ├── Text hierarchy: Šedé odstíny pro různé úrovně
 └── Consistency: Jednotný vzhled napříč celým webem
-```
+\`\`\`
 
 ---
 

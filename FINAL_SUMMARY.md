@@ -35,9 +35,9 @@ dokončil jsem implementaci skutečného odesílání e-mailů z kontaktního fo
 
 ### 2. Nastavení API klíče
 V souboru `.env.local` (v root složce projektu) přidejte:
-```bash
+\`\`\`bash
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
+\`\`\`
 
 ### 3. Testování
 1. Spusťte web: `pnpm dev`

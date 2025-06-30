@@ -1,23 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Search, 
-  Filter, 
   Edit, 
   Trash2, 
   Eye, 
   Copy, 
-  Calendar,
   Tag,
   MoreVertical,
   Plus,
   Download,
-  Upload,
   CheckSquare,
   Square,
-  RotateCcw
+  FileText
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface Article {
   id: string
@@ -36,9 +34,10 @@ interface Article {
 interface ArticleManagerProps {
   onEditArticle: (article: Article) => void
   onCreateNew: () => void
+  token: string
 }
 
-export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleManagerProps) {
+export default function ArticleManager({ onEditArticle, onCreateNew, token }: ArticleManagerProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -52,29 +51,28 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
 
   const categories = ['Aktuality', 'Městská politika', 'Doprava', 'Životní prostředí', 'Kultura', 'Sport']
 
-  useEffect(() => {
-    loadArticles()
-  }, [])
-
-  useEffect(() => {
-    filterArticles()
-  }, [articles, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder])
-
-  const loadArticles = async () => {
+  const loadArticles = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/articles')
+      const response = await fetch('/api/admin/articles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setArticles(data)
+      } else if (response.status === 401) {
+        console.error('Unauthorized access - token may be invalid')
+        // Optionally redirect to login or show error
       }
     } catch (error) {
       console.error('Error loading articles:', error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [token])
 
-  const filterArticles = () => {
+  const filterArticles = useCallback(() => {
     let filtered = [...articles]
 
     // Text search
@@ -125,11 +123,19 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
           break
       }
       
-      return sortOrder === 'desc' ? -compareValue : compareValue
+      return sortOrder === 'asc' ? compareValue : -compareValue
     })
 
     setFilteredArticles(filtered)
-  }
+  }, [articles, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder])
+
+  useEffect(() => {
+    loadArticles()
+  }, [loadArticles])
+
+  useEffect(() => {
+    filterArticles()
+  }, [filterArticles])
 
   const handleSelectAll = () => {
     if (selectedArticles.length === filteredArticles.length) {
@@ -148,19 +154,35 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
   }
 
   const handleBulkDelete = async () => {
-    if (selectedArticles.length === 0) return
+    if (selectedArticles.length === 0) {
+      alert('Nejprve vyberte články ke smazání')
+      return
+    }
     
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
       try {
         for (const articleId of selectedArticles) {
-          await fetch(`/api/admin/articles/${articleId}`, { method: 'DELETE' })
+          console.log('Deleting article:', articleId)
+          const response = await fetch(`/api/admin/articles/${articleId}`, { 
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (!response.ok) {
+            const errorData = await response.json()
+            console.error('Delete failed:', errorData)
+            throw new Error(`Chyba při mazání článku ${articleId}: ${errorData.message}`)
+          }
         }
         await loadArticles()
         setSelectedArticles([])
         alert('Články byly úspěšně smazány')
       } catch (error) {
         console.error('Error deleting articles:', error)
-        alert('Chyba při mazání článků')
+        const errorMessage = error instanceof Error ? error.message : 'Neznámá chyba'
+        alert(`Chyba při mazání článků: ${errorMessage}`)
       }
     }
   }
@@ -174,7 +196,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ ...article, published: true, publishedAt: undefined })
           })
         }
@@ -197,7 +222,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ ...article, published: false, publishedAt: undefined })
           })
         }
@@ -214,7 +242,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm('Opravdu chcete smazat tento článek?')) {
       try {
-        await fetch(`/api/admin/articles/${articleId}`, { method: 'DELETE' })
+        await fetch(`/api/admin/articles/${articleId}`, { 
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         await loadArticles()
         alert('Článek byl úspěšně smazán')
       } catch (error) {
@@ -238,7 +271,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
       
       const response = await fetch('/api/admin/articles', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(newArticle)
       })
       
@@ -497,9 +533,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                     <td className="px-6 py-4">
                       <div className="flex items-start space-x-4">
                         {article.imageUrl && (
-                          <img
+                          <Image
                             src={article.imageUrl}
                             alt={article.title}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                           />
                         )}

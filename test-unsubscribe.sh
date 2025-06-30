@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Test script pro ověření admin DELETE endpoint pro newsletter
 echo "=== TESTOVÁNÍ ADMIN UNSUBSCRIBE FUNKCE ==="
 

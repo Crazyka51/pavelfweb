@@ -40,7 +40,7 @@ Test verze CMS systému je **kompletně implementována a funkční**!
 
 ### 🏗️ Architektura
 
-```
+\`\`\`
 cms-test/
 ├── app/
 │   ├── components/          # React komponenty
@@ -59,7 +59,7 @@ cms-test/
 ├── .env.local             # ✅ Konfigurace prostředí
 ├── README.md              # ✅ Dokumentace
 └── INTEGRATION_GUIDE.md   # ✅ Návod na integraci
-```
+\`\`\`
 
 ### 📋 API Endpointy
 
@@ -85,24 +85,24 @@ cms-test/
 ## 🚀 Spuštění
 
 1. **Přejděte do složky:**
-   ```bash
+   \`\`\`bash
    cd cms-test
-   ```
+   \`\`\`
 
 2. **Nainstalujte závislosti:**
-   ```bash
+   \`\`\`bash
    npm install
-   ```
+   \`\`\`
 
 3. **Spusťte aplikaci:**
-   ```bash
+   \`\`\`bash
    npm run dev
-   ```
+   \`\`\`
 
 4. **Otevřete prohlížeč:**
-   ```
+   \`\`\`
    http://localhost:3001
-   ```
+   \`\`\`
 
 5. **Přihlaste se:**
    - Uživatel: `pavel`
@@ -114,12 +114,12 @@ Kompletní návod pro integraci do hlavního webu je v souboru `INTEGRATION_GUID
 
 ### Základní použití API:
 
-```javascript
+\`\`\`javascript
 // Načtení nejnovějších článků
 fetch('http://localhost:3001/api/public/articles?limit=3')
   .then(res => res.json())
   .then(data => console.log(data.articles))
-```
+\`\`\`
 
 ## 📈 Možná rozšíření
 

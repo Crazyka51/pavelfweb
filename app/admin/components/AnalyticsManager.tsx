@@ -1,313 +1,435 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, Users, Eye, Globe, Clock } from 'lucide-react'
+import { useState, useEffect, useCallback } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Users,
+  Eye,
+  MousePointer,
+  Clock,
+  TrendingUp,
+  Globe,
+  Smartphone,
+  Download,
+  RefreshCw,
+  Calendar,
+  BarChart3,
+} from "lucide-react"
 
 interface AnalyticsData {
+  totalUsers: number
+  totalSessions: number
   totalPageViews: number
-  uniqueVisitors: number
-  averageSessionDuration: string
-  bounceRate: string
-  realTimeUsers: number
-  conversions: number
-  pageLoadTime: string
-  topPages: Array<{ page: string; views: number; title: string }>
-  geographicData: Array<{ country: string; visitors: number }>
-  deviceData: Array<{ device: string; percentage: number }>
-  trafficSources: Array<{ source: string; percentage: number }>
+  bounceRate: number
+  averageSessionDuration: number
+  activeUsers: number
+  topPages: Array<{
+    page: string
+    views: number
+    users: number
+  }>
+  usersByCountry: Array<{
+    country: string
+    users: number
+  }>
+  deviceCategories: Array<{
+    device: string
+    users: number
+    percentage: number
+  }>
+  trafficSources: Array<{
+    source: string
+    users: number
+    percentage: number
+  }>
+  dailyData: Array<{
+    date: string
+    users: number
+    sessions: number
+    pageViews: number
+  }>
 }
 
 export default function AnalyticsManager() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
-    totalPageViews: 0,
-    uniqueVisitors: 0,
-    averageSessionDuration: '0:00',
-    bounceRate: '0%',
-    realTimeUsers: 0,
-    conversions: 0,
-    pageLoadTime: '0s',
-    topPages: [],
-    geographicData: [],
-    deviceData: [],
-    trafficSources: []
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [dateRange, setDateRange] = useState('7d')
+  const [data, setData] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [period, setPeriod] = useState("7daysAgo")
+  const [lastUpdated, setLastUpdated] = useState<string>("")
+
+  const loadAnalyticsData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const token = localStorage.getItem("adminToken")
+      if (!token) {
+        throw new Error("Nejste přihlášeni")
+      }
+
+      const response = await fetch(`/api/admin/analytics?startDate=${period}&endDate=today`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Chyba při načítání dat")
+      }
+
+      const result = await response.json()
+      setData(result.data)
+      setLastUpdated(result.lastUpdated)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Neznámá chyba")
+      console.error("Chyba při načítání analytics:", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [period])
 
   useEffect(() => {
     loadAnalyticsData()
-  }, [dateRange])
 
-  const loadAnalyticsData = async () => {
-    setIsLoading(true)
-    
+    // Auto-refresh každých 5 minut
+    const interval = setInterval(loadAnalyticsData, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [loadAnalyticsData])
+
+  const handleExport = async (format: "json" | "csv") => {
     try {
-      const token = localStorage.getItem('admin_token')
-      const response = await fetch(`/api/admin/analytics?dateRange=${dateRange}`, {
+      const token = localStorage.getItem("adminToken")
+      const response = await fetch(`/api/admin/analytics?startDate=${period}&endDate=today&format=${format}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setAnalyticsData(data)
-      } else {
-        console.error('Failed to load analytics data')
-      }
-    } catch (error) {
-      console.error('Error loading analytics:', error)
-    } finally {
-      setIsLoading(false)
+
+      if (!response.ok) throw new Error("Chyba při exportu")
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `analytics-${period}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err) {
+      console.error("Chyba při exportu:", err)
     }
   }
 
-  if (isLoading) {
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
+
+  const formatDate = (dateString: string) => {
+    const year = dateString.substring(0, 4)
+    const month = dateString.substring(4, 6)
+    const day = dateString.substring(6, 8)
+    return `${day}.${month}.${year}`
+  }
+
+  if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-            ))}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <div className="flex items-center space-x-2">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span className="text-sm text-muted-foreground">Načítání...</span>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     )
   }
 
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold">Analytics</h1>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-red-500 mb-4">Chyba: {error}</p>
+              <Button onClick={loadAnalyticsData}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Zkusit znovu
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!data) return null
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-1">
-            Přehled návštěvnosti a chování uživatelů na vašich stránkách
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <p className="text-muted-foreground">
+            Přehled návštěvnosti webu
+            {lastUpdated && (
+              <span className="ml-2 text-xs">(aktualizováno: {new Date(lastUpdated).toLocaleString("cs-CZ")})</span>
+            )}
           </p>
         </div>
-        <div className="flex gap-2">
-          <select 
-            value={dateRange} 
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="7d">Posledních 7 dní</option>
-            <option value="30d">Posledních 30 dní</option>
-            <option value="90d">Posledních 90 dní</option>
-          </select>
-          <button 
-            onClick={loadAnalyticsData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+
+        <div className="flex items-center space-x-2">
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-40">
+              <Calendar className="mr-2 h-4 w-4" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7daysAgo">Posledních 7 dní</SelectItem>
+              <SelectItem value="30daysAgo">Posledních 30 dní</SelectItem>
+              <SelectItem value="90daysAgo">Posledních 90 dní</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" onClick={loadAnalyticsData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
             Obnovit
-          </button>
+          </Button>
+
+          <Button variant="outline" onClick={() => handleExport("csv")}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Celkem zobrazení</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.totalPageViews.toLocaleString()}</p>
+      {/* Hlavní metriky */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Celkem uživatelů</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.totalUsers.toLocaleString()}</div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+              <Badge variant="secondary" className="text-green-600">
+                <TrendingUp className="mr-1 h-3 w-3" />
+                Aktivní: {data.activeUsers}
+              </Badge>
             </div>
-            <Eye className="h-6 w-6 text-blue-600" />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Unikátní návštěvníci</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.uniqueVisitors.toLocaleString()}</p>
-            </div>
-            <Users className="h-6 w-6 text-green-600" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Aktuálně online</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.realTimeUsers}</p>
-            </div>
-            <Globe className="h-6 w-6 text-red-600" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Průměrná relace</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.averageSessionDuration}</p>
-            </div>
-            <Clock className="h-6 w-6 text-purple-600" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Bounce Rate</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.bounceRate}</p>
-            </div>
-            <TrendingUp className="h-6 w-6 text-orange-600" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-600">Konverze</p>
-              <p className="text-xl font-bold text-gray-900">{analyticsData.conversions}</p>
-            </div>
-            <BarChart3 className="h-6 w-6 text-indigo-600" />
-          </div>
-        </div>
-      </div>
-
-      {/* Charts and Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Pages */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Nejnavštěvovanější stránky
-          </h3>
-          <div className="space-y-3">
-            {analyticsData.topPages.map((page, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-900">{page.title}</span>
-                  <span className="text-xs text-gray-500">{page.page}</span>
-                </div>
-                <span className="font-semibold text-blue-600">{page.views.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Geographic Data */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Návštěvníci podle zemí
-          </h3>
-          <div className="space-y-3">
-            {analyticsData.geographicData.map((country, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{country.country}</span>
-                <span className="font-semibold">{country.visitors.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Device Data */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Zařízení návštěvníků</h3>
-          <div className="space-y-3">
-            {analyticsData.deviceData.map((device, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{device.device}</span>
-                <span className="font-semibold">{device.percentage}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Traffic Sources */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Zdroje návštěvnosti</h3>
-          <div className="space-y-3">
-            {analyticsData.trafficSources.map((source, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">{source.source}</span>
-                <span className="font-semibold">{source.percentage}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Additional Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm">Rychlost načítání</p>
-              <p className="text-2xl font-bold">{analyticsData.pageLoadTime}</p>
-            </div>
-            <Clock className="h-8 w-8 text-blue-200" />
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm">Celkové konverze</p>
-              <p className="text-2xl font-bold">{analyticsData.conversions}</p>
-            </div>
-            <TrendingUp className="h-8 w-8 text-green-200" />
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-100 text-sm">Uživatelé nyní</p>
-              <p className="text-2xl font-bold">{analyticsData.realTimeUsers}</p>
-            </div>
-            <Globe className="h-8 w-8 text-purple-200" />
-          </div>
-        </div>
-      </div>
-
-      {/* Info Box */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-start gap-4">
-          <div className="bg-blue-100 rounded-full p-3">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-blue-900 text-lg">Google Analytics 4 Integration</h4>
-            <p className="text-blue-700 mt-2">
-              Administrace je připojena k Google Analytics a zobrazuje aktuální metriky z vašich stránek. 
-              Data se aktualizují automaticky a poskytují přehled o návštěvnosti a chování uživatelů.
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Zobrazení stránek</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.totalPageViews.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {Math.round(data.totalPageViews / data.totalSessions)} průměrně na relaci
             </p>
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-blue-800">Tracking ID:</span>
-                <br />
-                <span className="text-blue-600 font-mono">G-Z5Y3C04P25</span>
-              </div>
-              <div>
-                <span className="font-medium text-blue-800">Posledně aktualizováno:</span>
-                <br />
-                <span className="text-blue-600">Před chvílí</span>
-              </div>
-              <div>
-                <span className="font-medium text-blue-800">Stav:</span>
-                <br />
-                <span className="text-green-600 font-medium">✓ Aktivní</span>
-              </div>
-              <div>
-                <span className="font-medium text-blue-800">Období:</span>
-                <br />
-                <span className="text-blue-600">{dateRange === '7d' ? '7 dní' : dateRange === '30d' ? '30 dní' : '90 dní'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
+            <MousePointer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{(data.bounceRate * 100).toFixed(1)}%</div>
+            <Progress value={data.bounceRate * 100} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Průměrná doba relace</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatDuration(data.averageSessionDuration)}</div>
+            <p className="text-xs text-muted-foreground">{data.totalSessions.toLocaleString()} celkem relací</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Detailní analytics */}
+      <Tabs defaultValue="pages" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="pages">Top stránky</TabsTrigger>
+          <TabsTrigger value="geography">Geografie</TabsTrigger>
+          <TabsTrigger value="devices">Zařízení</TabsTrigger>
+          <TabsTrigger value="sources">Zdroje</TabsTrigger>
+          <TabsTrigger value="timeline">Časová osa</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pages">
+          <Card>
+            <CardHeader>
+              <CardTitle>Nejnavštěvovanější stránky</CardTitle>
+              <CardDescription>Stránky s nejvyšší návštěvností</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.topPages.map((page, index) => (
+                  <div key={page.page} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="outline">{index + 1}</Badge>
+                      <div>
+                        <p className="font-medium">{page.page}</p>
+                        <p className="text-sm text-muted-foreground">{page.users.toLocaleString()} uživatelů</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">{page.views.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">zobrazení</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="geography">
+          <Card>
+            <CardHeader>
+              <CardTitle>Uživatelé podle zemí</CardTitle>
+              <CardDescription>Geografické rozložení návštěvníků</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.usersByCountry.map((country) => (
+                  <div key={country.country} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{country.country}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Progress value={(country.users / data.totalUsers) * 100} className="w-20" />
+                      <span className="font-bold w-16 text-right">{country.users.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="devices">
+          <Card>
+            <CardHeader>
+              <CardTitle>Kategorie zařízení</CardTitle>
+              <CardDescription>Rozložení podle typu zařízení</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.deviceCategories.map((device) => (
+                  <div key={device.device} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Smartphone className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium capitalize">{device.device}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Progress value={device.percentage} className="w-20" />
+                      <span className="font-bold w-16 text-right">{device.percentage}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sources">
+          <Card>
+            <CardHeader>
+              <CardTitle>Zdroje návštěvnosti</CardTitle>
+              <CardDescription>Odkud přicházejí návštěvníci</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.trafficSources.map((source) => (
+                  <div key={source.source} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{source.source}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Progress value={source.percentage} className="w-20" />
+                      <span className="font-bold w-16 text-right">{source.percentage}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="timeline">
+          <Card>
+            <CardHeader>
+              <CardTitle>Denní přehled</CardTitle>
+              <CardDescription>Vývoj návštěvnosti v čase</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {data.dailyData.map((day) => (
+                  <div key={day.date} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{formatDate(day.date)}</span>
+                    </div>
+                    <div className="flex items-center space-x-6 text-sm">
+                      <div className="text-center">
+                        <p className="font-bold">{day.users}</p>
+                        <p className="text-muted-foreground">uživatelé</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold">{day.sessions}</p>
+                        <p className="text-muted-foreground">relace</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold">{day.pageViews}</p>
+                        <p className="text-muted-foreground">zobrazení</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

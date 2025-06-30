@@ -5,7 +5,7 @@
 ### 1. Google Consent Mode v2 funkce
 
 #### setDefaultConsentState()
-```javascript
+\`\`\`javascript
 window.gtag('consent', 'default', {
   'ad_storage': 'denied',
   'ad_user_data': 'denied', 
@@ -16,10 +16,10 @@ window.gtag('consent', 'default', {
   'security_storage': 'granted',
   'wait_for_update': 500,
 })
-```
+\`\`\`
 
 #### updateConsentState(granted: boolean)
-```javascript
+\`\`\`javascript
 window.gtag('consent', 'update', {
   'ad_storage': granted ? 'granted' : 'denied',
   'ad_user_data': granted ? 'granted' : 'denied', 
@@ -29,12 +29,12 @@ window.gtag('consent', 'update', {
   'personalization_storage': granted ? 'granted' : 'denied',
   'security_storage': 'granted',
 })
-```
+\`\`\`
 
 #### gtagSetAdsDataRedaction(redact: boolean)
-```javascript
+\`\`\`javascript
 window.gtag('set', 'ads_data_redaction', redact)
-```
+\`\`\`
 
 ### 2. Komponenty
 
@@ -97,12 +97,12 @@ window.gtag('set', 'ads_data_redaction', redact)
 - Při souhlasu: `ads_data_redaction: false`
 
 #### Anonymizace IP
-```javascript
+\`\`\`javascript
 gtag('config', GA_TRACKING_ID, {
   'anonymize_ip': true,
   'cookie_flags': 'SameSite=None;Secure'
 })
-```
+\`\`\`
 
 #### Uložení preferencí
 - `cookieConsent`: 'accepted' | 'declined'
@@ -110,12 +110,12 @@ gtag('config', GA_TRACKING_ID, {
 - `cookiePreferences`: JSON objekt s detailními preferencemi
 
 ### 5. Tracking events
-```javascript
+\`\`\`javascript
 trackEvent('consent_update', 'cookie_banner', 'accepted|declined')
 trackEvent('consent_preferences_updated', 'cookie_settings', 'accepted|declined')
 trackEvent('consent_accept_all', 'cookie_settings', 'accepted')
 trackEvent('consent_decline_all', 'cookie_settings', 'declined')
-```
+\`\`\`
 
 ## 🔧 Jak testovat
 
@@ -125,7 +125,7 @@ trackEvent('consent_decline_all', 'cookie_settings', 'declined')
 - Ověřit správné nastavení consent parametrů
 
 ### 2. Developer Tools
-```javascript
+\`\`\`javascript
 // Zkontrolovat dataLayer
 console.log(window.dataLayer)
 
@@ -136,7 +136,7 @@ window.gtag('get', GA_TRACKING_ID, 'consent')
 window.gtag('consent', 'update', {
   'analytics_storage': 'granted'
 })
-```
+\`\`\`
 
 ### 3. Real-time reporting
 - Google Analytics > Real-time
