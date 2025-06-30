@@ -1,10 +1,3 @@
-/**
- * Google Analytics gtag helpers
- * Provides pageview and event tracking functions
- */
-
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-LNF9PDP1RH"
-
 declare global {
   interface Window {
     gtag: (...args: any[]) => void
@@ -12,55 +5,52 @@ declare global {
   }
 }
 
-/**
- * Send a page view event to Google Analytics
- */
-export function pageview(url: string, title?: string) {
-  if (typeof window === "undefined" || !window.gtag) return
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH"
 
-  window.gtag("config", GA_MEASUREMENT_ID, {
-    page_path: url,
-    page_title: title || document.title,
+// Funkce pro sledování page views
+export const pageview = (url: string) => {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("config", GA_MEASUREMENT_ID, {
+      page_path: url,
+      page_title: document.title,
+      page_location: window.location.href,
+    })
+  }
+}
+
+// Funkce pro sledování eventů
+export const event = (action: string, parameters: Record<string, any> = {}) => {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", action, parameters)
+  }
+}
+
+// Specifické event funkce
+export const trackButtonClick = (buttonName: string) => {
+  event("click", {
+    event_category: "engagement",
+    event_label: buttonName,
   })
 }
 
-/**
- * Send a custom event to Google Analytics
- */
-interface EventProps {
-  action: string
-  category?: string
-  label?: string
-  value?: number
-}
-
-export function event({ action, category, label, value }: EventProps) {
-  if (typeof window === "undefined" || !window.gtag) return
-
-  window.gtag("event", action, {
-    event_category: category,
-    event_label: label,
-    value: value,
+export const trackFormSubmit = (formName: string) => {
+  event("form_submit", {
+    event_category: "engagement",
+    event_label: formName,
   })
 }
 
-/**
- * Track conversion events
- */
-export function trackConversion(conversionId: string, value?: number) {
-  if (typeof window === "undefined" || !window.gtag) return
-
-  window.gtag("event", "conversion", {
-    send_to: conversionId,
-    value: value,
+export const trackDownload = (fileName: string) => {
+  event("file_download", {
+    event_category: "engagement",
+    event_label: fileName,
   })
 }
 
-/**
- * Track custom events with additional parameters
- */
-export function trackCustomEvent(eventName: string, parameters: Record<string, any> = {}) {
-  if (typeof window === "undefined" || !window.gtag) return
-
-  window.gtag("event", eventName, parameters)
+export const trackOutboundLink = (url: string) => {
+  event("click", {
+    event_category: "outbound",
+    event_label: url,
+    transport_type: "beacon",
+  })
 }

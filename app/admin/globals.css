@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import React Quill styles */
-@import 'react-quill/dist/quill.snow.css';
+@import "react-quill/dist/quill.snow.css";
 
 body {
   background-color: #f8fafc;
@@ -24,7 +24,7 @@ body {
   min-height: 400px;
   font-size: 16px;
   line-height: 1.6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
   padding: 20px;
 }
 
@@ -57,7 +57,7 @@ body {
 }
 
 .ql-editor::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -69,7 +69,7 @@ body {
 
 /* Vylepšení image button v toolbaru */
 .ql-toolbar .ql-image::before {
-  content: '🖼️';
+  content: "🖼️";
 }
 
 .ql-toolbar .ql-image {
@@ -132,11 +132,11 @@ body {
 
 /* Styly pro fonty */
 .ql-font-serif {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .ql-font-monospace {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 /* Styly pro zarovnání */
@@ -178,7 +178,7 @@ body {
   .ql-toolbar {
     padding: 4px;
   }
-  
+
   .ql-toolbar button {
     margin: 0.5px;
   }

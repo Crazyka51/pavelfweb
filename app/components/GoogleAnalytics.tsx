@@ -1,116 +1,106 @@
 "use client"
 
-/**
- * GoogleAnalytics component + helpers
- * – Uses the global gtag.js snippet
- * – Exports helpers expected elsewhere in the CMS
- */
-
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Script from "next/script"
-import { usePathname, useSearchParams } from "next/navigation"
-import { pageview, event as gtagEvent } from "@/app/lib/gtag"
 
-/* ------------------------------------------------------------------ */
-/*  CONFIGURATION & CONSENT                                           */
-/* ------------------------------------------------------------------ */
-
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-LNF9PDP1RH"
-
-/** Keys used in localStorage so we have a single source of truth */
-const CONSENT_KEY = "ga_consent" as const
-type ConsentStatus = "granted" | "denied" | "unset"
-
-export interface ConsentSettings {
-  /** current user consent for GA tracking */
-  analytics: ConsentStatus
-}
-
-/**
- * Reads saved preferences from localStorage (client-side only)
- */
-export function getCurrentConsentPreferences(): ConsentSettings {
-  if (typeof window === "undefined") return { analytics: "unset" }
-  const raw = window.localStorage.getItem(CONSENT_KEY)
-  if (raw === "granted" || raw === "denied") return { analytics: raw }
-  return { analytics: "unset" }
-}
-
-/** Should we show the consent banner? */
-export function shouldShowConsentBanner(): boolean {
-  return getCurrentConsentPreferences().analytics === "unset"
-}
-
-/** Save consent & inform gtag */
-export function handleConsentChange(status: ConsentStatus) {
-  if (typeof window === "undefined") return
-  window.localStorage.setItem(CONSENT_KEY, status)
-  if (status === "granted") {
-    window.gtag?.("consent", "update", { analytics_storage: "granted" })
-  } else if (status === "denied") {
-    window.gtag?.("consent", "update", { analytics_storage: "denied" })
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void
+    dataLayer: any[]
   }
 }
 
-/* ------------------------------------------------------------------ */
-/*  EVENT TRACKING WRAPPER                                            */
-/* ------------------------------------------------------------------ */
-
-interface TrackEventProps {
-  action: string
-  category?: string
-  label?: string
-  value?: number
+// Typy pro consent
+export interface ConsentSettings {
+  analytics: boolean
+  marketing: boolean
+  functional: boolean
 }
 
-export function trackEvent({ action, category, label, value }: TrackEventProps) {
-  gtagEvent({
-    action,
-    category,
-    label,
-    value,
-  })
-}
-
-/* ------------------------------------------------------------------ */
-/*  MAIN COMPONENT                                                    */
-/* ------------------------------------------------------------------ */
-
+// Hlavní komponenta
 export function GoogleAnalytics() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams() // wrapped in suspense via loading.tsx
+  const [consentGiven, setConsentGiven] = useState(false)
+  const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH"
 
-  // Track page-views on route change
   useEffect(() => {
-    if (!pathname) return
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "")
-    pageview(url)
-  }, [pathname, searchParams])
+    // Zkontroluj uložený consent
+    const consent = localStorage.getItem("cookie-consent")
+    if (consent) {
+      const consentData = JSON.parse(consent)
+      setConsentGiven(consentData.analytics === true)
+    }
+  }, [])
 
-  // Inject only once
+  const handleScriptLoad = () => {
+    if (consentGiven) {
+      window.gtag("config", GA_MEASUREMENT_ID, {
+        page_title: document.title,
+        page_location: window.location.href,
+      })
+    }
+  }
+
+  if (!consentGiven) {
+    return null
+  }
+
   return (
     <>
-      {/* Global site tag (gtag.js) */}
-      <Script id="gtag-loader" src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} async />
-      <Script id="gtag-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          // Respect initial consent
-          const consent = localStorage.getItem('${CONSENT_KEY}');
-          if (consent === 'granted') {
-            gtag('consent', 'update', { analytics_storage: 'granted' });
-          } else if (consent === 'denied') {
-            gtag('consent', 'update', { analytics_storage: 'denied' });
-          }
-
-          gtag('config', '${GA_MEASUREMENT_ID}', {
-            page_path: window.location.pathname,
-          });
-        `}
-      </Script>
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        onLoad={handleScriptLoad}
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_title: document.title,
+              page_location: window.location.href,
+            });
+          `,
+        }}
+      />
     </>
   )
 }
+
+// Export funkcí pro consent management
+export const handleConsentChange = (consent: ConsentSettings) => {
+  localStorage.setItem("cookie-consent", JSON.stringify(consent))
+
+  if (consent.analytics) {
+    // Reload stránku pro načtení GA
+    window.location.reload()
+  }
+}
+
+export const shouldShowConsentBanner = (): boolean => {
+  if (typeof window === "undefined") return false
+  return !localStorage.getItem("cookie-consent")
+}
+
+export const getCurrentConsentPreferences = (): ConsentSettings | null => {
+  if (typeof window === "undefined") return null
+  const consent = localStorage.getItem("cookie-consent")
+  return consent ? JSON.parse(consent) : null
+}
+
+// Funkce pro tracking eventů
+export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+    })
+  }
+}
+
+// Export default komponenty
+export default GoogleAnalytics
