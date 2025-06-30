@@ -48,20 +48,9 @@
       "klimatické změny",
       "dotace"
     ],
-    "published": false,
+    "published": true,
     "createdAt": "2025-01-24T11:40:00.000Z",
-    "updatedAt": "2025-06-28T16:42:02.938Z"
-  },
-  {
-    "id": "1750966515568o31d45ndm",
-    "title": "Test 1",
-    "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ipsum purus cras id ornare enim mattis id in per. Lobortis pellentesque massa dictum quam torquent lacus rhoncus primis lacus.\n\nHabitasse fermentum enim malesuada vivamus parturient ipsum sociosqu viverra amet. Accumsan id commodo pellentesque egestas habitant habitant venenatis sollicitudin lobortis. Platea egestas eget integer leo vel ultrices nullam porttitor vulputate.\n\nTurpis velit vel pellentesque sagittis mattis elit auctor pulvinar odio. Proin euismod ultrices tellus pulvinar litora diam condimentum duis ac. Nascetur porta ac convallis mi ultrices penatibus vitae nisi euismod.\n\nMus fermentum adipiscing tellus fermentum ac dapibus aenean lacinia fusce. Scelerisque gravida nisi ipsum curae dapibus aliquet pulvinar orci potenti. Per senectus mattis vel ridiculus tortor posuere class eleifend sodales.\n\nVelit maecenas parturient magnis primis et dictumst nunc imperdiet arcu. Risus ullamcorper ligula convallis tempor semper sit donec suscipit suspendisse. Pulvinar magnis velit proin fermentum posuere cum nunc laoreet quam.",
-    "excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ipsum purus cras id ornare enim mattis id in per. Lobortis pellentesque massa dictum quam tor...",
-    "category": "Kultura",
-    "tags": [],
-    "published": false,
-    "createdAt": "2025-06-26T19:35:15.568Z",
-    "updatedAt": "2025-06-28T16:42:03.276Z"
+    "updatedAt": "2025-06-30T20:39:05.324Z"
   },
   {
     "id": "17510598031543hckjboa8",
@@ -70,9 +59,9 @@
     "excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Egestas iaculis vel erat orci velit felis facilisi netus himenaeos phasellus. Ac aliquam mi n...",
     "category": "Životní prostředí",
     "tags": [],
-    "published": false,
+    "published": true,
     "createdAt": "2025-06-27T21:30:03.154Z",
-    "updatedAt": "2025-06-28T16:42:03.173Z",
+    "updatedAt": "2025-06-30T20:39:05.481Z",
     "imageUrl": "https://assets.tarkov.dev/5f5f41f56760b4138443b352-base-image.webp"
   }
 ]

@@ -35,7 +35,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       } else {
         setError(data.message || 'Neplatné přihlašovací údaje')
       }
-    } catch (error) {
+    } catch {
       setError('Chyba při přihlašování')
     } finally {
       setIsLoading(false)
@@ -67,7 +67,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-gray-900 bg-white"
                 placeholder="Zadejte uživatelské jméno"
                 required
                 disabled={isLoading}
@@ -88,7 +88,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors text-gray-900 bg-white"
                 placeholder="Zadejte heslo"
                 required
                 disabled={isLoading}

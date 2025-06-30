@@ -137,7 +137,7 @@ export default function DataDeletionPage() {
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-gray-600 mb-2">Pošlete e-mail s předmětem:</p>
                   <p className="font-mono text-sm bg-white p-2 rounded border">
-                    "Žádost o smazání údajů - GDPR"
+                    &quot;Žádost o smazání údajů - GDPR&quot;
                   </p>
                 </div>
                 <a 
@@ -164,7 +164,7 @@ export default function DataDeletionPage() {
                     <strong>Pavel Fišer</strong><br />
                     Antala Staška 2059/80b<br />
                     140 00 Praha 4<br />
-                    <em className="text-gray-500">Poznámka: "Žádost o smazání údajů"</em>
+                    <em className="text-gray-500">Poznámka: &quot;Žádost o smazání údajů&quot;</em>
                   </div>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default function DataDeletionPage() {
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                      <span>Jasné vyjádření "žádám o smazání údajů"</span>
+                      <span>Jasné vyjádření &quot;žádám o smazání údajů&quot;</span>
                     </li>
                   </ul>
                 </div>
@@ -238,29 +238,29 @@ export default function DataDeletionPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Vzor žádosti</h2>
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-3">E-mailová žádost - vzor</h3>
-              <div className="bg-white p-4 rounded border font-mono text-sm">
-                <p className="mb-2"><strong>Předmět:</strong> Žádost o smazání údajů - GDPR</p>
-                <hr className="my-3" />
-                <p className="mb-3">Vážený pane Fišere,</p>
-                <p className="mb-3">
+              <div className="bg-white p-4 rounded border font-mono text-sm text-black shadow-sm">
+                <p className="mb-2 text-black"><strong>Předmět:</strong> Žádost o smazání údajů - GDPR</p>
+                <hr className="my-3 border-gray-300" />
+                <p className="mb-3 text-black">Vážený pane Fišere,</p>
+                <p className="mb-3 text-black">
                   na základě článku 17 GDPR (právo na výmaz) žádám o smazání všech 
                   mých osobních údajů, které zpracováváte v souvislosti s:
                 </p>
-                <p className="mb-3 ml-4">
+                <p className="mb-3 ml-4 text-black">
                   □ Newsletter<br />
                   □ Kontaktní formuláře<br />
                   □ Facebook integrace<br />
                   □ Všechny moje údaje
                 </p>
-                <p className="mb-3">
+                <p className="mb-3 text-black">
                   <strong>Moje údaje:</strong><br />
                   Jméno: [Vaše jméno]<br />
                   E-mail: [Váš e-mail]
                 </p>
-                <p className="mb-3">
+                <p className="mb-3 text-black">
                   Žádám o potvrzení smazání na můj e-mail.
                 </p>
-                <p>
+                <p className="text-black">
                   Děkuji za vyřízení.<br />
                   [Vaše jméno]
                 </p>
@@ -321,7 +321,7 @@ export default function DataDeletionPage() {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-blue-900 mb-2">GDPR - Článek 17</h3>
                 <p className="text-blue-800 text-sm">
-                  Právo na výmaz ("právo být zapomenut") umožňuje požádat o smazání 
+                  Právo na výmaz (&quot;právo být zapomenut&quot;) umožňuje požádat o smazání 
                   osobních údajů za určitých podmínek.
                 </p>
               </div>

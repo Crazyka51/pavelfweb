@@ -1,6 +1,5 @@
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
@@ -53,7 +52,7 @@ export default function RootLayout({
       <head>
         <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-background text-foreground`}>
+      <body className={`${inter.className} min-h-screen bg-slate-900 text-gray-100 dark`}>
         <GoogleAnalytics />
         <StructuredData 
           type="person"
@@ -62,13 +61,11 @@ export default function RootLayout({
           url="https://fiserpavel.cz"
           image="https://fiserpavel.cz/og-image.svg"
         />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <CookieBanner />
-          <CookieManager />
-        </ThemeProvider>
+        <Header />
+        <main>{children}</main>
+        <Footer />
+        <CookieBanner />
+        <CookieManager />
       </body>
     </html>
   )

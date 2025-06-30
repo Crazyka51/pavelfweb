@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, Tag, ArrowLeft, Share2, Facebook, Twitter } from 'lucide-react'
+import { Calendar, Tag, ArrowLeft, Share2, Facebook, Twitter as X } from 'lucide-react'
 import Link from 'next/link'
 
 interface Article {
@@ -54,7 +54,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
           text: article.excerpt,
           url: shareUrl
         })
-      } catch (error) {
+      } catch {
         console.log('Sharing cancelled')
       }
     } else {
@@ -69,8 +69,8 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
     window.open(url, '_blank', 'width=600,height=400')
   }
 
-  const shareOnTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
+  const shareOnX = () => {
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
     window.open(url, '_blank', 'width=600,height=400')
   }
 
@@ -128,11 +128,11 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
               Facebook
             </button>
             <button
-              onClick={shareOnTwitter}
+              onClick={shareOnX}
               className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
-              <Twitter className="w-4 h-4" />
-              Twitter
+              <X className="w-4 h-4" />
+              X
             </button>
           </div>
         </div>

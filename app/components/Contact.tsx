@@ -13,40 +13,67 @@ import { toast } from "@/components/ui/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
+    message: "Jméno musí mít alespoň 2 znaky.",
   }),
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: "Zadejte platnou e-mailovou adresu.",
+  }),
+  subject: z.string().min(5, {
+    message: "Předmět musí mít alespoň 5 znaků.",
   }),
   message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
+    message: "Zpráva musí mít alespoň 10 znaků.",
   }),
 })
 
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
+      subject: "",
       message: "",
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
-      setIsSubmitting(false)
-      toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
+    setSubmitStatus('idle')
+    
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
       })
-      form.reset()
-    }, 2000)
+      
+      if (response.ok) {
+        setSubmitStatus('success')
+        toast({
+          title: "Zpráva odeslána!",
+          description: "Děkujeme za Vaši zprávu. Ozveme se Vám co nejdříve.",
+        })
+        form.reset()
+      } else {
+        throw new Error('Failed to send email')
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+      setSubmitStatus('error')
+      toast({
+        title: "Chyba při odesílání",
+        description: "Zprávu se nepodařilo odeslat. Zkuste to prosím znovu.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -58,7 +85,7 @@ export default function Contact() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Get in Touch
+          Kontaktujte mě
         </motion.h2>
         <motion.div
           className="bg-white p-8 rounded-2xl shadow-lg"
@@ -73,9 +100,9 @@ export default function Contact() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Jméno</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="Jan Novák" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -86,9 +113,22 @@ export default function Contact() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>E-mail</FormLabel>
                     <FormControl>
-                      <Input placeholder="john@example.com" {...field} />
+                      <Input placeholder="jan@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Předmět</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Dotaz ohledně..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,17 +139,29 @@ export default function Contact() {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message</FormLabel>
+                    <FormLabel>Zpráva</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Tell us about your project..." className="min-h-[120px]" {...field} />
+                      <Textarea placeholder="Popište Váš dotaz..." className="min-h-[120px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting ? "Odesílání..." : "Odeslat zprávu"}
               </Button>
+              
+              {/* Status Messages */}
+              {submitStatus === 'success' && (
+                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                  Zpráva byla úspěšně odeslána! Brzy se Vám ozveme.
+                </div>
+              )}
+              {submitStatus === 'error' && (
+                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                  Při odesílání zprávy došlo k chybě. Zkuste to prosím znovu.
+                </div>
+              )}
             </form>
           </Form>
         </motion.div>

@@ -9,12 +9,7 @@ interface FullScreenMenuProps {
 }
 
 export default function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
-  const menuItems = [
-    { label: "Priority", href: "/#priority" },
-    { label: "Novinky", href: "/aktuality" },
-    { label: "O mně", href: "/#about" },
-    { label: "Kontakt", href: "/#contact" }
-  ]
+  const menuItems = ["Work", "About", "Services", "Contact"]
 
   return (
     <AnimatePresence>
@@ -39,17 +34,17 @@ export default function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps)
           <nav className="text-center">
             {menuItems.map((item, index) => (
               <motion.div
-                key={item.label}
+                key={item}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
                 <Link
-                  href={item.href}
+                  href={`#${item.toLowerCase()}`}
                   className="block text-4xl font-bold text-gray-900 mb-6 hover:text-gray-600 transition-colors"
                   onClick={onClose}
                 >
-                  {item.label}
+                  {item}
                 </Link>
               </motion.div>
             ))}

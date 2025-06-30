@@ -87,18 +87,18 @@ export default function CookieBanner() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
-            <Cookie className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900">
+            <Cookie className="h-6 w-6 text-blue-400" />
+            <h2 className="text-xl font-semibold text-white">
               Nastavení cookies a ochrany soukromí
             </h2>
           </div>
           <button
             onClick={() => setIsVisible(false)}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-300"
             aria-label="Zavřít"
           >
             <X className="h-6 w-6" />
@@ -108,16 +108,16 @@ export default function CookieBanner() {
         {/* Content */}
         <div className="p-6">
           <div className="mb-6">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-300 leading-relaxed">
               Tato webová stránka používá cookies k zajištění nejlepšího uživatelského zážitku. 
               Můžete si vybrat, které typy cookies nám dovolíte používat. Vaše volba bude 
               respektována a uložena po dobu 2 let.
             </p>
-            <div className="mt-4 flex items-center space-x-1 text-sm text-gray-600">
+            <div className="mt-4 flex items-center space-x-1 text-sm text-gray-400">
               <Info className="h-4 w-4" />
               <span>
                 Více informací najdete v našich{' '}
-                <Link href="/privacy-policy" className="text-blue-600 hover:underline">
+                <Link href="/privacy-policy" className="text-blue-400 hover:underline">
                   Zásadách ochrany osobních údajů
                 </Link>
               </span>
@@ -159,30 +159,30 @@ export default function CookieBanner() {
           {showSettings && (
             <div className="space-y-6">
               {/* Necessary Cookies */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-slate-600 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <Shield className="h-5 w-5 text-green-600" />
-                    <h3 className="font-semibold text-gray-900">Nezbytné cookies</h3>
+                    <Shield className="h-5 w-5 text-green-400" />
+                    <h3 className="font-semibold text-white">Nezbytné cookies</h3>
                   </div>
-                  <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                  <div className="bg-green-800 text-green-200 px-3 py-1 rounded-full text-sm font-medium">
                     Vždy aktivní
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Tyto cookies jsou nezbytné pro základní funkčnost webu, včetně bezpečnosti 
                   a přístupnosti. Nelze je deaktivovat.
                 </p>
               </div>
 
               {/* Analytics Cookies */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-slate-600 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Analytické cookies</h3>
+                  <h3 className="font-semibold text-white">Analytické cookies</h3>
                   <button
                     onClick={() => toggleSetting('analytics')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      consentSettings.analytics ? 'bg-blue-600' : 'bg-gray-200'
+                      consentSettings.analytics ? 'bg-blue-600' : 'bg-slate-600'
                     }`}
                   >
                     <span
@@ -192,20 +192,20 @@ export default function CookieBanner() {
                     />
                   </button>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Pomáhají nám pochopit, jak návštěvníci používají web, abychom mohli 
                   zlepšovat jeho výkon a obsah. Používáme Google Analytics s anonymizací IP.
                 </p>
               </div>
 
               {/* Marketing Cookies */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-slate-600 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Marketingové cookies</h3>
+                  <h3 className="font-semibold text-white">Marketingové cookies</h3>
                   <button
                     onClick={() => toggleSetting('marketing')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      consentSettings.marketing ? 'bg-blue-600' : 'bg-gray-200'
+                      consentSettings.marketing ? 'bg-blue-600' : 'bg-slate-600'
                     }`}
                   >
                     <span
@@ -215,20 +215,20 @@ export default function CookieBanner() {
                     />
                   </button>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Umožňují nám zobrazovat relevantní reklamy a měřit efektivitu reklamních kampaní. 
                   Mohou být používány třetími stranami.
                 </p>
               </div>
 
               {/* Personalization Cookies */}
-              <div className="border rounded-lg p-4">
+              <div className="border border-slate-600 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Personalizace</h3>
+                  <h3 className="font-semibold text-white">Personalizace</h3>
                   <button
                     onClick={() => toggleSetting('personalization')}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      consentSettings.personalization ? 'bg-blue-600' : 'bg-gray-200'
+                      consentSettings.personalization ? 'bg-blue-600' : 'bg-slate-600'
                     }`}
                   >
                     <span
@@ -238,14 +238,14 @@ export default function CookieBanner() {
                     />
                   </button>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-400">
                   Umožňují přizpůsobit obsah a funkce vašim preferencím a zájmům 
                   na základě vaší aktivity na webu.
                 </p>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-600">
                 <button
                   onClick={acceptSelectedCookies}
                   className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 
@@ -255,7 +255,7 @@ export default function CookieBanner() {
                 </button>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 
+                  className="flex-1 bg-slate-600 text-gray-200 px-6 py-3 rounded-lg hover:bg-slate-700 
                            transition-colors font-medium"
                 >
                   Zpět
@@ -266,15 +266,15 @@ export default function CookieBanner() {
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 rounded-b-lg">
-          <div className="text-xs text-gray-500 space-y-1">
+        <div className="bg-slate-700 px-6 py-4 rounded-b-lg">
+          <div className="text-xs text-gray-400 space-y-1">
             <p>
               Tento web je v souladu s GDPR a používá Google Consent Mode v2 pro maximální 
               ochranu vašeho soukromí.
             </p>
             <p>
               Nastavení můžete kdykoli změnit v patičce stránky. 
-              <Link href="/privacy-policy" className="text-blue-600 hover:underline ml-1">
+              <Link href="/privacy-policy" className="text-blue-400 hover:underline ml-1">
                 Více informací o cookies
               </Link>
             </p>
