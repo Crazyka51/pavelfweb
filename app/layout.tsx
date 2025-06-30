@@ -5,8 +5,8 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { GoogleAnalytics } from "./components/GoogleAnalytics"
-import { CookieBanner } from "./components/CookieBanner"
-import { StructuredData } from "./components/StructuredData"
+import CookieBanner from "./components/CookieBanner"
+import StructuredData from "./components/StructuredData"
 import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
