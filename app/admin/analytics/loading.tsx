@@ -3,17 +3,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function AnalyticsLoading() {
   return (
-    <div className="space-y-6 p-6">
+    <div className="p-8 animate-pulse space-y-6">
       {/* Header skeleton */}
       <div className="space-y-2">
-        <Skeleton className="h-8 w-48" />
+        <div className="h-8 bg-gray-200 rounded w-64"></div>
         <Skeleton className="h-4 w-96" />
       </div>
 
       {/* Stats cards skeleton */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="h-32 bg-gray-200 rounded-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-4" />
@@ -28,7 +28,7 @@ export default function AnalyticsLoading() {
 
       {/* Charts skeleton */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+        <Card className="col-span-4 h-64 bg-gray-200 rounded-lg">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
           </CardHeader>
