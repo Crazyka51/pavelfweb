@@ -5,26 +5,37 @@ import AdminLayout from "./components/AdminLayout"
 import AdminDashboard from "./components/AdminDashboard"
 import ArticleManager from "./components/ArticleManager"
 import ArticleEditor from "./components/ArticleEditor"
-import SettingsManager from "./components/SettingsManager"
+import CategoryManager from "./components/CategoryManager"
 import NewsletterManager from "./components/NewsletterManager"
+import SettingsManager from "./components/SettingsManager"
 import LoginForm from "./components/LoginForm"
 
-type View = "dashboard" | "articles" | "editor" | "settings" | "newsletter"
+type AdminSection =
+  | "dashboard"
+  | "articles"
+  | "editor"
+  | "categories"
+  | "newsletter"
+  | "analytics"
+  | "backup"
+  | "settings"
 
 export default function AdminPage() {
-  const [currentView, setCurrentView] = useState<View>("dashboard")
+  const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [editingArticle, setEditingArticle] = useState<string | null>(null)
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
 
   useEffect(() => {
-    checkAuth()
+    checkAuthentication()
   }, [])
 
-  const checkAuth = async () => {
+  const checkAuthentication = async () => {
     try {
       const token = localStorage.getItem("admin_token")
       if (!token) {
+        setIsAuthenticated(false)
         setIsLoading(false)
         return
       }
@@ -36,13 +47,16 @@ export default function AdminPage() {
       })
 
       if (response.ok) {
+        const userData = await response.json()
         setIsAuthenticated(true)
+        setCurrentUser(userData.user || { username: "admin", displayName: "Pavel Fišer" })
       } else {
         localStorage.removeItem("admin_token")
+        setIsAuthenticated(false)
       }
     } catch (error) {
       console.error("Auth check failed:", error)
-      localStorage.removeItem("admin_token")
+      setIsAuthenticated(false)
     } finally {
       setIsLoading(false)
     }
@@ -51,27 +65,40 @@ export default function AdminPage() {
   const handleLogin = (token: string) => {
     localStorage.setItem("admin_token", token)
     setIsAuthenticated(true)
+    setCurrentUser({ username: "admin", displayName: "Pavel Fišer" })
   }
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token")
     setIsAuthenticated(false)
-    setCurrentView("dashboard")
+    setCurrentSection("dashboard")
+    setCurrentUser(null)
+  }
+
+  const handleSectionChange = (section: string) => {
+    console.log("Section changing to:", section)
+    setCurrentSection(section as AdminSection)
+    setEditingArticleId(null)
   }
 
   const handleCreateNew = () => {
-    setEditingArticle(null)
-    setCurrentView("editor")
+    setEditingArticleId(null)
+    setCurrentSection("editor")
   }
 
   const handleEditArticle = (articleId: string) => {
-    setEditingArticle(articleId)
-    setCurrentView("editor")
+    setEditingArticleId(articleId)
+    setCurrentSection("editor")
+  }
+
+  const handleBackToDashboard = () => {
+    setCurrentSection("dashboard")
+    setEditingArticleId(null)
   }
 
   const handleBackToArticles = () => {
-    setEditingArticle(null)
-    setCurrentView("articles")
+    setCurrentSection("articles")
+    setEditingArticleId(null)
   }
 
   if (isLoading) {
@@ -87,29 +114,57 @@ export default function AdminPage() {
   }
 
   const renderContent = () => {
-    switch (currentView) {
+    console.log("Rendering content for section:", currentSection)
+
+    switch (currentSection) {
       case "dashboard":
         return (
           <AdminDashboard
             onCreateNew={handleCreateNew}
-            onViewArticles={() => setCurrentView("articles")}
-            onViewSettings={() => setCurrentView("settings")}
+            onViewArticles={() => setCurrentSection("articles")}
+            onViewSettings={() => setCurrentSection("settings")}
           />
         )
       case "articles":
         return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
       case "editor":
-        return <ArticleEditor articleId={editingArticle} onBack={handleBackToArticles} />
-      case "settings":
-        return <SettingsManager />
+        return (
+          <ArticleEditor
+            articleId={editingArticleId}
+            onBack={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+            onSave={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+          />
+        )
+      case "categories":
+        return <CategoryManager />
       case "newsletter":
         return <NewsletterManager />
+      case "analytics":
+        return (
+          <div className="p-8">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-2xl font-bold mb-4">Statistiky</h2>
+              <p className="text-gray-600">Analytics dashboard bude zde...</p>
+            </div>
+          </div>
+        )
+      case "backup":
+        return (
+          <div className="p-8">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-2xl font-bold mb-4">Zálohy</h2>
+              <p className="text-gray-600">Backup management bude zde...</p>
+            </div>
+          </div>
+        )
+      case "settings":
+        return <SettingsManager />
       default:
         return (
           <AdminDashboard
             onCreateNew={handleCreateNew}
-            onViewArticles={() => setCurrentView("articles")}
-            onViewSettings={() => setCurrentView("settings")}
+            onViewArticles={() => setCurrentSection("articles")}
+            onViewSettings={() => setCurrentSection("settings")}
           />
         )
     }
@@ -117,10 +172,10 @@ export default function AdminPage() {
 
   return (
     <AdminLayout
-      currentView={currentView}
-      onViewChange={setCurrentView}
+      currentSection={currentSection}
+      onSectionChange={handleSectionChange}
       onLogout={handleLogout}
-      onCreateNew={handleCreateNew}
+      currentUser={currentUser}
     >
       {renderContent()}
     </AdminLayout>
