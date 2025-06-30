@@ -2,62 +2,65 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { Home, ArrowLeft, Search } from "lucide-react"
-import { trackEvent } from "@/app/components/GoogleAnalytics"
+import { Home, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function NotFound() {
   useEffect(() => {
     // Track 404 page views
-    trackEvent("page_view_404", {
-      event_category: "error",
-      event_label: window.location.pathname,
-    })
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "page_view_404", {
+        event_category: "error",
+        event_label: window.location.pathname,
+      })
+    }
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full text-center p-8">
-        <div className="mb-8">
-          <h1 className="text-9xl font-bold text-gray-300">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Stránka nenalezena</h2>
-          <p className="text-gray-600 mb-8">Omlouváme se, ale stránka kterou hledáte neexistuje nebo byla přesunuta.</p>
-        </div>
-
-        <div className="space-y-4">
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Zpět na hlavní stránku
-          </Link>
-
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={() => window.history.back()}
-              className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Zpět
-            </button>
-
-            <Link
-              href="/aktuality"
-              className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Procházet články
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-gray-100 p-4">
+      <Card className="w-full max-w-md text-center bg-slate-800 border-slate-700">
+        <CardHeader className="space-y-4">
+          <div className="mx-auto w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center">
+            <span className="text-4xl font-bold text-slate-400">404</span>
           </div>
-        </div>
+          <CardTitle className="text-2xl font-bold text-white">Stránka nenalezena</CardTitle>
+          <CardDescription className="text-slate-400">
+            Omlouváme se, ale stránka kterou hledáte neexistuje nebo byla přesunuta.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild className="flex items-center gap-2">
+              <Link href="/">
+                <Home className="w-4 h-4" />
+                Domů
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="flex items-center gap-2 bg-transparent">
+              <button onClick={() => window.history.back()}>
+                <ArrowLeft className="w-4 h-4" />
+                Zpět
+              </button>
+            </Button>
+          </div>
 
-        <div className="mt-8 text-sm text-gray-500">
-          <p>Pokud problém přetrvává, kontaktujte nás na</p>
-          <a href="mailto:info@pavelfiser.cz" className="text-blue-600 hover:underline">
-            info@pavelfiser.cz
-          </a>
-        </div>
-      </div>
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-sm text-slate-500 mb-3">Nebo zkuste vyhledat:</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/aktuality">Aktuality</Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/#services">Služby</Link>
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/#contact">Kontakt</Link>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

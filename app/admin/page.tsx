@@ -5,27 +5,26 @@ import AdminLayout from "./components/AdminLayout"
 import AdminDashboard from "./components/AdminDashboard"
 import ArticleManager from "./components/ArticleManager"
 import ArticleEditor from "./components/ArticleEditor"
-import NewsletterManager from "./components/NewsletterManager"
 import SettingsManager from "./components/SettingsManager"
+import NewsletterManager from "./components/NewsletterManager"
 import LoginForm from "./components/LoginForm"
 
-type AdminView = "dashboard" | "articles" | "editor" | "newsletter" | "settings"
+type View = "dashboard" | "articles" | "editor" | "settings" | "newsletter"
 
 export default function AdminPage() {
-  const [currentView, setCurrentView] = useState<AdminView>("dashboard")
+  const [currentView, setCurrentView] = useState<View>("dashboard")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
+  const [editingArticle, setEditingArticle] = useState<string | null>(null)
 
   useEffect(() => {
-    checkAuthentication()
+    checkAuth()
   }, [])
 
-  const checkAuthentication = async () => {
+  const checkAuth = async () => {
     try {
       const token = localStorage.getItem("admin_token")
       if (!token) {
-        setIsAuthenticated(false)
         setIsLoading(false)
         return
       }
@@ -40,11 +39,10 @@ export default function AdminPage() {
         setIsAuthenticated(true)
       } else {
         localStorage.removeItem("admin_token")
-        setIsAuthenticated(false)
       }
     } catch (error) {
       console.error("Auth check failed:", error)
-      setIsAuthenticated(false)
+      localStorage.removeItem("admin_token")
     } finally {
       setIsLoading(false)
     }
@@ -62,28 +60,23 @@ export default function AdminPage() {
   }
 
   const handleCreateNew = () => {
-    setEditingArticleId(null)
+    setEditingArticle(null)
     setCurrentView("editor")
   }
 
   const handleEditArticle = (articleId: string) => {
-    setEditingArticleId(articleId)
+    setEditingArticle(articleId)
     setCurrentView("editor")
   }
 
-  const handleBackToDashboard = () => {
-    setCurrentView("dashboard")
-    setEditingArticleId(null)
-  }
-
   const handleBackToArticles = () => {
+    setEditingArticle(null)
     setCurrentView("articles")
-    setEditingArticleId(null)
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -106,17 +99,11 @@ export default function AdminPage() {
       case "articles":
         return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
       case "editor":
-        return (
-          <ArticleEditor
-            articleId={editingArticleId}
-            onBack={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            onSave={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-          />
-        )
-      case "newsletter":
-        return <NewsletterManager />
+        return <ArticleEditor articleId={editingArticle} onBack={handleBackToArticles} />
       case "settings":
         return <SettingsManager />
+      case "newsletter":
+        return <NewsletterManager />
       default:
         return (
           <AdminDashboard
