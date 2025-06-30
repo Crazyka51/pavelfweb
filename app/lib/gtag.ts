@@ -1,3 +1,8 @@
+/**
+ * Google Analytics gtag helpers
+ * Provides pageview and event tracking functions
+ */
+
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-LNF9PDP1RH"
 
 declare global {

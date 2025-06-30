@@ -33,4 +33,3 @@ export default function ProjectCard({ title, description, image, size }: Project
     </motion.div>
   )
 }
-

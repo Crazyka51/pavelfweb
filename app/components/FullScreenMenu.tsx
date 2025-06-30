@@ -54,4 +54,3 @@ export default function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps)
     </AnimatePresence>
   )
 }
-
