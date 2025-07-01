@@ -1,80 +1,135 @@
 import { type NextRequest, NextResponse } from "next/server"
+import jwt from "jsonwebtoken"
 
-// Mock analytics data - v produkci by se načítala z Google Analytics API
-const getMockAnalyticsData = (range: string) => {
-  const baseData = {
-    users: 1247,
-    sessions: 1856,
-    pageviews: 4321,
-    bounceRate: 42.3,
-    avgSessionDuration: "2m 34s",
-    topPages: [
-      { page: "/", views: 1234, percentage: 28.5 },
-      { page: "/aktuality", views: 856, percentage: 19.8 },
-      { page: "/aktuality/novy-web-design", views: 432, percentage: 10.0 },
-      { page: "/kontakt", views: 321, percentage: 7.4 },
-      { page: "/sluzby", views: 298, percentage: 6.9 },
-    ],
-    devices: [
-      { category: "Desktop", sessions: 1112, percentage: 59.9 },
-      { category: "Mobile", sessions: 632, percentage: 34.1 },
-      { category: "Tablet", sessions: 112, percentage: 6.0 },
-    ],
-    countries: [
-      { country: "Česká republika", sessions: 1456, percentage: 78.4 },
-      { country: "Slovensko", sessions: 234, percentage: 12.6 },
-      { country: "Německo", sessions: 89, percentage: 4.8 },
-      { country: "Rakousko", sessions: 45, percentage: 2.4 },
-      { country: "Ostatní", sessions: 32, percentage: 1.8 },
-    ],
-    trafficSources: [
-      { source: "Organic Search", sessions: 834, percentage: 44.9 },
-      { source: "Direct", sessions: 567, percentage: 30.5 },
-      { source: "Social Media", sessions: 234, percentage: 12.6 },
-      { source: "Referral", sessions: 156, percentage: 8.4 },
-      { source: "Email", sessions: 65, percentage: 3.6 },
-    ],
-  }
-
-  // Adjust data based on time range
-  const multiplier = range === "7d" ? 1 : range === "30d" ? 4.2 : 12.8
+// Mock analytics data generator
+function generateMockAnalytics(range: string) {
+  const baseMultiplier = range === "7d" ? 1 : range === "30d" ? 4 : 12
 
   return {
-    ...baseData,
-    users: Math.round(baseData.users * multiplier),
-    sessions: Math.round(baseData.sessions * multiplier),
-    pageviews: Math.round(baseData.pageviews * multiplier),
-    topPages: baseData.topPages.map((page) => ({
-      ...page,
-      views: Math.round(page.views * multiplier),
-    })),
-    devices: baseData.devices.map((device) => ({
-      ...device,
-      sessions: Math.round(device.sessions * multiplier),
-    })),
-    countries: baseData.countries.map((country) => ({
-      ...country,
-      sessions: Math.round(country.sessions * multiplier),
-    })),
-    trafficSources: baseData.trafficSources.map((source) => ({
-      ...source,
-      sessions: Math.round(source.sessions * multiplier),
-    })),
+    overview: {
+      users: Math.floor(1200 * baseMultiplier + Math.random() * 200),
+      sessions: Math.floor(1800 * baseMultiplier + Math.random() * 300),
+      pageviews: Math.floor(4300 * baseMultiplier + Math.random() * 500),
+      bounceRate: Math.round((40 + Math.random() * 20) * 10) / 10,
+      avgSessionDuration: Math.floor(180 + Math.random() * 60),
+      usersChange: Math.round((Math.random() * 30 - 10) * 10) / 10,
+      sessionsChange: Math.round((Math.random() * 25 - 5) * 10) / 10,
+      pageviewsChange: Math.round((Math.random() * 35 - 5) * 10) / 10,
+    },
+    topPages: [
+      {
+        path: "/",
+        views: Math.floor(1200 * baseMultiplier + Math.random() * 200),
+        change: Math.round((Math.random() * 20 - 5) * 10) / 10,
+      },
+      {
+        path: "/aktuality",
+        views: Math.floor(850 * baseMultiplier + Math.random() * 150),
+        change: Math.round((Math.random() * 15 - 8) * 10) / 10,
+      },
+      {
+        path: "/aktuality/nova-tramvajova-trat",
+        views: Math.floor(430 * baseMultiplier + Math.random() * 100),
+        change: Math.round((Math.random() * 25 + 5) * 10) / 10,
+      },
+      {
+        path: "/aktuality/komunitni-zahrada",
+        views: Math.floor(300 * baseMultiplier + Math.random() * 80),
+        change: Math.round((Math.random() * 20 - 2) * 10) / 10,
+      },
+      {
+        path: "/kontakt",
+        views: Math.floor(190 * baseMultiplier + Math.random() * 50),
+        change: Math.round((Math.random() * 10 - 5) * 10) / 10,
+      },
+    ],
+    devices: [
+      {
+        category: "Desktop",
+        users: Math.floor(680 * baseMultiplier + Math.random() * 100),
+        percentage: Math.round((55 + Math.random() * 10) * 10) / 10,
+      },
+      {
+        category: "Mobile",
+        users: Math.floor(430 * baseMultiplier + Math.random() * 80),
+        percentage: Math.round((35 + Math.random() * 8) * 10) / 10,
+      },
+      {
+        category: "Tablet",
+        users: Math.floor(120 * baseMultiplier + Math.random() * 30),
+        percentage: Math.round((10 + Math.random() * 5) * 10) / 10,
+      },
+    ],
+    countries: [
+      {
+        country: "Česká republika",
+        users: Math.floor(1080 * baseMultiplier + Math.random() * 150),
+        percentage: Math.round((87 + Math.random() * 5) * 10) / 10,
+      },
+      {
+        country: "Slovensko",
+        users: Math.floor(90 * baseMultiplier + Math.random() * 20),
+        percentage: Math.round((7 + Math.random() * 2) * 10) / 10,
+      },
+      {
+        country: "Německo",
+        users: Math.floor(35 * baseMultiplier + Math.random() * 10),
+        percentage: Math.round((2.5 + Math.random() * 1) * 10) / 10,
+      },
+      {
+        country: "Rakousko",
+        users: Math.floor(25 * baseMultiplier + Math.random() * 8),
+        percentage: Math.round((2 + Math.random() * 0.5) * 10) / 10,
+      },
+      {
+        country: "Ostatní",
+        users: Math.floor(15 * baseMultiplier + Math.random() * 5),
+        percentage: Math.round((1 + Math.random() * 0.5) * 10) / 10,
+      },
+    ],
+    sources: [
+      {
+        source: "Organic Search",
+        users: Math.floor(620 * baseMultiplier + Math.random() * 100),
+        percentage: Math.round((50 + Math.random() * 8) * 10) / 10,
+      },
+      {
+        source: "Direct",
+        users: Math.floor(370 * baseMultiplier + Math.random() * 80),
+        percentage: Math.round((30 + Math.random() * 6) * 10) / 10,
+      },
+      {
+        source: "Social Media",
+        users: Math.floor(150 * baseMultiplier + Math.random() * 40),
+        percentage: Math.round((12 + Math.random() * 4) * 10) / 10,
+      },
+      {
+        source: "Referral",
+        users: Math.floor(85 * baseMultiplier + Math.random() * 25),
+        percentage: Math.round((7 + Math.random() * 2) * 10) / 10,
+      },
+      {
+        source: "Email",
+        users: Math.floor(15 * baseMultiplier + Math.random() * 8),
+        percentage: Math.round((1 + Math.random() * 1) * 10) / 10,
+      },
+    ],
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin token
+    // Verify authentication
     const authHeader = request.headers.get("authorization")
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    const adminToken = process.env.ADMIN_TOKEN
 
-    if (!adminToken || token !== adminToken) {
+    try {
+      jwt.verify(token, process.env.ADMIN_TOKEN || "fallback-secret")
+    } catch (error) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
@@ -82,13 +137,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const range = searchParams.get("range") || "7d"
 
-    // In production, this would call Google Analytics API
-    // For now, return mock data
-    const analyticsData = getMockAnalyticsData(range)
+    // In a real implementation, you would fetch data from Google Analytics API
+    // For now, we'll return mock data
+    const analyticsData = generateMockAnalytics(range)
 
     return NextResponse.json(analyticsData)
   } catch (error) {
     console.error("Analytics API error:", error)
-    return NextResponse.json({ error: "Failed to fetch analytics data" }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

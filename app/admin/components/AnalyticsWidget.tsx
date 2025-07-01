@@ -1,32 +1,53 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart3, Users, Eye, Clock, TrendingUp, Globe, Smartphone, Monitor, RefreshCw } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Users,
+  Eye,
+  MousePointer,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  ExternalLink,
+  Smartphone,
+  Monitor,
+  Tablet,
+} from "lucide-react"
 
 interface AnalyticsData {
-  users: number
-  sessions: number
-  pageviews: number
-  bounceRate: number
-  avgSessionDuration: string
+  overview: {
+    users: number
+    sessions: number
+    pageviews: number
+    bounceRate: number
+    avgSessionDuration: number
+    usersChange: number
+    sessionsChange: number
+    pageviewsChange: number
+  }
   topPages: Array<{
-    page: string
+    path: string
     views: number
-    percentage: number
+    change: number
   }>
   devices: Array<{
     category: string
-    sessions: number
+    users: number
     percentage: number
   }>
   countries: Array<{
     country: string
-    sessions: number
+    users: number
     percentage: number
   }>
-  trafficSources: Array<{
+  sources: Array<{
     source: string
-    sessions: number
+    users: number
     percentage: number
   }>
 }
@@ -37,17 +58,12 @@ export default function AnalyticsWidget() {
   const [timeRange, setTimeRange] = useState("7d")
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
-  useEffect(() => {
-    loadAnalyticsData()
-  }, [timeRange])
-
-  const loadAnalyticsData = async () => {
+  const fetchAnalytics = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem("admin_token")
       const response = await fetch(`/api/admin/analytics?range=${timeRange}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
         },
       })
 
@@ -55,11 +71,11 @@ export default function AnalyticsWidget() {
         const analyticsData = await response.json()
         setData(analyticsData)
       } else {
-        // Fallback na mock data
+        // Fallback to mock data if API fails
         setData(getMockData())
       }
     } catch (error) {
-      console.error("Error loading analytics:", error)
+      console.error("Analytics fetch error:", error)
       setData(getMockData())
     } finally {
       setIsLoading(false)
@@ -68,64 +84,90 @@ export default function AnalyticsWidget() {
   }
 
   const getMockData = (): AnalyticsData => ({
-    users: 1247,
-    sessions: 1856,
-    pageviews: 4321,
-    bounceRate: 42.3,
-    avgSessionDuration: "2m 34s",
+    overview: {
+      users: 1247,
+      sessions: 1856,
+      pageviews: 4321,
+      bounceRate: 42.3,
+      avgSessionDuration: 185,
+      usersChange: 12.5,
+      sessionsChange: 8.7,
+      pageviewsChange: 15.2,
+    },
     topPages: [
-      { page: "/", views: 1234, percentage: 28.5 },
-      { page: "/aktuality", views: 856, percentage: 19.8 },
-      { page: "/aktuality/novy-web-design", views: 432, percentage: 10.0 },
-      { page: "/kontakt", views: 321, percentage: 7.4 },
-      { page: "/sluzby", views: 298, percentage: 6.9 },
+      { path: "/", views: 1234, change: 5.2 },
+      { path: "/aktuality", views: 856, change: -2.1 },
+      { path: "/aktuality/nova-tramvajova-trat", views: 432, change: 18.5 },
+      { path: "/aktuality/komunitni-zahrada", views: 298, change: 7.3 },
+      { path: "/kontakt", views: 187, change: -1.2 },
     ],
     devices: [
-      { category: "Desktop", sessions: 1112, percentage: 59.9 },
-      { category: "Mobile", sessions: 632, percentage: 34.1 },
-      { category: "Tablet", sessions: 112, percentage: 6.0 },
+      { category: "Desktop", users: 687, percentage: 55.1 },
+      { category: "Mobile", users: 435, percentage: 34.9 },
+      { category: "Tablet", users: 125, percentage: 10.0 },
     ],
     countries: [
-      { country: "Česká republika", sessions: 1456, percentage: 78.4 },
-      { country: "Slovensko", sessions: 234, percentage: 12.6 },
-      { country: "Německo", sessions: 89, percentage: 4.8 },
-      { country: "Rakousko", sessions: 45, percentage: 2.4 },
-      { country: "Ostatní", sessions: 32, percentage: 1.8 },
+      { country: "Česká republika", users: 1089, percentage: 87.3 },
+      { country: "Slovensko", users: 89, percentage: 7.1 },
+      { country: "Německo", users: 34, percentage: 2.7 },
+      { country: "Rakousko", users: 23, percentage: 1.8 },
+      { country: "Ostatní", users: 12, percentage: 1.1 },
     ],
-    trafficSources: [
-      { source: "Organic Search", sessions: 834, percentage: 44.9 },
-      { source: "Direct", sessions: 567, percentage: 30.5 },
-      { source: "Social Media", sessions: 234, percentage: 12.6 },
-      { source: "Referral", sessions: 156, percentage: 8.4 },
-      { source: "Email", sessions: 65, percentage: 3.6 },
+    sources: [
+      { source: "Organic Search", users: 623, percentage: 49.9 },
+      { source: "Direct", users: 374, percentage: 30.0 },
+      { source: "Social Media", users: 149, percentage: 11.9 },
+      { source: "Referral", users: 87, percentage: 7.0 },
+      { source: "Email", users: 14, percentage: 1.2 },
     ],
   })
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [timeRange])
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("cs-CZ").format(num)
   }
 
-  const getDeviceIcon = (device: string) => {
-    switch (device.toLowerCase()) {
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
+
+  const getDeviceIcon = (category: string) => {
+    switch (category.toLowerCase()) {
       case "mobile":
-        return <Smartphone className="w-4 h-4" />
+        return <Smartphone className="h-4 w-4" />
       case "tablet":
-        return <Monitor className="w-4 h-4" />
+        return <Tablet className="h-4 w-4" />
       default:
-        return <Monitor className="w-4 h-4" />
+        return <Monitor className="h-4 w-4" />
     }
+  }
+
+  const TrendIcon = ({ change }: { change: number }) => {
+    if (change > 0) {
+      return <TrendingUp className="h-4 w-4 text-green-600" />
+    } else if (change < 0) {
+      return <TrendingDown className="h-4 w-4 text-red-600" />
+    }
+    return null
   }
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-48"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
-            ))}
-          </div>
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     )
@@ -133,188 +175,208 @@ export default function AnalyticsWidget() {
 
   if (!data) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="text-center py-8">
-          <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Nepodařilo se načíst analytics data</p>
-          <button
-            onClick={loadAnalyticsData}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Zkusit znovu
-          </button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-gray-500">Nepodařilo se načíst analytická data.</p>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <BarChart3 className="w-6 h-6 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Analytics přehled</h3>
-          </div>
-          <div className="flex items-center space-x-3">
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="7d">Posledních 7 dní</option>
-              <option value="30d">Posledních 30 dní</option>
-              <option value="90d">Posledních 90 dní</option>
-            </select>
-            <button
-              onClick={loadAnalyticsData}
-              className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-              title="Obnovit data"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+          <p className="text-sm text-gray-500">Poslední aktualizace: {lastUpdated.toLocaleString("cs-CZ")}</p>
         </div>
-        <p className="text-sm text-gray-500 mt-1">Naposledy aktualizováno: {lastUpdated.toLocaleString("cs-CZ")}</p>
+        <div className="flex items-center gap-2">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 dní</SelectItem>
+              <SelectItem value="30d">30 dní</SelectItem>
+              <SelectItem value="90d">90 dní</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={fetchAnalytics}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Obnovit
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              GA4
+            </a>
+          </Button>
+        </div>
       </div>
 
-      <div className="p-6 space-y-6">
-        {/* Key metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <div className="flex items-center">
-              <Users className="w-8 h-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-blue-600">Uživatelé</p>
-                <p className="text-2xl font-bold text-blue-900">{formatNumber(data.users)}</p>
-              </div>
+      {/* Overview Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Uživatelé</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatNumber(data.overview.users)}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <TrendIcon change={data.overview.usersChange} />
+              <span className={`ml-1 ${data.overview.usersChange > 0 ? "text-green-600" : "text-red-600"}`}>
+                {data.overview.usersChange > 0 ? "+" : ""}
+                {data.overview.usersChange}%
+              </span>
+              <span className="ml-1">oproti předchozímu období</span>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center">
-              <Eye className="w-8 h-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-600">Zobrazení</p>
-                <p className="text-2xl font-bold text-green-900">{formatNumber(data.pageviews)}</p>
-              </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Relace</CardTitle>
+            <MousePointer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatNumber(data.overview.sessions)}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <TrendIcon change={data.overview.sessionsChange} />
+              <span className={`ml-1 ${data.overview.sessionsChange > 0 ? "text-green-600" : "text-red-600"}`}>
+                {data.overview.sessionsChange > 0 ? "+" : ""}
+                {data.overview.sessionsChange}%
+              </span>
+              <span className="ml-1">oproti předchozímu období</span>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="bg-purple-50 rounded-lg p-4">
-            <div className="flex items-center">
-              <Clock className="w-8 h-8 text-purple-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-purple-600">Průměrná doba</p>
-                <p className="text-2xl font-bold text-purple-900">{data.avgSessionDuration}</p>
-              </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Zobrazení stránek</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatNumber(data.overview.pageviews)}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <TrendIcon change={data.overview.pageviewsChange} />
+              <span className={`ml-1 ${data.overview.pageviewsChange > 0 ? "text-green-600" : "text-red-600"}`}>
+                {data.overview.pageviewsChange > 0 ? "+" : ""}
+                {data.overview.pageviewsChange}%
+              </span>
+              <span className="ml-1">oproti předchozímu období</span>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="bg-orange-50 rounded-lg p-4">
-            <div className="flex items-center">
-              <TrendingUp className="w-8 h-8 text-orange-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-orange-600">Bounce Rate</p>
-                <p className="text-2xl font-bold text-orange-900">{data.bounceRate}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Průměrná doba relace</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatDuration(data.overview.avgSessionDuration)}</div>
+            <p className="text-xs text-muted-foreground">Bounce rate: {data.overview.bounceRate}%</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Charts grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top pages */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">Nejnavštěvovanější stránky</h4>
+      {/* Detailed Analytics */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Top Pages */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Nejnavštěvovanější stránky</CardTitle>
+            <CardDescription>Stránky s nejvyšší návštěvností</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               {data.topPages.map((page, index) => (
-                <div key={index} className="flex items-center justify-between">
+                <div key={page.path} className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{page.page}</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${page.percentage}%` }} />
-                    </div>
+                    <p className="text-sm font-medium truncate">{page.path}</p>
+                    <p className="text-xs text-gray-500">{formatNumber(page.views)} zobrazení</p>
                   </div>
-                  <div className="ml-4 text-right">
-                    <p className="text-sm font-semibold text-gray-900">{formatNumber(page.views)}</p>
-                    <p className="text-xs text-gray-500">{page.percentage}%</p>
+                  <div className="flex items-center ml-2">
+                    <TrendIcon change={page.change} />
+                    <span className={`text-xs ml-1 ${page.change > 0 ? "text-green-600" : "text-red-600"}`}>
+                      {page.change > 0 ? "+" : ""}
+                      {page.change}%
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Devices */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">Zařízení</h4>
+        {/* Devices */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Zařízení</CardTitle>
+            <CardDescription>Rozložení podle typu zařízení</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {data.devices.map((device, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+              {data.devices.map((device) => (
+                <div key={device.category} className="flex items-center justify-between">
+                  <div className="flex items-center">
                     {getDeviceIcon(device.category)}
-                    <span className="text-sm font-medium text-gray-900">{device.category}</span>
+                    <span className="ml-2 text-sm font-medium">{device.category}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900">{formatNumber(device.sessions)}</p>
-                    <p className="text-xs text-gray-500">{device.percentage}%</p>
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">{formatNumber(device.users)}</span>
+                    <Badge variant="secondary">{device.percentage}%</Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Countries */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">Země</h4>
+        {/* Countries */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Země</CardTitle>
+            <CardDescription>Geografické rozložení návštěvníků</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {data.countries.map((country, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Globe className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-900">{country.country}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900">{formatNumber(country.sessions)}</p>
-                    <p className="text-xs text-gray-500">{country.percentage}%</p>
+              {data.countries.map((country) => (
+                <div key={country.country} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{country.country}</span>
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">{formatNumber(country.users)}</span>
+                    <Badge variant="secondary">{country.percentage}%</Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Traffic sources */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">Zdroje návštěvnosti</h4>
+        {/* Traffic Sources */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Zdroje návštěvnosti</CardTitle>
+            <CardDescription>Odkud přicházejí návštěvníci</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {data.trafficSources.map((source, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">{source.source}</span>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900">{formatNumber(source.sessions)}</p>
-                    <p className="text-xs text-gray-500">{source.percentage}%</p>
+              {data.sources.map((source) => (
+                <div key={source.source} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{source.source}</span>
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-600 mr-2">{formatNumber(source.users)}</span>
+                    <Badge variant="secondary">{source.percentage}%</Badge>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>Data z Google Analytics 4</span>
-            <a
-              href="https://analytics.google.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Otevřít GA4 →
-            </a>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

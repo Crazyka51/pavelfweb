@@ -1,141 +1,101 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import jwt from 'jsonwebtoken'
+import { type NextRequest, NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
 
-// Force dynamic rendering pro API článků
-export const dynamic = 'force-dynamic'
+const ARTICLES_FILE = path.join(process.cwd(), "data", "articles.json")
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-const ARTICLES_FILE = path.join(process.cwd(), 'data', 'articles.json')
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
-
-// Helper function to verify JWT token
-async function verifyToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('No token provided')
-  }
-
-  const token = authHeader.substring(7)
-  return jwt.verify(token, JWT_SECRET)
-}
-
-// Helper function to read articles
-async function readArticles(): Promise<Article[]> {
+function readArticles() {
   try {
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8')
+    const data = fs.readFileSync(ARTICLES_FILE, "utf8")
     return JSON.parse(data)
   } catch (error) {
     return []
   }
 }
 
-// Helper function to write articles
-async function writeArticles(articles: Article[]): Promise<void> {
-  await fs.writeFile(ARTICLES_FILE, JSON.stringify(articles, null, 2))
+function writeArticles(articles: any[]) {
+  fs.writeFileSync(ARTICLES_FILE, JSON.stringify(articles, null, 2))
 }
 
-// GET - Get single article
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+function verifyAuth(request: NextRequest) {
+  const authHeader = request.headers.get("authorization")
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false
+  }
+
+  const token = authHeader.substring(7)
   try {
-    await verifyToken(request)
-    const articles = await readArticles()
-    const article = articles.find(a => a.id === params.id)
-    
-    if (!article) {
-      return NextResponse.json(
-        { message: 'Článek nebyl nalezen' },
-        { status: 404 }
-      )
-    }
-    
-    return NextResponse.json(article)
+    const decoded = Buffer.from(token, "base64").toString()
+    const [username, timestamp] = decoded.split(":")
+    const tokenAge = Date.now() - Number.parseInt(timestamp)
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+
+    return tokenAge <= maxAge
   } catch (error) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
+    return false
   }
 }
 
-// PUT - Update article
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const articles = readArticles()
+  const article = articles.find((a: any) => a.id === params.id)
+
+  if (!article) {
+    return NextResponse.json({ message: "Article not found" }, { status: 404 })
+  }
+
+  return NextResponse.json(article)
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    await verifyToken(request)
-    const updateData = await request.json()
-    const articles = await readArticles()
-    const articleIndex = articles.findIndex(a => a.id === params.id)
-    
+    const articleData = await request.json()
+    const articles = readArticles()
+    const articleIndex = articles.findIndex((a: any) => a.id === params.id)
+
     if (articleIndex === -1) {
-      return NextResponse.json(
-        { message: 'Článek nebyl nalezen' },
-        { status: 404 }
-      )
+      return NextResponse.json({ message: "Article not found" }, { status: 404 })
     }
-    
-    const updatedArticle = {
+
+    articles[articleIndex] = {
       ...articles[articleIndex],
-      ...updateData,
-      updatedAt: new Date().toISOString()
+      ...articleData,
+      updatedAt: new Date().toISOString(),
     }
-    
-    articles[articleIndex] = updatedArticle
-    await writeArticles(articles)
-    
-    return NextResponse.json(updatedArticle)
+
+    writeArticles(articles)
+
+    return NextResponse.json(articles[articleIndex])
   } catch (error) {
-    return NextResponse.json(
-      { message: 'Chyba při aktualizaci článku' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: "Error updating article" }, { status: 500 })
   }
 }
 
-// DELETE - Delete article
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    await verifyToken(request)
-    const articles = await readArticles()
-    const articleIndex = articles.findIndex(a => a.id === params.id)
-    
-    if (articleIndex === -1) {
-      return NextResponse.json(
-        { message: 'Článek nebyl nalezen' },
-        { status: 404 }
-      )
+    const articles = readArticles()
+    const filteredArticles = articles.filter((a: any) => a.id !== params.id)
+
+    if (filteredArticles.length === articles.length) {
+      return NextResponse.json({ message: "Article not found" }, { status: 404 })
     }
-    
-    articles.splice(articleIndex, 1)
-    await writeArticles(articles)
-    
-    return NextResponse.json({ message: 'Článek byl smazán' })
+
+    writeArticles(filteredArticles)
+
+    return NextResponse.json({ message: "Article deleted successfully" })
   } catch (error) {
-    return NextResponse.json(
-      { message: 'Chyba při mazání článku' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: "Error deleting article" }, { status: 500 })
   }
 }

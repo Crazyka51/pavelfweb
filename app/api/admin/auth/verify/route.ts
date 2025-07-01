@@ -1,57 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
-
-// Force dynamic rendering pro API autentifikaci
-export const dynamic = 'force-dynamic'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { message: 'No token provided', valid: false },
-        { status: 401 }
-      )
+    const authHeader = request.headers.get("authorization")
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ valid: false, message: "Chybí autorizační token" }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as any
 
-    return NextResponse.json({ 
-      valid: true, 
-      username: decoded.username 
-    })
-  } catch (error) {
-    return NextResponse.json(
-      { message: 'Neplatný token', valid: false },
-      { status: 401 }
-    )
-  }
-}
+    // Simple token validation (in production use proper JWT verification)
+    try {
+      const decoded = Buffer.from(token, "base64").toString()
+      const [username, timestamp] = decoded.split(":")
 
-export async function POST(request: NextRequest) {
-  try {
-    const { token } = await request.json()
+      // Check if token is not older than 24 hours
+      const tokenAge = Date.now() - Number.parseInt(timestamp)
+      const maxAge = 24 * 60 * 60 * 1000 // 24 hours
 
-    if (!token) {
-      return NextResponse.json(
-        { message: 'Token je povinný' },
-        { status: 400 }
-      )
+      if (tokenAge > maxAge) {
+        return NextResponse.json({ valid: false, message: "Token vypršel" }, { status: 401 })
+      }
+
+      return NextResponse.json({
+        valid: true,
+        user: {
+          username,
+          displayName: username === "pavel" ? "Pavel Fišer" : "Administrátor",
+        },
+      })
+    } catch (error) {
+      return NextResponse.json({ valid: false, message: "Neplatný token" }, { status: 401 })
     }
-
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-    
-    return NextResponse.json({ 
-      valid: true, 
-      user: { username: decoded.username, role: decoded.role } 
-    })
   } catch (error) {
-    return NextResponse.json(
-      { valid: false, message: 'Neplatný token' },
-      { status: 401 }
-    )
+    return NextResponse.json({ valid: false, message: "Chyba serveru" }, { status: 500 })
   }
 }

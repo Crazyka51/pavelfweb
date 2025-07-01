@@ -1,98 +1,97 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import jwt from 'jsonwebtoken'
+import { type NextRequest, NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
 
-// Force dynamic rendering pro API články
-export const dynamic = 'force-dynamic'
+const ARTICLES_FILE = path.join(process.cwd(), "data", "articles.json")
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-const ARTICLES_FILE = path.join(process.cwd(), 'data', 'articles.json')
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
+// Ensure data directory exists
+const dataDir = path.join(process.cwd(), "data")
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true })
 }
 
-// Helper function to verify JWT token
-async function verifyToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('No token provided')
-  }
-
-  const token = authHeader.substring(7)
-  return jwt.verify(token, JWT_SECRET)
+// Initialize articles file if it doesn't exist
+if (!fs.existsSync(ARTICLES_FILE)) {
+  const initialArticles = [
+    {
+      id: "1",
+      title: "Vítejte v novém CMS systému",
+      content:
+        "<p>Tento článek byl vytvořen automaticky při inicializaci systému.</p><p>Můžete ho upravit nebo smazat a vytvořit své vlastní články.</p>",
+      excerpt: "Úvodní článek pro demonstraci CMS systému",
+      category: "Aktuality",
+      tags: ["cms", "úvod"],
+      published: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      imageUrl: "",
+    },
+  ]
+  fs.writeFileSync(ARTICLES_FILE, JSON.stringify(initialArticles, null, 2))
 }
 
-// Helper function to read articles
-async function readArticles(): Promise<Article[]> {
+function readArticles() {
   try {
-    const data = await fs.readFile(ARTICLES_FILE, 'utf8')
+    const data = fs.readFileSync(ARTICLES_FILE, "utf8")
     return JSON.parse(data)
   } catch (error) {
-    // If file doesn't exist, return empty array
     return []
   }
 }
 
-// Helper function to write articles
-async function writeArticles(articles: Article[]): Promise<void> {
-  await fs.writeFile(ARTICLES_FILE, JSON.stringify(articles, null, 2))
+function writeArticles(articles: any[]) {
+  fs.writeFileSync(ARTICLES_FILE, JSON.stringify(articles, null, 2))
 }
 
-// GET - Get all articles
-export async function GET(request: NextRequest) {
+function verifyAuth(request: NextRequest) {
+  const authHeader = request.headers.get("authorization")
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false
+  }
+
+  const token = authHeader.substring(7)
   try {
-    await verifyToken(request)
-    const articles = await readArticles()
-    return NextResponse.json(articles)
+    const decoded = Buffer.from(token, "base64").toString()
+    const [username, timestamp] = decoded.split(":")
+    const tokenAge = Date.now() - Number.parseInt(timestamp)
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+
+    return tokenAge <= maxAge
   } catch (error) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
+    return false
   }
 }
 
-// POST - Create new article
+export async function GET(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const articles = readArticles()
+  return NextResponse.json(articles)
+}
+
 export async function POST(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    await verifyToken(request)
     const articleData = await request.json()
-    
-    const newArticle: Article = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      title: articleData.title || 'Nový článek',
-      content: articleData.content || '',
-      excerpt: articleData.excerpt || '',
-      category: articleData.category || 'Obecné',
-      tags: articleData.tags || [],
-      published: articleData.published || false,
+    const articles = readArticles()
+
+    const newArticle = {
+      id: Date.now().toString(),
+      ...articleData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      imageUrl: articleData.imageUrl,
-      publishedAt: articleData.publishedAt
     }
 
-    const articles = await readArticles()
     articles.push(newArticle)
-    await writeArticles(articles)
+    writeArticles(articles)
 
     return NextResponse.json(newArticle, { status: 201 })
   } catch (error) {
-    return NextResponse.json(
-      { message: 'Chyba při vytváření článku' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: "Error creating article" }, { status: 500 })
   }
 }

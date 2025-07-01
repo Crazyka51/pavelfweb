@@ -1,32 +1,30 @@
-"use client";
-import { useEffect, useState } from "react";
+"use client"
+
+import { useState, useEffect } from "react"
 
 interface TypewriterTextProps {
-  text: string;
-  speed?: number;
-  className?: string;
+  text: string
+  speed?: number
+  delay?: number
 }
 
-export const TypewriterText = ({ text, speed = 40, className = "" }: TypewriterTextProps) => {
-  const [displayed, setDisplayed] = useState("");
+export function TypewriterText({ text, speed = 50, delay = 0 }: TypewriterTextProps) {
+  const [displayText, setDisplayText] = useState("")
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
-    if (!text) return;
-    
-    let currentIndex = 0;
-    setDisplayed("");
-    
-    const interval = setInterval(() => {
-      if (currentIndex < text.length) {
-        setDisplayed(text.slice(0, currentIndex + 1));
-        currentIndex++;
-      } else {
-        clearInterval(interval);
-      }
-    }, speed);
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(
+        () => {
+          setDisplayText((prev) => prev + text[currentIndex])
+          setCurrentIndex((prev) => prev + 1)
+        },
+        currentIndex === 0 ? delay : speed,
+      )
 
-    return () => clearInterval(interval);
-  }, [text, speed]);
+      return () => clearTimeout(timeout)
+    }
+  }, [currentIndex, text, speed, delay])
 
-  return <span className={className}>{displayed}</span>;
-};
+  return <span>{displayText}</span>
+}

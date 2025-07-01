@@ -1,19 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import LoginForm from "./components/LoginForm"
 import AdminLayout from "./components/AdminLayout"
-import AdminDashboard from "./components/AdminDashboard"
+import Dashboard from "./components/Dashboard"
 import ArticleManager from "./components/ArticleManager"
 import ArticleEditor from "./components/ArticleEditor"
 import CategoryManager from "./components/CategoryManager"
 import NewsletterManager from "./components/NewsletterManager"
 import SettingsManager from "./components/SettingsManager"
-import LoginForm from "./components/LoginForm"
+import AnalyticsManager from "./components/AnalyticsManager"
 
 type AdminSection =
   | "dashboard"
   | "articles"
-  | "editor"
+  | "new-article"
   | "categories"
   | "newsletter"
   | "analytics"
@@ -21,9 +22,9 @@ type AdminSection =
   | "settings"
 
 export default function AdminPage() {
-  const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
 
@@ -33,7 +34,7 @@ export default function AdminPage() {
 
   const checkAuthentication = async () => {
     try {
-      const token = localStorage.getItem("admin_token")
+      const token = localStorage.getItem("adminToken")
       if (!token) {
         setIsAuthenticated(false)
         setIsLoading(false)
@@ -51,7 +52,7 @@ export default function AdminPage() {
         setIsAuthenticated(true)
         setCurrentUser(userData.user || { username: "admin", displayName: "Pavel Fišer" })
       } else {
-        localStorage.removeItem("admin_token")
+        localStorage.removeItem("adminToken")
         setIsAuthenticated(false)
       }
     } catch (error) {
@@ -63,32 +64,31 @@ export default function AdminPage() {
   }
 
   const handleLogin = (token: string) => {
-    localStorage.setItem("admin_token", token)
+    localStorage.setItem("adminToken", token)
     setIsAuthenticated(true)
     setCurrentUser({ username: "admin", displayName: "Pavel Fišer" })
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_token")
+    localStorage.removeItem("adminToken")
     setIsAuthenticated(false)
     setCurrentSection("dashboard")
     setCurrentUser(null)
   }
 
   const handleSectionChange = (section: string) => {
-    console.log("Section changing to:", section)
     setCurrentSection(section as AdminSection)
     setEditingArticleId(null)
   }
 
   const handleCreateNew = () => {
     setEditingArticleId(null)
-    setCurrentSection("editor")
+    setCurrentSection("new-article")
   }
 
-  const handleEditArticle = (articleId: string) => {
-    setEditingArticleId(articleId)
-    setCurrentSection("editor")
+  const handleEditArticle = (article: any) => {
+    setEditingArticleId(article.id)
+    setCurrentSection("new-article")
   }
 
   const handleBackToDashboard = () => {
@@ -114,20 +114,12 @@ export default function AdminPage() {
   }
 
   const renderContent = () => {
-    console.log("Rendering content for section:", currentSection)
-
     switch (currentSection) {
       case "dashboard":
-        return (
-          <AdminDashboard
-            onCreateNew={handleCreateNew}
-            onViewArticles={() => setCurrentSection("articles")}
-            onViewSettings={() => setCurrentSection("settings")}
-          />
-        )
+        return <Dashboard />
       case "articles":
         return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
-      case "editor":
+      case "new-article":
         return (
           <ArticleEditor
             articleId={editingArticleId}
@@ -138,35 +130,25 @@ export default function AdminPage() {
       case "categories":
         return <CategoryManager />
       case "newsletter":
-        return <NewsletterManager />
+        return <NewsletterManager token={localStorage.getItem("adminToken") || ""} />
       case "analytics":
-        return (
-          <div className="p-8">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-2xl font-bold mb-4">Statistiky</h2>
-              <p className="text-gray-600">Analytics dashboard bude zde...</p>
-            </div>
-          </div>
-        )
+        return <AnalyticsManager />
       case "backup":
         return (
           <div className="p-8">
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-2xl font-bold mb-4">Zálohy</h2>
-              <p className="text-gray-600">Backup management bude zde...</p>
+              <p className="text-gray-600">Export a import dat systému</p>
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">Funkce zálohování bude implementována v budoucí verzi.</p>
+              </div>
             </div>
           </div>
         )
       case "settings":
         return <SettingsManager />
       default:
-        return (
-          <AdminDashboard
-            onCreateNew={handleCreateNew}
-            onViewArticles={() => setCurrentSection("articles")}
-            onViewSettings={() => setCurrentSection("settings")}
-          />
-        )
+        return <Dashboard />
     }
   }
 

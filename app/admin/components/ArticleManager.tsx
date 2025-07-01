@@ -1,21 +1,21 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
-import { 
-  Search, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  Copy, 
+import { useState, useEffect, useCallback } from "react"
+import {
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  Copy,
   Tag,
   MoreVertical,
   Plus,
   Download,
   CheckSquare,
   Square,
-  FileText
-} from 'lucide-react'
-import Image from 'next/image'
+  FileText,
+} from "lucide-react"
+import Image from "next/image"
 
 interface Article {
   id: string
@@ -32,45 +32,45 @@ interface Article {
 }
 
 interface ArticleManagerProps {
-  onEditArticle: (article: Article) => void
-  onCreateNew: () => void
-  token: string
+  onEditArticle?: (article: Article) => void
+  onCreateNew?: () => void
+  token?: string
 }
 
 export default function ArticleManager({ onEditArticle, onCreateNew, token }: ArticleManagerProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedStatus, setSelectedStatus] = useState('all')
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedArticles, setSelectedArticles] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>('updated')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [sortBy, setSortBy] = useState<"updated" | "created" | "title">("updated")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [isLoading, setIsLoading] = useState(true)
   const [showActions, setShowActions] = useState<string | null>(null)
 
-  const categories = ['Aktuality', 'Městská politika', 'Doprava', 'Životní prostředí', 'Kultura', 'Sport']
+  const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
 
   const loadArticles = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/articles', {
+      const adminToken = localStorage.getItem("adminToken")
+      const response = await fetch("/api/admin/articles", {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${adminToken}`,
+        },
       })
       if (response.ok) {
         const data = await response.json()
         setArticles(data)
       } else if (response.status === 401) {
-        console.error('Unauthorized access - token may be invalid')
-        // Optionally redirect to login or show error
+        console.error("Unauthorized access - token may be invalid")
       }
     } catch (error) {
-      console.error('Error loading articles:', error)
+      console.error("Error loading articles:", error)
     } finally {
       setIsLoading(false)
     }
-  }, [token])
+  }, [])
 
   const filterArticles = useCallback(() => {
     let filtered = [...articles]
@@ -78,30 +78,31 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     // Text search
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase()
-      filtered = filtered.filter(article => 
-        article.title.toLowerCase().includes(search) ||
-        article.excerpt.toLowerCase().includes(search) ||
-        article.content.toLowerCase().includes(search) ||
-        article.tags.some(tag => tag.toLowerCase().includes(search))
+      filtered = filtered.filter(
+        (article) =>
+          article.title.toLowerCase().includes(search) ||
+          article.excerpt.toLowerCase().includes(search) ||
+          article.content.toLowerCase().includes(search) ||
+          article.tags.some((tag) => tag.toLowerCase().includes(search)),
       )
     }
 
     // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(article => article.category === selectedCategory)
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((article) => article.category === selectedCategory)
     }
 
     // Status filter
-    if (selectedStatus !== 'all') {
+    if (selectedStatus !== "all") {
       switch (selectedStatus) {
-        case 'published':
-          filtered = filtered.filter(article => article.published && !article.publishedAt)
+        case "published":
+          filtered = filtered.filter((article) => article.published && !article.publishedAt)
           break
-        case 'draft':
-          filtered = filtered.filter(article => !article.published && !article.publishedAt)
+        case "draft":
+          filtered = filtered.filter((article) => !article.published && !article.publishedAt)
           break
-        case 'scheduled':
-          filtered = filtered.filter(article => article.publishedAt)
+        case "scheduled":
+          filtered = filtered.filter((article) => article.publishedAt)
           break
       }
     }
@@ -109,21 +110,21 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     // Sorting
     filtered.sort((a, b) => {
       let compareValue = 0
-      
+
       switch (sortBy) {
-        case 'title':
+        case "title":
           compareValue = a.title.localeCompare(b.title)
           break
-        case 'created':
+        case "created":
           compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           break
-        case 'updated':
+        case "updated":
         default:
           compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
           break
       }
-      
-      return sortOrder === 'asc' ? compareValue : -compareValue
+
+      return sortOrder === "asc" ? compareValue : -compareValue
     })
 
     setFilteredArticles(filtered)
@@ -141,124 +142,124 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     if (selectedArticles.length === filteredArticles.length) {
       setSelectedArticles([])
     } else {
-      setSelectedArticles(filteredArticles.map(article => article.id))
+      setSelectedArticles(filteredArticles.map((article) => article.id))
     }
   }
 
   const handleSelectArticle = (articleId: string) => {
-    setSelectedArticles(prev => 
-      prev.includes(articleId) 
-        ? prev.filter(id => id !== articleId)
-        : [...prev, articleId]
+    setSelectedArticles((prev) =>
+      prev.includes(articleId) ? prev.filter((id) => id !== articleId) : [...prev, articleId],
     )
   }
 
   const handleBulkDelete = async () => {
     if (selectedArticles.length === 0) {
-      alert('Nejprve vyberte články ke smazání')
+      alert("Nejprve vyberte články ke smazání")
       return
     }
-    
+
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
       try {
+        const adminToken = localStorage.getItem("adminToken")
         for (const articleId of selectedArticles) {
-          console.log('Deleting article:', articleId)
-          const response = await fetch(`/api/admin/articles/${articleId}`, { 
-            method: 'DELETE',
+          const response = await fetch(`/api/admin/articles/${articleId}`, {
+            method: "DELETE",
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              Authorization: `Bearer ${adminToken}`,
+            },
           })
-          
+
           if (!response.ok) {
             const errorData = await response.json()
-            console.error('Delete failed:', errorData)
             throw new Error(`Chyba při mazání článku ${articleId}: ${errorData.message}`)
           }
         }
         await loadArticles()
         setSelectedArticles([])
-        alert('Články byly úspěšně smazány')
+        alert("Články byly úspěšně smazány")
       } catch (error) {
-        console.error('Error deleting articles:', error)
-        const errorMessage = error instanceof Error ? error.message : 'Neznámá chyba'
-        alert(`Chyba při mazání článků: ${errorMessage}`)
+        console.error("Error deleting articles:", error)
+        alert(`Chyba při mazání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
       }
     }
   }
 
   const handleBulkPublish = async () => {
     if (selectedArticles.length === 0) return
-    
+
     try {
+      const adminToken = localStorage.getItem("adminToken")
       for (const articleId of selectedArticles) {
-        const article = articles.find(a => a.id === articleId)
+        const article = articles.find((a) => a.id === articleId)
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
-            method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${adminToken}`,
             },
-            body: JSON.stringify({ ...article, published: true, publishedAt: undefined })
+            body: JSON.stringify({ ...article, published: true, publishedAt: undefined }),
           })
         }
       }
       await loadArticles()
       setSelectedArticles([])
-      alert('Články byly úspěšně publikovány')
+      alert("Články byly úspěšně publikovány")
     } catch (error) {
-      console.error('Error publishing articles:', error)
-      alert('Chyba při publikování článků')
+      console.error("Error publishing articles:", error)
+      alert("Chyba při publikování článků")
     }
   }
 
   const handleBulkUnpublish = async () => {
     if (selectedArticles.length === 0) return
-    
+
     try {
+      const adminToken = localStorage.getItem("adminToken")
       for (const articleId of selectedArticles) {
-        const article = articles.find(a => a.id === articleId)
+        const article = articles.find((a) => a.id === articleId)
         if (article) {
           await fetch(`/api/admin/articles/${articleId}`, {
-            method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${adminToken}`,
             },
-            body: JSON.stringify({ ...article, published: false, publishedAt: undefined })
+            body: JSON.stringify({ ...article, published: false, publishedAt: undefined }),
           })
         }
       }
       await loadArticles()
       setSelectedArticles([])
-      alert('Články byly převedeny na koncepty')
+      alert("Články byly převedeny na koncepty")
     } catch (error) {
-      console.error('Error unpublishing articles:', error)
-      alert('Chyba při převádění na koncepty')
+      console.error("Error unpublishing articles:", error)
+      alert("Chyba při převádění na koncepty")
     }
   }
 
   const handleDeleteArticle = async (articleId: string) => {
-    if (confirm('Opravdu chcete smazat tento článek?')) {
+    if (confirm("Opravdu chcete smazat tento článek?")) {
       try {
-        await fetch(`/api/admin/articles/${articleId}`, { 
-          method: 'DELETE',
+        const adminToken = localStorage.getItem("adminToken")
+        await fetch(`/api/admin/articles/${articleId}`, {
+          method: "DELETE",
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${adminToken}`,
+          },
         })
         await loadArticles()
-        alert('Článek byl úspěšně smazán')
+        alert("Článek byl úspěšně smazán")
       } catch (error) {
-        console.error('Error deleting article:', error)
-        alert('Chyba při mazání článku')
+        console.error("Error deleting article:", error)
+        alert("Chyba při mazání článku")
       }
     }
   }
 
   const handleDuplicateArticle = async (article: Article) => {
     try {
+      const adminToken = localStorage.getItem("adminToken")
       const newArticle = {
         ...article,
         id: undefined,
@@ -266,53 +267,55 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         published: false,
         publishedAt: undefined,
         createdAt: undefined,
-        updatedAt: undefined
+        updatedAt: undefined,
       }
-      
-      const response = await fetch('/api/admin/articles', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+
+      const response = await fetch("/api/admin/articles", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
         },
-        body: JSON.stringify(newArticle)
+        body: JSON.stringify(newArticle),
       })
-      
+
       if (response.ok) {
         await loadArticles()
-        alert('Článek byl úspěšně duplikován')
+        alert("Článek byl úspěšně duplikován")
       }
     } catch (error) {
-      console.error('Error duplicating article:', error)
-      alert('Chyba při duplikování článku')
+      console.error("Error duplicating article:", error)
+      alert("Chyba při duplikování článku")
     }
   }
 
   const exportArticles = () => {
     const dataStr = JSON.stringify(filteredArticles, null, 2)
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-    
-    const exportFileDefaultName = `articles_${new Date().toISOString().split('T')[0]}.json`
-    
-    const linkElement = document.createElement('a')
-    linkElement.setAttribute('href', dataUri)
-    linkElement.setAttribute('download', exportFileDefaultName)
+    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
+
+    const exportFileDefaultName = `articles_${new Date().toISOString().split("T")[0]}.json`
+
+    const linkElement = document.createElement("a")
+    linkElement.setAttribute("href", dataUri)
+    linkElement.setAttribute("download", exportFileDefaultName)
     linkElement.click()
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('cs-CZ', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("cs-CZ", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     })
   }
 
   const getStatusBadge = (article: Article) => {
     if (article.publishedAt) {
-      return <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Naplánováno</span>
+      return (
+        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Naplánováno</span>
+      )
     } else if (article.published) {
       return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>
     } else {
@@ -326,7 +329,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-64"></div>
           <div className="h-12 bg-gray-200 rounded"></div>
-          {[1, 2, 3, 4, 5].map(i => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-16 bg-gray-200 rounded"></div>
           ))}
         </div>
@@ -384,8 +387,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">Všechny kategorie</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
 
@@ -405,9 +410,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
           <select
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => {
-              const [field, order] = e.target.value.split('-')
-              setSortBy(field as 'updated' | 'created' | 'title')
-              setSortOrder(order as 'asc' | 'desc')
+              const [field, order] = e.target.value.split("-")
+              setSortBy(field as "updated" | "created" | "title")
+              setSortOrder(order as "asc" | "desc")
             }}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
@@ -426,13 +431,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-blue-900">
-                Vybráno {selectedArticles.length} článků
-              </span>
-              <button
-                onClick={() => setSelectedArticles([])}
-                className="text-sm text-blue-600 hover:text-blue-700"
-              >
+              <span className="text-sm font-medium text-blue-900">Vybráno {selectedArticles.length} článků</span>
+              <button onClick={() => setSelectedArticles([])} className="text-sm text-blue-600 hover:text-blue-700">
                 Zrušit výběr
               </button>
             </div>
@@ -467,12 +467,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Žádné články nenalezeny</h3>
             <p className="text-gray-500 mb-6">
-              {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' 
-                ? 'Zkuste změnit filtry nebo vyhledávací dotaz.'
-                : 'Zatím nemáte žádné články. Vytvořte svůj první článek!'
-              }
+              {searchTerm || selectedCategory !== "all" || selectedStatus !== "all"
+                ? "Zkuste změnit filtry nebo vyhledávací dotaz."
+                : "Zatím nemáte žádné články. Vytvořte svůj první článek!"}
             </p>
-            {(!searchTerm && selectedCategory === 'all' && selectedStatus === 'all') && (
+            {!searchTerm && selectedCategory === "all" && selectedStatus === "all" && (
               <button
                 onClick={onCreateNew}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -487,10 +486,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left">
-                    <button
-                      onClick={handleSelectAll}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
+                    <button onClick={handleSelectAll} className="text-gray-400 hover:text-gray-600">
                       {selectedArticles.length === filteredArticles.length ? (
                         <CheckSquare className="w-4 h-4" />
                       ) : (
@@ -534,7 +530,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
                       <div className="flex items-start space-x-4">
                         {article.imageUrl && (
                           <Image
-                            src={article.imageUrl}
+                            src={article.imageUrl || "/placeholder.svg"}
                             alt={article.title}
                             width={48}
                             height={48}
@@ -542,16 +538,15 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
-                            {article.title}
-                          </h4>
-                          <p className="text-sm text-gray-500 truncate">
-                            {article.excerpt}
-                          </p>
+                          <h4 className="text-sm font-medium text-gray-900 truncate">{article.title}</h4>
+                          <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
                           {article.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {article.tags.slice(0, 3).map((tag, index) => (
-                                <span key={index} className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded"
+                                >
                                   <Tag className="w-3 h-3 mr-1" />
                                   {tag}
                                 </span>
@@ -567,9 +562,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">{article.category}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(article)}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(article)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(article.updatedAt)}
                     </td>
@@ -581,13 +574,13 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
-                        
+
                         {showActions === article.id && (
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
                             <div className="py-1">
                               <button
                                 onClick={() => {
-                                  onEditArticle(article)
+                                  onEditArticle?.(article)
                                   setShowActions(null)
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -606,7 +599,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
                                 Duplikovat
                               </button>
                               <a
-                                href={`http://localhost:3002/preview/${article.id}`}
+                                href={`/aktuality/${article.id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

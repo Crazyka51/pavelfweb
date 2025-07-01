@@ -1,70 +1,46 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { Suspense } from "react"
-import GoogleAnalytics from "./components/GoogleAnalytics"
+import { Inter } from "next/font/google"
+import Header from "./components/Header"
+import Footer from "./components/Footer"
 import CookieBanner from "./components/CookieBanner"
+import CookieManager from "./components/CookieManager"
+import { GoogleAnalytics } from "./components/GoogleAnalytics"
+import StructuredData from "./components/StructuredData"
+import type React from "react"
+import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "Pavel Fišer - Webový vývojář a designér",
-  description: "Profesionální webové stránky, e-shopy a aplikace. Moderní design, rychlé načítání a SEO optimalizace.",
-  keywords: "webový vývojář, web design, e-shop, aplikace, SEO, Pavel Fišer",
-  authors: [{ name: "Pavel Fišer" }],
-  creator: "Pavel Fišer",
-  publisher: "Pavel Fišer",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL("https://pavelfiser.cz"),
-  alternates: {
-    canonical: "/",
-  },
+export const metadata = {
+  title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
+  description: "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
+  generator: "v0.dev",
+  metadataBase: new URL("https://fiserpavel.cz"),
   openGraph: {
-    title: "Pavel Fišer - Webový vývojář a designér",
-    description:
-      "Profesionální webové stránky, e-shopy a aplikace. Moderní design, rychlé načítání a SEO optimalizace.",
-    url: "https://pavelfiser.cz",
-    siteName: "Pavel Fišer",
-    locale: "cs_CZ",
-    type: "website",
+    title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
+    description: "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
+    url: "https://fiserpavel.cz",
+    siteName: "Pavel Fišer - Zastupitel MČ Praha 4",
     images: [
       {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Pavel Fišer - Webový vývojář a designér",
+        alt: "Bc. Pavel Fišer - Zastupitel MČ Praha 4",
       },
     ],
+    locale: "cs_CZ",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pavel Fišer - Webový vývojář a designér",
-    description:
-      "Profesionální webové stránky, e-shopy a aplikace. Moderní design, rychlé načítání a SEO optimalizace.",
+    title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
+    description: "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
     images: ["/og-image.svg"],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+  other: {
+    "facebook-domain-verification": "84zli94h1aqmrsxj4u3bgxzuum7kzd",
   },
-  verification: {
-    google: "google4f5dc87ffdafdc6a",
-  },
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -74,15 +50,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="cs" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Suspense fallback={<div>Loading...</div>}>
-            <GoogleAnalytics />
-            {children}
-            <CookieBanner />
-          </Suspense>
-          <Toaster />
-        </ThemeProvider>
+      <head>
+        <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
+      </head>
+      <body className={`${inter.className} min-h-screen bg-slate-900 text-gray-100 dark`}>
+        <Suspense fallback={null}>
+          <GoogleAnalytics />
+          <StructuredData
+            type="person"
+            title="Bc. Pavel Fišer"
+            description="Zastupitel MČ Praha 4 a manažer s vášní pro komunitní rozvoj"
+            url="https://fiserpavel.cz"
+            image="https://fiserpavel.cz/og-image.svg"
+          />
+        </Suspense>
+
+        <Header />
+        <main>{children}</main>
+        <Footer />
+
+        <Suspense fallback={null}>
+          <CookieBanner />
+          <CookieManager />
+        </Suspense>
       </body>
     </html>
   )
