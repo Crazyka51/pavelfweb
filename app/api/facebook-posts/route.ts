@@ -1,89 +1,85 @@
-import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
+import { NextResponse } from "next/server"
 
-// Force dynamic rendering pro API volání
-export const dynamic = 'force-dynamic'
+// Mock data pro Facebook příspěvky
+const mockFacebookPosts = [
+  {
+    id: "1",
+    message: "Nová cyklostezka na Praze 4 je hotová! 🚴‍♂️ Děkuji všem občanům za trpělivost během výstavby.",
+    created_time: "2024-01-15T10:30:00Z",
+    likes: { summary: { total_count: 45 } },
+    comments: { summary: { total_count: 12 } },
+    shares: { count: 8 },
+    permalink_url: "https://facebook.com/pavel.fiser/posts/1",
+    full_picture: "/placeholder.svg?height=400&width=600",
+  },
+  {
+    id: "2",
+    message:
+      "Setkání s občany ohledně rekonstrukce náměstí Míru proběhlo úspěšně. Vaše připomínky budou zapracovány do projektu.",
+    created_time: "2024-01-12T14:20:00Z",
+    likes: { summary: { total_count: 32 } },
+    comments: { summary: { total_count: 8 } },
+    shares: { count: 5 },
+    permalink_url: "https://facebook.com/pavel.fiser/posts/2",
+    full_picture: "/placeholder.svg?height=300&width=500",
+  },
+  {
+    id: "3",
+    message: "Nové kontejnery na tříděný odpad byly instalovány v lokalitě Pankrác. Děkuji za vaše podněty! ♻️",
+    created_time: "2024-01-10T09:15:00Z",
+    likes: { summary: { total_count: 28 } },
+    comments: { summary: { total_count: 6 } },
+    shares: { count: 3 },
+    permalink_url: "https://facebook.com/pavel.fiser/posts/3",
+    full_picture: "/placeholder.svg?height=350&width=550",
+  },
+]
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const limit = searchParams.get('limit') || '6'
-    const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID || '61574874071299'
+    // Zkusíme načíst reálná data z Facebook API
+    const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID
     const accessToken = process.env.FACEBOOK_ACCESS_TOKEN
-    const appSecret = process.env.FACEBOOK_APP_SECRET
 
-    // Pokud je nastaveno používání mock dat nebo chybí access token
-    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || !accessToken) {
-      const mockPosts = [
-        {
-          id: "1",
-          message: "Dnes jsem se zúčastnil jednání zastupitelstva MČ Praha 4. Projednávali jsme důležité otázky týkající se rozvoje naší čtvrti a zlepšení kvality života obyvatel.",
-          created_time: new Date().toISOString(),
-          permalink_url: "/61574874071299/posts/1",
-          type: "status",
-          reactions: { summary: { total_count: 15 } },
-          comments: { summary: { total_count: 3 } }
-        },
-        {
-          id: "2",
-          message: "Nová hřiště pro děti v našem obvodu jsou téměř hotová! Už se těším, až si na nich děti budou moci hrát. Investice do dětských hřišť je investice do budoucnosti naší komunity.",
-          created_time: new Date(Date.now() - 86400000).toISOString(),
-          permalink_url: "/61574874071299/posts/2",
-          type: "status",
-          reactions: { summary: { total_count: 28 } },
-          comments: { summary: { total_count: 7 } }
-        },
-        {
-          id: "3",
-          message: "Účastnil jsem se dnešního jednání o dopravě v Praze 4. Diskutovali jsme o nových cyklostezkách a zlepšení veřejné dopravy.",
-          created_time: new Date(Date.now() - 172800000).toISOString(),
-          permalink_url: "/61574874071299/posts/3",
-          type: "status",
-          reactions: { summary: { total_count: 12 } },
-          comments: { summary: { total_count: 5 } }
-        }
-      ]
-
-      return NextResponse.json({ 
-        data: mockPosts.slice(0, parseInt(limit)),
-        mock: true 
+    if (!pageId || !accessToken) {
+      console.log("Facebook API není nakonfigurováno, používám mock data")
+      return NextResponse.json({
+        data: mockFacebookPosts,
+        isMockData: true,
+        message: "Zobrazují se ukázková data - Facebook API není nakonfigurováno",
       })
     }
 
-    // Generování app_secret_proof pro bezpečnost
-    let appSecretProof = ''
-    if (appSecret && accessToken) {
-      appSecretProof = crypto
-        .createHmac('sha256', appSecret)
-        .update(accessToken)
-        .digest('hex')
-    }
+    // Pokus o načtení reálných dat
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&limit=10`,
+      { next: { revalidate: 300 } }, // Cache na 5 minut
+    )
 
-    // Produkční API volání
-    const fields = "id,message,story,created_time,permalink_url,full_picture,type,reactions.summary(total_count),comments.summary(total_count),shares"
-    
-    // Sestavení URL s app_secret_proof
-    let url = `https://graph.facebook.com/v18.0/${pageId}/posts?fields=${fields}&access_token=${accessToken}&limit=${limit}`
-    if (appSecretProof) {
-      url += `&appsecret_proof=${appSecretProof}`
-    }
-    
-    const response = await fetch(url, {
-      next: { revalidate: 300 } // Cache na 5 minut
-    })
-    
     if (!response.ok) {
-      throw new Error(`Facebook API chyba: ${response.status}`)
+      console.log("Facebook API chyba, používám mock data")
+      return NextResponse.json({
+        data: mockFacebookPosts,
+        isMockData: true,
+        message: "Zobrazují se ukázková data - problém s Facebook API",
+      })
     }
 
     const data = await response.json()
-    
-    return NextResponse.json(data)
+
+    return NextResponse.json({
+      data: data.data || mockFacebookPosts,
+      isMockData: false,
+      message: "Reálná data z Facebook",
+    })
   } catch (error) {
-    console.error('Chyba při načítání Facebook příspěvků:', error)
-    return NextResponse.json(
-      { error: 'Nepodařilo se načíst příspěvky z Facebooku' },
-      { status: 500 }
-    )
+    console.error("Facebook API error:", error)
+
+    // Fallback na mock data
+    return NextResponse.json({
+      data: mockFacebookPosts,
+      isMockData: true,
+      message: "Zobrazují se ukázková data - chyba při načítání z Facebook",
+    })
   }
 }

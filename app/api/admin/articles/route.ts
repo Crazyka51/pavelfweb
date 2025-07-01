@@ -1,97 +1,114 @@
 import { type NextRequest, NextResponse } from "next/server"
-import fs from "fs"
-import path from "path"
+import { requireAuth } from "@/lib/auth-utils"
+import { DataManager } from "@/lib/data-persistence"
 
-const ARTICLES_FILE = path.join(process.cwd(), "data", "articles.json")
-
-// Ensure data directory exists
-const dataDir = path.join(process.cwd(), "data")
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
+interface Article {
+  id: string
+  title: string
+  content: string
+  excerpt: string
+  category: string
+  tags: string[]
+  published: boolean
+  createdAt: string
+  updatedAt: string
+  imageUrl?: string
+  publishedAt?: string
 }
 
-// Initialize articles file if it doesn't exist
-if (!fs.existsSync(ARTICLES_FILE)) {
-  const initialArticles = [
-    {
-      id: "1",
-      title: "Vítejte v novém CMS systému",
-      content:
-        "<p>Tento článek byl vytvořen automaticky při inicializaci systému.</p><p>Můžete ho upravit nebo smazat a vytvořit své vlastní články.</p>",
-      excerpt: "Úvodní článek pro demonstraci CMS systému",
-      category: "Aktuality",
-      tags: ["cms", "úvod"],
-      published: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      imageUrl: "",
-    },
-  ]
-  fs.writeFileSync(ARTICLES_FILE, JSON.stringify(initialArticles, null, 2))
-}
-
-function readArticles() {
-  try {
-    const data = fs.readFileSync(ARTICLES_FILE, "utf8")
-    return JSON.parse(data)
-  } catch (error) {
-    return []
-  }
-}
-
-function writeArticles(articles: any[]) {
-  fs.writeFileSync(ARTICLES_FILE, JSON.stringify(articles, null, 2))
-}
-
-function verifyAuth(request: NextRequest) {
-  const authHeader = request.headers.get("authorization")
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.substring(7)
-  try {
-    const decoded = Buffer.from(token, "base64").toString()
-    const [username, timestamp] = decoded.split(":")
-    const tokenAge = Date.now() - Number.parseInt(timestamp)
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
-
-    return tokenAge <= maxAge
-  } catch (error) {
-    return false
-  }
-}
+const articlesManager = new DataManager<Article>("articles.json")
 
 export async function GET(request: NextRequest) {
-  if (!verifyAuth(request)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-  }
+  try {
+    requireAuth(request)
 
-  const articles = readArticles()
-  return NextResponse.json(articles)
+    const { searchParams } = new URL(request.url)
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const category = searchParams.get("category")
+    const published = searchParams.get("published")
+    const search = searchParams.get("search")
+
+    let articles = await articlesManager.read()
+
+    // Filtrování
+    if (category && category !== "all") {
+      articles = articles.filter((article) => article.category === category)
+    }
+
+    if (published !== null && published !== undefined) {
+      const isPublished = published === "true"
+      articles = articles.filter((article) => article.published === isPublished)
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase()
+      articles = articles.filter(
+        (article) =>
+          article.title.toLowerCase().includes(searchLower) ||
+          article.content.toLowerCase().includes(searchLower) ||
+          article.tags.some((tag) => tag.toLowerCase().includes(searchLower)),
+      )
+    }
+
+    // Řazení podle data vytvoření (nejnovější první)
+    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    // Paginace
+    const total = articles.length
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const paginatedArticles = articles.slice(startIndex, endIndex)
+
+    return NextResponse.json({
+      articles: paginatedArticles,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    })
+  } catch (error) {
+    console.error("Articles GET error:", error)
+    return NextResponse.json({ error: "Chyba při načítání článků" }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {
-  if (!verifyAuth(request)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-  }
-
   try {
-    const articleData = await request.json()
-    const articles = readArticles()
+    requireAuth(request)
 
-    const newArticle = {
-      id: Date.now().toString(),
-      ...articleData,
+    const articleData = await request.json()
+
+    // Validace povinných polí
+    if (!articleData.title || !articleData.content) {
+      return NextResponse.json({ error: "Název a obsah jsou povinné" }, { status: 400 })
+    }
+
+    // Vytvoření nového článku
+    const newArticle: Article = {
+      id: `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      title: articleData.title,
+      content: articleData.content,
+      excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
+      category: articleData.category || "Aktuality",
+      tags: articleData.tags || [],
+      published: articleData.published || false,
+      imageUrl: articleData.imageUrl,
+      publishedAt: articleData.publishedAt,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
-    articles.push(newArticle)
-    writeArticles(articles)
+    const savedArticle = await articlesManager.create(newArticle)
 
-    return NextResponse.json(newArticle, { status: 201 })
+    return NextResponse.json({
+      success: true,
+      article: savedArticle,
+    })
   } catch (error) {
-    return NextResponse.json({ message: "Error creating article" }, { status: 500 })
+    console.error("Articles POST error:", error)
+    return NextResponse.json({ error: "Chyba při vytváření článku" }, { status: 500 })
   }
 }

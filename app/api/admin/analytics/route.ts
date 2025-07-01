@@ -1,149 +1,305 @@
 import { type NextRequest, NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
+import { DataManager } from "@/lib/data-persistence"
 
-// Mock analytics data generator
-function generateMockAnalytics(range: string) {
-  const baseMultiplier = range === "7d" ? 1 : range === "30d" ? 4 : 12
-
-  return {
-    overview: {
-      users: Math.floor(1200 * baseMultiplier + Math.random() * 200),
-      sessions: Math.floor(1800 * baseMultiplier + Math.random() * 300),
-      pageviews: Math.floor(4300 * baseMultiplier + Math.random() * 500),
-      bounceRate: Math.round((40 + Math.random() * 20) * 10) / 10,
-      avgSessionDuration: Math.floor(180 + Math.random() * 60),
-      usersChange: Math.round((Math.random() * 30 - 10) * 10) / 10,
-      sessionsChange: Math.round((Math.random() * 25 - 5) * 10) / 10,
-      pageviewsChange: Math.round((Math.random() * 35 - 5) * 10) / 10,
-    },
-    topPages: [
-      {
-        path: "/",
-        views: Math.floor(1200 * baseMultiplier + Math.random() * 200),
-        change: Math.round((Math.random() * 20 - 5) * 10) / 10,
-      },
-      {
-        path: "/aktuality",
-        views: Math.floor(850 * baseMultiplier + Math.random() * 150),
-        change: Math.round((Math.random() * 15 - 8) * 10) / 10,
-      },
-      {
-        path: "/aktuality/nova-tramvajova-trat",
-        views: Math.floor(430 * baseMultiplier + Math.random() * 100),
-        change: Math.round((Math.random() * 25 + 5) * 10) / 10,
-      },
-      {
-        path: "/aktuality/komunitni-zahrada",
-        views: Math.floor(300 * baseMultiplier + Math.random() * 80),
-        change: Math.round((Math.random() * 20 - 2) * 10) / 10,
-      },
-      {
-        path: "/kontakt",
-        views: Math.floor(190 * baseMultiplier + Math.random() * 50),
-        change: Math.round((Math.random() * 10 - 5) * 10) / 10,
-      },
-    ],
-    devices: [
-      {
-        category: "Desktop",
-        users: Math.floor(680 * baseMultiplier + Math.random() * 100),
-        percentage: Math.round((55 + Math.random() * 10) * 10) / 10,
-      },
-      {
-        category: "Mobile",
-        users: Math.floor(430 * baseMultiplier + Math.random() * 80),
-        percentage: Math.round((35 + Math.random() * 8) * 10) / 10,
-      },
-      {
-        category: "Tablet",
-        users: Math.floor(120 * baseMultiplier + Math.random() * 30),
-        percentage: Math.round((10 + Math.random() * 5) * 10) / 10,
-      },
-    ],
-    countries: [
-      {
-        country: "Česká republika",
-        users: Math.floor(1080 * baseMultiplier + Math.random() * 150),
-        percentage: Math.round((87 + Math.random() * 5) * 10) / 10,
-      },
-      {
-        country: "Slovensko",
-        users: Math.floor(90 * baseMultiplier + Math.random() * 20),
-        percentage: Math.round((7 + Math.random() * 2) * 10) / 10,
-      },
-      {
-        country: "Německo",
-        users: Math.floor(35 * baseMultiplier + Math.random() * 10),
-        percentage: Math.round((2.5 + Math.random() * 1) * 10) / 10,
-      },
-      {
-        country: "Rakousko",
-        users: Math.floor(25 * baseMultiplier + Math.random() * 8),
-        percentage: Math.round((2 + Math.random() * 0.5) * 10) / 10,
-      },
-      {
-        country: "Ostatní",
-        users: Math.floor(15 * baseMultiplier + Math.random() * 5),
-        percentage: Math.round((1 + Math.random() * 0.5) * 10) / 10,
-      },
-    ],
-    sources: [
-      {
-        source: "Organic Search",
-        users: Math.floor(620 * baseMultiplier + Math.random() * 100),
-        percentage: Math.round((50 + Math.random() * 8) * 10) / 10,
-      },
-      {
-        source: "Direct",
-        users: Math.floor(370 * baseMultiplier + Math.random() * 80),
-        percentage: Math.round((30 + Math.random() * 6) * 10) / 10,
-      },
-      {
-        source: "Social Media",
-        users: Math.floor(150 * baseMultiplier + Math.random() * 40),
-        percentage: Math.round((12 + Math.random() * 4) * 10) / 10,
-      },
-      {
-        source: "Referral",
-        users: Math.floor(85 * baseMultiplier + Math.random() * 25),
-        percentage: Math.round((7 + Math.random() * 2) * 10) / 10,
-      },
-      {
-        source: "Email",
-        users: Math.floor(15 * baseMultiplier + Math.random() * 8),
-        percentage: Math.round((1 + Math.random() * 1) * 10) / 10,
-      },
-    ],
+interface AnalyticsData {
+  pageViews: {
+    total: number
+    thisMonth: number
+    thisWeek: number
+    today: number
+    trend: number // percentage change from previous period
+  }
+  visitors: {
+    total: number
+    unique: number
+    returning: number
+    newVisitors: number
+  }
+  topPages: Array<{
+    path: string
+    title: string
+    views: number
+    uniqueViews: number
+  }>
+  referrers: Array<{
+    source: string
+    visits: number
+    percentage: number
+  }>
+  devices: {
+    desktop: number
+    mobile: number
+    tablet: number
+  }
+  locations: Array<{
+    country: string
+    city?: string
+    visits: number
+  }>
+  timeRange: {
+    from: string
+    to: string
   }
 }
 
-export async function GET(request: NextRequest) {
+interface AnalyticsEvent {
+  id: string
+  type: "pageview" | "click" | "form_submit" | "download"
+  path: string
+  title?: string
+  userId?: string
+  sessionId: string
+  userAgent: string
+  referrer?: string
+  timestamp: string
+  metadata?: Record<string, any>
+}
+
+const analyticsManager = new DataManager<AnalyticsEvent>("analytics-events.json")
+
+// Helper function to verify admin token
+function verifyAdminToken(request: NextRequest): boolean {
+  const authHeader = request.headers.get("Authorization")
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false
+  }
+
+  const token = authHeader.substring(7)
   try {
-    // Verify authentication
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const decoded = Buffer.from(token, "base64").toString()
+    const [username, timestamp] = decoded.split(":")
+    const tokenAge = Date.now() - Number.parseInt(timestamp)
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
 
-    const token = authHeader.substring(7)
+    return tokenAge <= maxAge
+  } catch (error) {
+    return false
+  }
+}
 
-    try {
-      jwt.verify(token, process.env.ADMIN_TOKEN || "fallback-secret")
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
-    }
+// Helper function to get date ranges
+function getDateRanges() {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
 
-    // Get time range from query params
+  return {
+    today,
+    thisWeek,
+    thisMonth,
+    lastMonth,
+    lastMonthEnd,
+  }
+}
+
+// Helper function to detect device type from user agent
+function getDeviceType(userAgent: string): "desktop" | "mobile" | "tablet" {
+  const ua = userAgent.toLowerCase()
+
+  if (ua.includes("tablet") || ua.includes("ipad")) {
+    return "tablet"
+  }
+
+  if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
+    return "mobile"
+  }
+
+  return "desktop"
+}
+
+// Helper function to extract referrer domain
+function getReferrerDomain(referrer: string): string {
+  if (!referrer) return "Direct"
+
+  try {
+    const url = new URL(referrer)
+    return url.hostname
+  } catch {
+    return "Unknown"
+  }
+}
+
+// GET - Get analytics data
+export async function GET(request: NextRequest) {
+  if (!verifyAdminToken(request)) {
+    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  }
+
+  try {
     const { searchParams } = new URL(request.url)
-    const range = searchParams.get("range") || "7d"
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
 
-    // In a real implementation, you would fetch data from Google Analytics API
-    // For now, we'll return mock data
-    const analyticsData = generateMockAnalytics(range)
+    const events = await analyticsManager.read()
+    const dateRanges = getDateRanges()
+
+    // Filter events by date range if provided
+    let filteredEvents = events
+    if (from && to) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+      filteredEvents = events.filter((event) => {
+        const eventDate = new Date(event.timestamp)
+        return eventDate >= fromDate && eventDate <= toDate
+      })
+    }
+
+    // Calculate page views
+    const pageViewEvents = filteredEvents.filter((event) => event.type === "pageview")
+    const totalPageViews = pageViewEvents.length
+
+    const thisMonthViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisMonth).length
+
+    const thisWeekViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisWeek).length
+
+    const todayViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.today).length
+
+    // Calculate last month views for trend
+    const lastMonthViews = pageViewEvents.filter((event) => {
+      const eventDate = new Date(event.timestamp)
+      return eventDate >= dateRanges.lastMonth && eventDate <= dateRanges.lastMonthEnd
+    }).length
+
+    const trend = lastMonthViews > 0 ? ((thisMonthViews - lastMonthViews) / lastMonthViews) * 100 : 0
+
+    // Calculate unique visitors
+    const uniqueSessions = new Set(pageViewEvents.map((event) => event.sessionId))
+    const uniqueVisitors = uniqueSessions.size
+
+    // Calculate top pages
+    const pageStats: Record<string, { views: number; uniqueViews: Set<string>; title?: string }> = {}
+
+    pageViewEvents.forEach((event) => {
+      if (!pageStats[event.path]) {
+        pageStats[event.path] = {
+          views: 0,
+          uniqueViews: new Set(),
+          title: event.title,
+        }
+      }
+      pageStats[event.path].views++
+      pageStats[event.path].uniqueViews.add(event.sessionId)
+    })
+
+    const topPages = Object.entries(pageStats)
+      .map(([path, stats]) => ({
+        path,
+        title: stats.title || path,
+        views: stats.views,
+        uniqueViews: stats.uniqueViews.size,
+      }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10)
+
+    // Calculate referrers
+    const referrerStats: Record<string, number> = {}
+    pageViewEvents.forEach((event) => {
+      const domain = getReferrerDomain(event.referrer || "")
+      referrerStats[domain] = (referrerStats[domain] || 0) + 1
+    })
+
+    const totalReferrerVisits = Object.values(referrerStats).reduce((sum, count) => sum + count, 0)
+    const referrers = Object.entries(referrerStats)
+      .map(([source, visits]) => ({
+        source,
+        visits,
+        percentage: totalReferrerVisits > 0 ? (visits / totalReferrerVisits) * 100 : 0,
+      }))
+      .sort((a, b) => b.visits - a.visits)
+      .slice(0, 10)
+
+    // Calculate device types
+    const deviceStats = { desktop: 0, mobile: 0, tablet: 0 }
+    pageViewEvents.forEach((event) => {
+      const deviceType = getDeviceType(event.userAgent)
+      deviceStats[deviceType]++
+    })
+
+    // Mock location data (would need IP geolocation service in real implementation)
+    const locations = [
+      { country: "Czech Republic", city: "Prague", visits: Math.floor(uniqueVisitors * 0.6) },
+      { country: "Czech Republic", city: "Brno", visits: Math.floor(uniqueVisitors * 0.2) },
+      { country: "Slovakia", city: "Bratislava", visits: Math.floor(uniqueVisitors * 0.1) },
+      { country: "Germany", city: "Berlin", visits: Math.floor(uniqueVisitors * 0.05) },
+      { country: "Austria", city: "Vienna", visits: Math.floor(uniqueVisitors * 0.05) },
+    ]
+
+    const analyticsData: AnalyticsData = {
+      pageViews: {
+        total: totalPageViews,
+        thisMonth: thisMonthViews,
+        thisWeek: thisWeekViews,
+        today: todayViews,
+        trend: Math.round(trend * 100) / 100,
+      },
+      visitors: {
+        total: uniqueVisitors,
+        unique: uniqueVisitors,
+        returning: Math.floor(uniqueVisitors * 0.3), // Mock data
+        newVisitors: Math.floor(uniqueVisitors * 0.7), // Mock data
+      },
+      topPages,
+      referrers,
+      devices: deviceStats,
+      locations,
+      timeRange: {
+        from: from || dateRanges.thisMonth.toISOString(),
+        to: to || new Date().toISOString(),
+      },
+    }
 
     return NextResponse.json(analyticsData)
   } catch (error) {
-    console.error("Analytics API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error fetching analytics:", error)
+    return NextResponse.json(
+      {
+        message: "Chyba při načítání analytických dat",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
+  }
+}
+
+// POST - Track analytics event
+export async function POST(request: NextRequest) {
+  try {
+    const eventData = await request.json()
+    const { type, path, title, userId, sessionId, referrer, metadata } = eventData
+
+    if (!type || !path || !sessionId) {
+      return NextResponse.json({ message: "Chybí povinné údaje (type, path, sessionId)" }, { status: 400 })
+    }
+
+    const userAgent = request.headers.get("user-agent") || ""
+
+    const newEvent: AnalyticsEvent = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      type,
+      path,
+      title,
+      userId,
+      sessionId,
+      userAgent,
+      referrer,
+      timestamp: new Date().toISOString(),
+      metadata,
+    }
+
+    await analyticsManager.create(newEvent)
+
+    return NextResponse.json({ message: "Událost byla zaznamenána", eventId: newEvent.id }, { status: 201 })
+  } catch (error) {
+    console.error("Error tracking analytics event:", error)
+    return NextResponse.json(
+      {
+        message: "Chyba při zaznamenávání události",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }

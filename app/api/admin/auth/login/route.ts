@@ -1,40 +1,72 @@
 import { type NextRequest, NextResponse } from "next/server"
+import jwt from "jsonwebtoken"
 
-const ADMIN_USERS = [
-  {
-    username: "pavel",
-    password: "test123",
-    displayName: "Pavel Fišer",
-  },
-  {
-    username: "admin",
-    password: "admin123",
-    displayName: "Administrátor",
-  },
-]
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+
+// Přihlašovací údaje - v produkci by měly být v databázi s hashovanými hesly
+const ADMIN_CREDENTIALS = {
+  pavel: "test123",
+  admin: "admin123",
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
-    // Find user
-    const user = ADMIN_USERS.find((u) => u.username === username && u.password === password)
+    console.log("🔐 Login attempt:", {
+      username,
+      hasPassword: !!password,
+      timestamp: new Date().toISOString(),
+    })
 
-    if (!user) {
-      return NextResponse.json({ message: "Neplatné přihlašovací údaje" }, { status: 401 })
+    // Validace vstupních dat
+    if (!username || !password) {
+      console.log("❌ Missing credentials")
+      return NextResponse.json({ error: "Uživatelské jméno a heslo jsou povinné" }, { status: 400 })
     }
 
-    // Generate simple token (in production use JWT)
-    const token = Buffer.from(`${username}:${Date.now()}`).toString("base64")
+    // Kontrola přihlašovacích údajů
+    const expectedPassword = ADMIN_CREDENTIALS[username as keyof typeof ADMIN_CREDENTIALS]
+    if (!expectedPassword || expectedPassword !== password) {
+      console.log("❌ Invalid credentials for user:", username)
+      return NextResponse.json({ error: "Neplatné přihlašovací údaje" }, { status: 401 })
+    }
 
-    return NextResponse.json({
-      token,
+    // Vytvoření JWT tokenu
+    const tokenPayload = {
+      username,
+      role: "admin",
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hodin
+    }
+
+    const token = jwt.sign(tokenPayload, JWT_SECRET)
+
+    console.log("✅ Login successful for user:", username)
+
+    // Vytvoření response s HTTP-only cookie
+    const response = NextResponse.json({
+      success: true,
+      message: "Přihlášení úspěšné",
       user: {
-        username: user.username,
-        displayName: user.displayName,
+        username,
+        role: "admin",
+        displayName: username === "pavel" ? "Pavel Fišer" : "Administrátor",
       },
     })
+
+    // Nastavení HTTP-only cookie
+    response.cookies.set("admin-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60, // 24 hodin
+      path: "/",
+    })
+
+    return response
   } catch (error) {
-    return NextResponse.json({ message: "Chyba serveru" }, { status: 500 })
+    console.error("💥 Login error:", error)
+    return NextResponse.json({ error: "Chyba při přihlašování" }, { status: 500 })
   }
 }
