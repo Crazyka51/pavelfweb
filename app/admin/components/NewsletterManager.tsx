@@ -55,66 +55,64 @@ export default function NewsletterManager({ token }: NewsletterManagerProps) {
 
   const loadData = async () => {
     try {
-      // Načtení skutečných dat z API
-      const [subscribersResponse, campaignsResponse] = await Promise.all([
-        fetch('/api/admin/newsletter', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch('/api/admin/newsletter/campaigns', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-      ])
+      // Mock data pro demonstraci
+      const mockSubscribers: Subscriber[] = [
+        {
+          id: "1",
+          email: "jan.novak@email.cz",
+          subscribedAt: "2024-01-15T10:30:00Z",
+          isActive: true,
+          source: "web",
+        },
+        {
+          id: "2",
+          email: "marie.svoboda@email.cz",
+          subscribedAt: "2024-01-20T14:15:00Z",
+          isActive: true,
+          source: "web",
+        },
+        {
+          id: "3",
+          email: "petr.dvorak@email.cz",
+          subscribedAt: "2024-02-01T09:45:00Z",
+          isActive: true,
+          source: "manual",
+        },
+      ]
 
-      if (subscribersResponse.ok) {
-        const subscribersData = await subscribersResponse.json()
-        setSubscribers(subscribersData)
-      } else {
-        console.error('Chyba při načítání odběratelů:', subscribersResponse.status)
-        // Fallback - prázdné pole místo mock dat
-        setSubscribers([])
-      }
+      const mockCampaigns: Campaign[] = [
+        {
+          id: "1",
+          subject: "Měsíční přehled aktualit",
+          content: "<p>Vážení občané, zde je přehled nejdůležitějších událostí...</p>",
+          sentAt: "2024-02-15T10:00:00Z",
+          recipientCount: 127,
+          openRate: 68.5,
+          clickRate: 12.3,
+        },
+        {
+          id: "2",
+          subject: "Nové dopravní opatření",
+          content: "<p>Informujeme vás o nových dopravních opatřeních...</p>",
+          sentAt: "2024-02-01T15:30:00Z",
+          recipientCount: 125,
+          openRate: 72.1,
+          clickRate: 15.8,
+        },
+      ]
 
-      if (campaignsResponse.ok) {
-        const campaignsData = await campaignsResponse.json()
-        setCampaigns(campaignsData)
-      } else {
-        console.error('Chyba při načítání kampaní:', campaignsResponse.status)
-        // Fallback - prázdné pole místo mock dat
-        setCampaigns([])
-      }
-
-      // Výpočet statistik na základě skutečných dat
-      const activeSubscribers = subscribers.filter(sub => sub.isActive)
-      const thisMonth = new Date()
-      thisMonth.setMonth(thisMonth.getMonth() - 1)
-      
-      const subscribersThisMonth = activeSubscribers.filter(sub => 
-        new Date(sub.subscribedAt) >= thisMonth
-      )
-
+      setSubscribers(mockSubscribers)
+      setCampaigns(mockCampaigns)
       setStats({
-        total: subscribers.length,
-        thisMonth: subscribersThisMonth.length,
-        activeSubscribers: activeSubscribers.length,
-        totalCampaigns: campaigns.length,
+        total: mockSubscribers.length,
+        thisMonth: mockSubscribers.filter(
+          (s) => new Date(s.subscribedAt) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        ).length,
+        activeSubscribers: mockSubscribers.filter((s) => s.isActive).length,
+        totalCampaigns: mockCampaigns.length,
       })
     } catch (error) {
-      console.error('Error loading newsletter data:', error)
-      // V případě chyby nastavíme prázdná data
-      setSubscribers([])
-      setCampaigns([])
-      setStats({
-        total: 0,
-        thisMonth: 0,
-        activeSubscribers: 0,
-        totalCampaigns: 0,
-      })
+      console.error("Error loading newsletter data:", error)
     } finally {
       setIsLoading(false)
     }
@@ -133,30 +131,9 @@ export default function NewsletterManager({ token }: NewsletterManagerProps) {
   }
 
   const handleUnsubscribe = async (email: string) => {
-    if (!confirm(`Opravdu chcete odhlásit ${email} z newsletteru?`)) return
-
-    try {
-      const response = await fetch('/api/admin/newsletter', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email })
-      })
-
-      if (response.ok) {
-        // Odstranit z lokálního stavu
-        setSubscribers(prev => prev.map(sub => 
-          sub.email === email ? { ...sub, isActive: false } : sub
-        ))
-        alert('Odběratel byl úspěšně odhlášen')
-      } else {
-        throw new Error('Chyba při odhlašování')
-      }
-    } catch (error) {
-      console.error('Error unsubscribing:', error)
-      alert('Chyba při odhlašování odběratele')
+    if (confirm(`Opravdu chcete odhlásit ${email}?`)) {
+      setSubscribers((prev) => prev.filter((s) => s.email !== email))
+      alert("Odběratel byl odhlášen")
     }
   }
 

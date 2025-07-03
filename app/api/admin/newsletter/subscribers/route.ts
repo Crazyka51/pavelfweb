@@ -1,8 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
-import { NewsletterService } from "@/lib/services/newsletter-service"
+import { DataManager } from "@/lib/data-persistence"
 
-const newsletterService = new NewsletterService()
+interface Subscriber {
+  id: string
+  email: string
+  name?: string
+  active: boolean
+  source: string
+  subscribedAt: string
+  preferences: {
+    newsletter: boolean
+    announcements: boolean
+    events: boolean
+  }
+}
+
+const subscribersManager = new DataManager<Subscriber>("newsletter-subscribers.json")
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,11 +29,14 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search")
     const source = searchParams.get("source")
 
-    // Získání všech odběratelů
-    const activeOnly = active === "true" || active === null
-    let subscribers = await newsletterService.getSubscribers(!activeOnly)
+    let subscribers = await subscribersManager.read()
 
-    // Client-side filtrování (v budoucnu přesunout do DB)
+    // Filtrování
+    if (active !== null && active !== undefined) {
+      const isActive = active === "true"
+      subscribers = subscribers.filter((sub) => sub.active === isActive)
+    }
+
     if (source && source !== "all") {
       subscribers = subscribers.filter((sub) => sub.source === source)
     }
@@ -28,9 +45,12 @@ export async function GET(request: NextRequest) {
       const searchLower = search.toLowerCase()
       subscribers = subscribers.filter(
         (sub) =>
-          sub.email.toLowerCase().includes(searchLower)
+          sub.email.toLowerCase().includes(searchLower) || (sub.name && sub.name.toLowerCase().includes(searchLower)),
       )
     }
+
+    // Řazení podle data přihlášení (nejnovější první)
+    subscribers.sort((a, b) => new Date(b.subscribedAt).getTime() - new Date(a.subscribedAt).getTime())
 
     // Paginace
     const total = subscribers.length
@@ -41,8 +61,8 @@ export async function GET(request: NextRequest) {
     // Statistiky
     const stats = {
       total: subscribers.length,
-      active: subscribers.filter((s) => s.is_active).length,
-      inactive: subscribers.filter((s) => !s.is_active).length,
+      active: subscribers.filter((s) => s.active).length,
+      inactive: subscribers.filter((s) => !s.active).length,
       sources: subscribers.reduce(
         (acc, sub) => {
           acc[sub.source] = (acc[sub.source] || 0) + 1
@@ -76,31 +96,39 @@ export async function POST(request: NextRequest) {
 
     // Validace
     if (!subscriberData.email) {
-      return NextResponse.json({ error: "Email je povinný" }, { status: 400 })
+      return NextResponse.json({ error: "E-mail je povinný" }, { status: 400 })
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(subscriberData.email)) {
-      return NextResponse.json({ error: "Neplatný formát emailu" }, { status: 400 })
+    // Kontrola duplicity
+    const existingSubscribers = await subscribersManager.read()
+    const existingSubscriber = existingSubscribers.find((s) => s.email === subscriberData.email)
+
+    if (existingSubscriber) {
+      return NextResponse.json({ error: "Tento e-mail je již registrován" }, { status: 400 })
     }
 
-    try {
-      const savedSubscriber = await newsletterService.subscribeEmail(
-        subscriberData.email,
-        subscriberData.source || "admin"
-      )
-
-      return NextResponse.json({
-        success: true,
-        subscriber: savedSubscriber,
-      })
-    } catch (error: any) {
-      // Duplicitní email
-      if (error.message.includes("duplicate") || error.message.includes("unique")) {
-        return NextResponse.json({ error: "Email je již registrován" }, { status: 409 })
-      }
-      throw error
+    // Vytvoření nového odběratele
+    const newSubscriber: Subscriber = {
+      id: `subscriber_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      email: subscriberData.email,
+      name: subscriberData.name,
+      active: subscriberData.active !== false,
+      source: subscriberData.source || "admin",
+      subscribedAt: new Date().toISOString(),
+      preferences: {
+        newsletter: true,
+        announcements: true,
+        events: true,
+        ...subscriberData.preferences,
+      },
     }
+
+    const savedSubscriber = await subscribersManager.create(newSubscriber)
+
+    return NextResponse.json({
+      success: true,
+      subscriber: savedSubscriber,
+    })
   } catch (error) {
     console.error("Subscribers POST error:", error)
     return NextResponse.json({ error: "Chyba při vytváření odběratele" }, { status: 500 })

@@ -1,21 +1,8 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import {
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  Copy,
-  Tag,
-  MoreVertical,
-  Plus,
-  Download,
-  CheckSquare,
-  Square,
-  FileText,
-} from "lucide-react"
-import Image from "next/image"
+import { useState, useEffect } from 'react'
+import { Search, Plus, Edit2, Trash2, Eye, Filter, Calendar, Tag, User, FileText } from 'lucide-react'
+import ArticleEditor from './ArticleEditor'
 
 interface Article {
   id: string
@@ -34,335 +21,210 @@ interface Article {
 interface ArticleManagerProps {
   onEditArticle?: (article: Article) => void
   onCreateNew?: () => void
-  token?: string
 }
 
-export default function ArticleManager({ onEditArticle, onCreateNew, token }: ArticleManagerProps) {
+export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleManagerProps) {
   const [articles, setArticles] = useState<Article[]>([])
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedArticles, setSelectedArticles] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<"updated" | "created" | "title">("updated")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [categories, setCategories] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showActions, setShowActions] = useState<string | null>(null)
-
-  const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
-
-  const loadArticles = useCallback(async () => {
-    try {
-      const adminToken = localStorage.getItem("adminToken")
-      const response = await fetch("/api/admin/articles", {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setArticles(data)
-      } else if (response.status === 401) {
-        console.error("Unauthorized access - token may be invalid")
-      }
-    } catch (error) {
-      console.error("Error loading articles:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const filterArticles = useCallback(() => {
-    let filtered = [...articles]
-
-    // Text search
-    if (searchTerm.trim()) {
-      const search = searchTerm.toLowerCase()
-      filtered = filtered.filter(
-        (article) =>
-          article.title.toLowerCase().includes(search) ||
-          article.excerpt.toLowerCase().includes(search) ||
-          article.content.toLowerCase().includes(search) ||
-          article.tags.some((tag) => tag.toLowerCase().includes(search)),
-      )
-    }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((article) => article.category === selectedCategory)
-    }
-
-    // Status filter
-    if (selectedStatus !== "all") {
-      switch (selectedStatus) {
-        case "published":
-          filtered = filtered.filter((article) => article.published && !article.publishedAt)
-          break
-        case "draft":
-          filtered = filtered.filter((article) => !article.published && !article.publishedAt)
-          break
-        case "scheduled":
-          filtered = filtered.filter((article) => article.publishedAt)
-          break
-      }
-    }
-
-    // Sorting
-    filtered.sort((a, b) => {
-      let compareValue = 0
-
-      switch (sortBy) {
-        case "title":
-          compareValue = a.title.localeCompare(b.title)
-          break
-        case "created":
-          compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          break
-        case "updated":
-        default:
-          compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-          break
-      }
-
-      return sortOrder === "asc" ? compareValue : -compareValue
-    })
-
-    setFilteredArticles(filtered)
-  }, [articles, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [showPublished, setShowPublished] = useState<'all' | 'published' | 'unpublished'>('all')
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const articlesPerPage = 10
 
   useEffect(() => {
     loadArticles()
-  }, [loadArticles])
+    loadCategories()
+  }, [])
 
-  useEffect(() => {
-    filterArticles()
-  }, [filterArticles])
+  const loadArticles = async () => {
+    setIsLoading(true)
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/articles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
 
-  const handleSelectAll = () => {
-    if (selectedArticles.length === filteredArticles.length) {
-      setSelectedArticles([])
+      if (response.ok) {
+        const data = await response.json()
+        setArticles(data.data || [])
+      } else {
+        console.error('Failed to load articles')
+        setArticles([])
+      }
+    } catch (error) {
+      console.error('Error loading articles:', error)
+      setArticles([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadCategories = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/categories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data.categories || ['Obecné', 'Technologie', 'Design', 'Business'])
+      } else {
+        // Fallback categories
+        setCategories(['Obecné', 'Technologie', 'Design', 'Business'])
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+      // Fallback categories
+      setCategories(['Obecné', 'Technologie', 'Design', 'Business'])
+    }
+  }
+
+  const handleEditArticle = (article: Article) => {
+    if (onEditArticle) {
+      onEditArticle(article)
     } else {
-      setSelectedArticles(filteredArticles.map((article) => article.id))
+      setEditingArticle(article)
+      setShowEditor(true)
     }
   }
 
-  const handleSelectArticle = (articleId: string) => {
-    setSelectedArticles((prev) =>
-      prev.includes(articleId) ? prev.filter((id) => id !== articleId) : [...prev, articleId],
-    )
-  }
-
-  const handleBulkDelete = async () => {
-    if (selectedArticles.length === 0) {
-      alert("Nejprve vyberte články ke smazání")
-      return
-    }
-
-    if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
-      try {
-        const adminToken = localStorage.getItem("adminToken")
-        for (const articleId of selectedArticles) {
-          const response = await fetch(`/api/admin/articles/${articleId}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${adminToken}`,
-            },
-          })
-
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(`Chyba při mazání článku ${articleId}: ${errorData.message}`)
-          }
-        }
-        await loadArticles()
-        setSelectedArticles([])
-        alert("Články byly úspěšně smazány")
-      } catch (error) {
-        console.error("Error deleting articles:", error)
-        alert(`Chyba při mazání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
-      }
+  const handleCreateNew = () => {
+    if (onCreateNew) {
+      onCreateNew()
+    } else {
+      setEditingArticle(null)
+      setShowEditor(true)
     }
   }
 
-  const handleBulkPublish = async () => {
-    if (selectedArticles.length === 0) return
-
+  const handleSaveArticle = async (articleData: Partial<Article>) => {
     try {
-      const adminToken = localStorage.getItem("adminToken")
-      for (const articleId of selectedArticles) {
-        const article = articles.find((a) => a.id === articleId)
-        if (article) {
-          await fetch(`/api/admin/articles/${articleId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${adminToken}`,
-            },
-            body: JSON.stringify({ ...article, published: true, publishedAt: undefined }),
-          })
-        }
-      }
-      await loadArticles()
-      setSelectedArticles([])
-      alert("Články byly úspěšně publikovány")
-    } catch (error) {
-      console.error("Error publishing articles:", error)
-      alert("Chyba při publikování článků")
-    }
-  }
+      const token = localStorage.getItem('adminToken')
+      const url = editingArticle 
+        ? `/api/articles/${editingArticle.id}` 
+        : '/api/articles'
+      const method = editingArticle ? 'PUT' : 'POST'
 
-  const handleBulkUnpublish = async () => {
-    if (selectedArticles.length === 0) return
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(articleData)
+      })
 
-    try {
-      const adminToken = localStorage.getItem("adminToken")
-      for (const articleId of selectedArticles) {
-        const article = articles.find((a) => a.id === articleId)
-        if (article) {
-          await fetch(`/api/admin/articles/${articleId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${adminToken}`,
-            },
-            body: JSON.stringify({ ...article, published: false, publishedAt: undefined }),
-          })
-        }
+      if (response.ok) {
+        await loadArticles() // Reload articles
+        setShowEditor(false)
+        setEditingArticle(null)
+      } else {
+        const errorData = await response.json()
+        alert(`Chyba při ukládání: ${errorData.error || 'Neznámá chyba'}`)
       }
-      await loadArticles()
-      setSelectedArticles([])
-      alert("Články byly převedeny na koncepty")
     } catch (error) {
-      console.error("Error unpublishing articles:", error)
-      alert("Chyba při převádění na koncepty")
+      console.error('Error saving article:', error)
+      alert('Chyba při ukládání článku')
     }
   }
 
   const handleDeleteArticle = async (articleId: string) => {
-    if (confirm("Opravdu chcete smazat tento článek?")) {
-      try {
-        const adminToken = localStorage.getItem("adminToken")
-        await fetch(`/api/admin/articles/${articleId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-          },
-        })
-        await loadArticles()
-        alert("Článek byl úspěšně smazán")
-      } catch (error) {
-        console.error("Error deleting article:", error)
-        alert("Chyba při mazání článku")
-      }
-    }
-  }
+    if (!confirm('Opravdu chcete smazat tento článek?')) return
 
-  const handleDuplicateArticle = async (article: Article) => {
     try {
-      const adminToken = localStorage.getItem("adminToken")
-      const newArticle = {
-        ...article,
-        id: undefined,
-        title: `${article.title} (kopie)`,
-        published: false,
-        publishedAt: undefined,
-        createdAt: undefined,
-        updatedAt: undefined,
-      }
-
-      const response = await fetch("/api/admin/articles", {
-        method: "POST",
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch(`/api/articles/${articleId}`, {
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: JSON.stringify(newArticle),
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       if (response.ok) {
-        await loadArticles()
-        alert("Článek byl úspěšně duplikován")
+        await loadArticles() // Reload articles
+      } else {
+        alert('Chyba při mazání článku')
       }
     } catch (error) {
-      console.error("Error duplicating article:", error)
-      alert("Chyba při duplikování článku")
+      console.error('Error deleting article:', error)
+      alert('Chyba při mazání článku')
     }
   }
 
-  const exportArticles = () => {
-    const dataStr = JSON.stringify(filteredArticles, null, 2)
-    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
-
-    const exportFileDefaultName = `articles_${new Date().toISOString().split("T")[0]}.json`
-
-    const linkElement = document.createElement("a")
-    linkElement.setAttribute("href", dataUri)
-    linkElement.setAttribute("download", exportFileDefaultName)
-    linkElement.click()
+  const handleCancel = () => {
+    setShowEditor(false)
+    setEditingArticle(null)
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("cs-CZ", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  // Filter articles based on search and filters
+  const filteredArticles = articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = !selectedCategory || article.category === selectedCategory
+    const matchesPublished = showPublished === 'all' || 
+                           (showPublished === 'published' && article.published) ||
+                           (showPublished === 'unpublished' && !article.published)
+    
+    return matchesSearch && matchesCategory && matchesPublished
+  })
 
-  const getStatusBadge = (article: Article) => {
-    if (article.publishedAt) {
-      return (
-        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Naplánováno</span>
-      )
-    } else if (article.published) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>
-    } else {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Koncept</span>
-    }
+  // Pagination
+  const totalPages = Math.ceil(filteredArticles.length / articlesPerPage)
+  const startIndex = (currentPage - 1) * articlesPerPage
+  const paginatedArticles = filteredArticles.slice(startIndex, startIndex + articlesPerPage)
+
+  if (showEditor) {
+    return (
+      <ArticleEditor
+        article={editingArticle}
+        categories={categories}
+        onSave={handleSaveArticle}
+        onCancel={handleCancel}
+      />
+    )
   }
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-64"></div>
-          <div className="h-12 bg-gray-200 rounded"></div>
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-          ))}
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-4 lg:p-8 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Správa článků</h2>
+          <h1 className="text-2xl font-bold text-gray-900">Správa článků</h1>
           <p className="text-gray-600 mt-1">
-            Celkem {articles.length} článků • Zobrazeno {filteredArticles.length}
+            Vytvářejte a spravujte články pro váš web
           </p>
         </div>
-        <div className="flex gap-2 mt-4 sm:mt-0">
-          <button
-            onClick={exportArticles}
-            className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </button>
-          <button
-            onClick={onCreateNew}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nový článek
-          </button>
-        </div>
+        <button
+          onClick={handleCreateNew}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Nový článek
+        </button>
       </div>
 
       {/* Filters */}
@@ -376,7 +238,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
               placeholder="Hledat články..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -384,251 +246,452 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Všechny kategorie</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
+            <option value="">Všechny kategorie</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
 
-          {/* Status filter */}
+          {/* Published filter */}
           <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={showPublished}
+            onChange={(e) => setShowPublished(e.target.value as any)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="all">Všechny stavy</option>
-            <option value="published">Publikováno</option>
-            <option value="draft">Koncepty</option>
-            <option value="scheduled">Naplánováno</option>
+            <option value="all">Všechny</option>
+            <option value="published">Publikované</option>
+            <option value="unpublished">Nepublikované</option>
           </select>
 
-          {/* Sort */}
-          <select
-            value={`${sortBy}-${sortOrder}`}
-            onChange={(e) => {
-              const [field, order] = e.target.value.split("-")
-              setSortBy(field as "updated" | "created" | "title")
-              setSortOrder(order as "asc" | "desc")
-            }}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="updated-desc">Nejnovější</option>
-            <option value="updated-asc">Nejstarší</option>
-            <option value="title-asc">Název A-Z</option>
-            <option value="title-desc">Název Z-A</option>
-            <option value="created-desc">Datum vytvoření ↓</option>
-            <option value="created-asc">Datum vytvoření ↑</option>
-          </select>
+          {/* Stats */}
+          <div className="text-sm text-gray-600">
+            Zobrazeno: {filteredArticles.length} z {articles.length} článků
+          </div>
         </div>
       </div>
 
-      {/* Bulk actions */}
-      {selectedArticles.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-blue-900">Vybráno {selectedArticles.length} článků</span>
-              <button onClick={() => setSelectedArticles([])} className="text-sm text-blue-600 hover:text-blue-700">
-                Zrušit výběr
-              </button>
+      {/* Articles list */}
+      <div className="bg-white rounded-lg shadow-sm border">
+        {paginatedArticles.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="text-gray-400 mb-4">
+              <FileText className="w-12 h-12 mx-auto" />
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleBulkPublish}
-                className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-              >
-                Publikovat
-              </button>
-              <button
-                onClick={handleBulkUnpublish}
-                className="px-3 py-1 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
-              >
-                Koncept
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              >
-                Smazat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Articles table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        {filteredArticles.length === 0 ? (
-          <div className="p-12 text-center">
-            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Žádné články nenalezeny</h3>
-            <p className="text-gray-500 mb-6">
-              {searchTerm || selectedCategory !== "all" || selectedStatus !== "all"
-                ? "Zkuste změnit filtry nebo vyhledávací dotaz."
-                : "Zatím nemáte žádné články. Vytvořte svůj první článek!"}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Žádné články</h3>
+            <p className="text-gray-600">
+              {articles.length === 0 ? 'Zatím nemáte žádné články.' : 'Nenalezeny žádné články odpovídající filtrům.'}
             </p>
-            {!searchTerm && selectedCategory === "all" && selectedStatus === "all" && (
+            {articles.length === 0 && (
               <button
-                onClick={onCreateNew}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={handleCreateNew}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Vytvořit první článek
               </button>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left">
-                    <button onClick={handleSelectAll} className="text-gray-400 hover:text-gray-600">
-                      {selectedArticles.length === filteredArticles.length ? (
-                        <CheckSquare className="w-4 h-4" />
-                      ) : (
-                        <Square className="w-4 h-4" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Článek
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kategorie
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stav
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Aktualizováno
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Akce
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredArticles.map((article) => (
-                  <tr key={article.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleSelectArticle(article.id)}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        {selectedArticles.includes(article.id) ? (
-                          <CheckSquare className="w-4 h-4 text-blue-600" />
-                        ) : (
-                          <Square className="w-4 h-4" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-start space-x-4">
-                        {article.imageUrl && (
-                          <Image
-                            src={article.imageUrl || "/placeholder.svg"}
-                            alt={article.title}
-                            width={48}
-                            height={48}
-                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">{article.title}</h4>
-                          <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
-                          {article.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {article.tags.slice(0, 3).map((tag, index) => (
-                                <span
-                                  key={index}
-                                  className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded"
-                                >
-                                  <Tag className="w-3 h-3 mr-1" />
-                                  {tag}
-                                </span>
-                              ))}
-                              {article.tags.length > 3 && (
-                                <span className="text-xs text-gray-400">+{article.tags.length - 3}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
+          <>
+            <div className="divide-y divide-gray-200">
+              {paginatedArticles.map((article) => (
+                <div key={article.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-medium text-gray-900">{article.title}</h3>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          article.published 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {article.published ? 'Publikováno' : 'Koncept'}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{article.category}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(article)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(article.updatedAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowActions(showActions === article.id ? null : article.id)}
-                          className="text-gray-400 hover:text-gray-600 p-1"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-
-                        {showActions === article.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                            <div className="py-1">
-                              <button
-                                onClick={() => {
-                                  onEditArticle?.(article)
-                                  setShowActions(null)
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <Edit className="w-4 h-4 mr-3" />
-                                Upravit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleDuplicateArticle(article)
-                                  setShowActions(null)
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <Copy className="w-4 h-4 mr-3" />
-                                Duplikovat
-                              </button>
-                              <a
-                                href={`/aktuality/${article.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setShowActions(null)}
-                              >
-                                <Eye className="w-4 h-4 mr-3" />
-                                Náhled
-                              </a>
-                              <button
-                                onClick={() => {
-                                  handleDeleteArticle(article.id)
-                                  setShowActions(null)
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-4 h-4 mr-3" />
-                                Smazat
-                              </button>
-                            </div>
+                      
+                      <p className="text-gray-600 mb-3 line-clamp-2">{article.excerpt}</p>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Tag className="w-4 h-4" />
+                          {article.category}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(article.createdAt).toLocaleDateString('cs-CZ')}
+                        </div>
+                        {article.tags && article.tags.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <span>{article.tags.join(', ')}</span>
                           </div>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => handleEditArticle(article)}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Upravit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteArticle(article.id)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Smazat"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      {article.published && (
+                        <a
+                          href={`/aktuality/${article.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Zobrazit"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="p-6 border-t border-gray-200">
+                <div className="flex justify-center items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Předchozí
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 text-sm rounded-lg ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Další
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
+      </div>
+    </div>
+  )
+}
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    totalPageViews: 0,
+    uniqueVisitors: 0,
+    averageSessionDuration: '0:00',
+    bounceRate: '0%',
+    realTimeUsers: 0,
+    conversions: 0,
+    pageLoadTime: '0s',
+    topPages: [],
+    geographicData: [],
+    deviceData: [],
+    trafficSources: []
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [dateRange, setDateRange] = useState('7d')
+
+  useEffect(() => {
+    loadAnalyticsData()
+  }, [dateRange])
+
+  const loadAnalyticsData = async () => {
+    setIsLoading(true)
+    
+    try {
+      const token = localStorage.getItem('admin_token')
+      const response = await fetch(`/api/admin/analytics?dateRange=${dateRange}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAnalyticsData(data)
+      } else {
+        console.error('Failed to load analytics data')
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+          <p className="text-gray-600 mt-1">
+            Přehled návštěvnosti a chování uživatelů na vašich stránkách
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <select 
+            value={dateRange} 
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="7d">Posledních 7 dní</option>
+            <option value="30d">Posledních 30 dní</option>
+            <option value="90d">Posledních 90 dní</option>
+          </select>
+          <button 
+            onClick={loadAnalyticsData}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Obnovit
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Celkem zobrazení</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.totalPageViews.toLocaleString()}</p>
+            </div>
+            <Eye className="h-6 w-6 text-blue-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Unikátní návštěvníci</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.uniqueVisitors.toLocaleString()}</p>
+            </div>
+            <Users className="h-6 w-6 text-green-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Aktuálně online</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.realTimeUsers}</p>
+            </div>
+            <Globe className="h-6 w-6 text-red-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Průměrná relace</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.averageSessionDuration}</p>
+            </div>
+            <Clock className="h-6 w-6 text-purple-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Bounce Rate</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.bounceRate}</p>
+            </div>
+            <TrendingUp className="h-6 w-6 text-orange-600" />
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-600">Konverze</p>
+              <p className="text-xl font-bold text-gray-900">{analyticsData.conversions}</p>
+            </div>
+            <BarChart3 className="h-6 w-6 text-indigo-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Charts and Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Pages */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Nejnavštěvovanější stránky
+          </h3>
+          <div className="space-y-3">
+            {analyticsData.topPages.map((page, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-900">{page.title}</span>
+                  <span className="text-xs text-gray-500">{page.page}</span>
+                </div>
+                <span className="font-semibold text-blue-600">{page.views.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Geographic Data */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            Návštěvníci podle zemí
+          </h3>
+          <div className="space-y-3">
+            {analyticsData.geographicData.map((country, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">{country.country}</span>
+                <span className="font-semibold">{country.visitors.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Device Data */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4">Zařízení návštěvníků</h3>
+          <div className="space-y-3">
+            {analyticsData.deviceData.map((device, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">{device.device}</span>
+                <span className="font-semibold">{device.percentage}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Traffic Sources */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4">Zdroje návštěvnosti</h3>
+          <div className="space-y-3">
+            {analyticsData.trafficSources.map((source, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">{source.source}</span>
+                <span className="font-semibold">{source.percentage}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm">Rychlost načítání</p>
+              <p className="text-2xl font-bold">{analyticsData.pageLoadTime}</p>
+            </div>
+            <Clock className="h-8 w-8 text-blue-200" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm">Celkové konverze</p>
+              <p className="text-2xl font-bold">{analyticsData.conversions}</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-green-200" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm">Uživatelé nyní</p>
+              <p className="text-2xl font-bold">{analyticsData.realTimeUsers}</p>
+            </div>
+            <Globe className="h-8 w-8 text-purple-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* Info Box */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-blue-100 rounded-full p-3">
+            <BarChart3 className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-blue-900 text-lg">Google Analytics 4 Integration</h4>
+            <p className="text-blue-700 mt-2">
+              Administrace je připojena k Google Analytics a zobrazuje aktuální metriky z vašich stránek. 
+              Data se aktualizují automaticky a poskytují přehled o návštěvnosti a chování uživatelů.
+            </p>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="font-medium text-blue-800">Tracking ID:</span>
+                <br />
+                <span className="text-blue-600 font-mono">G-Z5Y3C04P25</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Posledně aktualizováno:</span>
+                <br />
+                <span className="text-blue-600">Před chvílí</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Stav:</span>
+                <br />
+                <span className="text-green-600 font-medium">✓ Aktivní</span>
+              </div>
+              <div>
+                <span className="font-medium text-blue-800">Období:</span>
+                <br />
+                <span className="text-blue-600">{dateRange === '7d' ? '7 dní' : dateRange === '30d' ? '30 dní' : '90 dní'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

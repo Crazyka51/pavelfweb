@@ -25,7 +25,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
+  const [editingArticle, setEditingArticle] = useState<any>(null)
   const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
 
   useEffect(() => {
@@ -78,27 +78,27 @@ export default function AdminPage() {
 
   const handleSectionChange = (section: string) => {
     setCurrentSection(section as AdminSection)
-    setEditingArticleId(null)
+    setEditingArticle(null)
   }
 
   const handleCreateNew = () => {
-    setEditingArticleId(null)
+    setEditingArticle(null)
     setCurrentSection("new-article")
   }
 
   const handleEditArticle = (article: any) => {
-    setEditingArticleId(article.id)
+    setEditingArticle(article)
     setCurrentSection("new-article")
   }
 
   const handleBackToDashboard = () => {
     setCurrentSection("dashboard")
-    setEditingArticleId(null)
+    setEditingArticle(null)
   }
 
   const handleBackToArticles = () => {
     setCurrentSection("articles")
-    setEditingArticleId(null)
+    setEditingArticle(null)
   }
 
   if (isLoading) {
@@ -122,9 +122,10 @@ export default function AdminPage() {
       case "new-article":
         return (
           <ArticleEditor
-            articleId={editingArticleId}
-            onBack={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            onSave={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+            article={editingArticle}
+            categories={["Aktuálně", "Život v Praze 4", "Doprava", "Životní prostředí", "Kultura", "Sport", "Ostatní"]}
+            onSave={handleBackToArticles}
+            onCancel={editingArticle ? handleBackToArticles : handleBackToDashboard}
           />
         )
       case "categories":

@@ -1,14 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
-import { ArticleService } from "@/lib/services/article-service"
+import { DataManager } from "@/lib/data-persistence"
 
-const articleService = new ArticleService()
+interface Article {
+  id: string
+  title: string
+  content: string
+  excerpt: string
+  category: string
+  tags: string[]
+  published: boolean
+  createdAt: string
+  updatedAt: string
+  imageUrl?: string
+  publishedAt?: string
+}
+
+const articlesManager = new DataManager<Article>("articles.json")
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     requireAuth(request)
 
-    const article = await articleService.getArticleById(params.id)
+    const article = await articlesManager.findById(params.id)
 
     if (!article) {
       return NextResponse.json({ error: "Článek nenalezen" }, { status: 404 })
@@ -27,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const updates = await request.json()
 
-    const updatedArticle = await articleService.updateArticle(params.id, updates)
+    const updatedArticle = await articlesManager.update(params.id, updates)
 
     if (!updatedArticle) {
       return NextResponse.json({ error: "Článek nenalezen" }, { status: 404 })
@@ -47,7 +61,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   try {
     requireAuth(request)
 
-    const deleted = await articleService.deleteArticle(params.id)
+    const deleted = await articlesManager.delete(params.id)
 
     if (!deleted) {
       return NextResponse.json({ error: "Článek nenalezen" }, { status: 404 })

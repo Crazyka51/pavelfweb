@@ -1,7 +1,39 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { NewsletterService } from "@/lib/services/newsletter-service"
+import { DataManager } from "@/lib/data-persistence"
 
-const newsletterService = new NewsletterService()
+interface Campaign {
+  id: string
+  name: string
+  subject: string
+  content: string
+  htmlContent: string
+  textContent?: string
+  templateId?: string
+  status: "draft" | "scheduled" | "sending" | "sent" | "failed"
+  scheduledAt?: string
+  sentAt?: string
+  recipientCount: number
+  openCount: number
+  clickCount: number
+  bounceCount: number
+  unsubscribeCount: number
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  tags?: string[]
+  segmentId?: string
+}
+
+interface CampaignStats {
+  openRate: number
+  clickRate: number
+  bounceRate: number
+  unsubscribeRate: number
+}
+
+const campaignManager = new DataManager<Campaign>("newsletter-campaigns.json", {
+  validateData: (data) => Array.isArray(data) && data.every((campaign) => campaign.id && campaign.subject),
+})
 
 // Helper function to verify admin token
 function verifyAdminToken(request: NextRequest): boolean {
