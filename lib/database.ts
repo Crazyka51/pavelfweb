@@ -1,11 +1,11 @@
 import { neon } from '@neondatabase/serverless';
 
-if (!process.env.NEON_DATABASE_URL) {
-  throw new Error('NEON_DATABASE_URL environment variable is not set');
+if (!process.env.STORAGE_URL) {
+  throw new Error('STORAGE_URL environment variable is not set');
 }
 
 // Create Neon SQL client
-export const sql = neon(process.env.NEON_DATABASE_URL);
+export const sql = neon(process.env.STORAGE_URL);
 
 // Database connection health check
 export async function checkDatabaseConnection(): Promise<boolean> {
