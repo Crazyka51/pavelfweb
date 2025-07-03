@@ -46,39 +46,12 @@ export default function RecentNews() {
     } catch (error) {
       console.error('Error loading articles:', error)
       setError('Nepodařilo se načíst nejnovější články')
-      // Fallback - mock data pro případ, že CMS není dostupný
-      setArticles(getMockArticles())
+      // Místo mock dat zobrazíme chybovou zprávu
+      setArticles([])
     } finally {
       setIsLoading(false)
     }
   }
-
-  const getMockArticles = (): Article[] => [
-    {
-      id: '1',
-      title: 'Nová cyklostezka v Praze 4',
-      excerpt: 'Dokončili jsme další úsek cyklostezky, který propojuje centrum s okrajovými částmi městské části.',
-      content: '',
-      category: 'Doprava',
-      tags: ['doprava', 'cyklostezka', 'investice'],
-      published: true,
-      createdAt: '2025-06-20T10:00:00Z',
-      updatedAt: '2025-06-20T10:00:00Z',
-      imageUrl: '/placeholder.jpg'
-    },
-    {
-      id: '2',
-      title: 'Revitalizace parku Kamýk',
-      excerpt: 'Zahájili jsme rozsáhlou revitalizaci parku Kamýk, která přinese nové prvky pro odpočinek i sport.',
-      content: '',
-      category: 'Životní prostředí',
-      tags: ['park', 'revitalizace', 'životní prostředí'],
-      published: true,
-      createdAt: '2025-06-18T14:30:00Z',
-      updatedAt: '2025-06-18T14:30:00Z',
-      imageUrl: '/placeholder.jpg'
-    }
-  ]
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
@@ -226,7 +199,23 @@ export default function RecentNews() {
           ))}
         </div>
 
-        {articles.length === 0 && !error && (
+        {error && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-red-400" />
+            </div>
+            <p className="text-red-600 text-lg font-medium mb-2">Chyba při načítání článků</p>
+            <p className="text-gray-500 text-sm">Zkuste obnovit stránku nebo se obraťte na administrátora.</p>
+            <button 
+              onClick={loadRecentArticles}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Zkusit znovu
+            </button>
+          </div>
+        )}
+
+        {!error && articles.length === 0 && !isLoading && (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-gray-400" />

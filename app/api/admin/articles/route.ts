@@ -1,22 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
-import { DataManager } from "@/lib/data-persistence"
+import { ArticleService } from "@/lib/services/article-service"
 
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
-
-const articlesManager = new DataManager<Article>("articles.json")
+const articleService = new ArticleService()
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,39 +15,38 @@ export async function GET(request: NextRequest) {
     const published = searchParams.get("published")
     const search = searchParams.get("search")
 
-    let articles = await articlesManager.read()
+    // Základní filtrování
+    const filters: any = {
+      limit,
+      offset: (page - 1) * limit
+    }
 
-    // Filtrování
     if (category && category !== "all") {
-      articles = articles.filter((article) => article.category === category)
+      filters.category = category
     }
 
     if (published !== null && published !== undefined) {
-      const isPublished = published === "true"
-      articles = articles.filter((article) => article.published === isPublished)
+      filters.published = published === "true"
     }
 
+    let articles = await articleService.getArticles(filters)
+
+    // Client-side filtrování pro vyhledávání (dokud nenastavíme full-text search)
     if (search) {
       const searchLower = search.toLowerCase()
       articles = articles.filter(
         (article) =>
           article.title.toLowerCase().includes(searchLower) ||
           article.content.toLowerCase().includes(searchLower) ||
-          article.tags.some((tag) => tag.toLowerCase().includes(searchLower)),
+          (article.tags && article.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)))
       )
     }
 
-    // Řazení podle data vytvoření (nejnovější první)
-    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-    // Paginace
-    const total = articles.length
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedArticles = articles.slice(startIndex, endIndex)
+    // Získání celkového počtu pro paginaci
+    const total = articles.length // Zjednodušení - v produkci by bylo lepší počítat v DB
 
     return NextResponse.json({
-      articles: paginatedArticles,
+      articles,
       pagination: {
         page,
         limit,
@@ -86,22 +71,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Název a obsah jsou povinné" }, { status: 400 })
     }
 
-    // Vytvoření nového článku
-    const newArticle: Article = {
-      id: `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    // Příprava dat pro vytvoření článku
+    const newArticleData = {
       title: articleData.title,
       content: articleData.content,
       excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
       category: articleData.category || "Aktuality",
       tags: articleData.tags || [],
       published: articleData.published || false,
-      imageUrl: articleData.imageUrl,
-      publishedAt: articleData.publishedAt,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      image_url: articleData.imageUrl,
+      published_at: articleData.publishedAt,
+      created_by: "admin" // Momentálně hardcoded, v budoucnu z auth tokenu
     }
 
-    const savedArticle = await articlesManager.create(newArticle)
+    const savedArticle = await articleService.createArticle(newArticleData)
 
     return NextResponse.json({
       success: true,
