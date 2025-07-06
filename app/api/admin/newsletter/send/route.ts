@@ -107,7 +107,11 @@ async function sendNewsletterEmail(
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   
   // Add unsubscribe link to content
-  const unsubscribeUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/newsletter?token=${unsubscribeToken}`
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
+  }
+  const unsubscribeUrl = `${baseUrl}/api/admin/newsletter?token=${unsubscribeToken}`
   
   const emailHtml = `
     <!DOCTYPE html>
@@ -355,19 +359,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const campaigns = await readCampaigns()
-    
+    const campaigns = await readCampaigns();
+    const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
     return NextResponse.json({
-      campaigns: campaigns.sort((a, b) => 
+      campaigns: safeCampaigns.sort((a, b) => 
         new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
       )
-    })
-
+    });
   } catch (error) {
-    console.error('Error fetching campaigns:', error)
+    console.error('Error fetching campaigns:', error);
     return NextResponse.json(
-      { message: 'Chyba při načítání kampaní' },
+      { campaigns: [] },
       { status: 500 }
-    )
+    );
   }
 }

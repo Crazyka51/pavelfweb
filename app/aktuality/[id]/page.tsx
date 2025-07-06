@@ -1,4 +1,7 @@
 import type { Metadata } from "next"
+
+// Tato stránka je vždy generována dynamicky (SSR), aby nedocházelo k chybám s fetch a cookies
+export const dynamic = "force-dynamic"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -22,9 +25,13 @@ interface Article {
 
 async function getArticle(id: string): Promise<Article | null> {
   try {
-    // Pokus o načtení z API
+    // Získání BASE_URL, v produkci musí být nastavena
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
+    }
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/public/articles`,
+      `${baseUrl}/api/admin/public/articles`,
       {
         cache: "no-store",
       },
@@ -197,8 +204,12 @@ export default async function ArticlePage({ params }: { params: { id: string } }
 
 export async function generateStaticParams() {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
+    }
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/public/articles`,
+      `${baseUrl}/api/admin/public/articles`,
       {
         cache: "no-store",
       },
