@@ -90,4 +90,8 @@ jobs:
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           branch: preview/pr-${{ github.event.number }}-${{ needs.setup.outputs.branch }}
+<<<<<<< HEAD
           api_key: ${{ secrets.NEON_API_KEY }}
+=======
+          api_key: ${{ secrets.NEON_API_KEY }}
+>>>>>>> f768c85 (Add Neon GitHub Actions workflow)
