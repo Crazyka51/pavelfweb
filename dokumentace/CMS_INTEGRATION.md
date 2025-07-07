@@ -126,7 +126,7 @@ GET /api/public/articles
    \`\`\`
    # CMS
    DATABASE_URL=postgresql://...
-   JWT_SECRET=your-secret-key
+   JWT_SECRET=c9f733d944090adced308bd6acbda326da8c2dcaf700988f866a096d0f3cce8d
    ADMIN_PASSWORD_HASH=bcrypt-hash
    
    # Hlavní web
