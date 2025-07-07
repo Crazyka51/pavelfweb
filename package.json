@@ -68,7 +68,7 @@
     "embla-carousel-react": "latest",
     "framer-motion": "latest",
     "fs": "latest",
-    "dotenv":"latest",
+    "dotenv":"^17.0.1",
     "immer": "latest",
     "input-otp": "latest",
     "jsonwebtoken": "latest",
