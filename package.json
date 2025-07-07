@@ -68,6 +68,7 @@
     "embla-carousel-react": "latest",
     "framer-motion": "latest",
     "fs": "latest",
+    "dotenv":"latest",
     "immer": "latest",
     "input-otp": "latest",
     "jsonwebtoken": "latest",
@@ -90,6 +91,7 @@
     "vaul": "latest",
     "zod": "latest",
     "zustand": "latest"
+    
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",
