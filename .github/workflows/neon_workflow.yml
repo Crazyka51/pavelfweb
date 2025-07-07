@@ -1,3 +1,5 @@
+name: Setup Neon Database
+
 on:
   push:
     branches:
@@ -6,12 +8,14 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: Production
+
     steps:
-      - name: Create Neon Branch
-        id: create_neon_branch
-        run: echo "db_url_with_pooler=your_database_url_here" >> $GITHUB_OUTPUT
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use DATABASE_URL from Secrets
+        run: echo "${{ secrets.DATABASE_URL }}"
 
       - name: Run Database Setup
         run: node scripts/complete-setup.js
-        env:
-          DATABASE_URL: "${{ steps.create_neon_branch.outputs.db_url_with_pooler }}"
