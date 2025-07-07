@@ -61,7 +61,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
       })
       if (response.ok) {
         const data = await response.json()
-        setArticles(data)
+        setArticles(data.articles)
       } else if (response.status === 401) {
         console.error("Unauthorized access - token may be invalid")
       }

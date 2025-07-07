@@ -66,7 +66,8 @@ export default function Dashboard() {
       })
 
       if (articlesResponse.ok) {
-        const articles: Article[] = await articlesResponse.json()
+        const data = await articlesResponse.json()
+        const articles: Article[] = data.articles
 
         // Calculate statistics
         const published = articles.filter((a) => a.published && !a.publishedAt)
