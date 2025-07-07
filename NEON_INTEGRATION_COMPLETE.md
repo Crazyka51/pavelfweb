@@ -4,7 +4,7 @@
 
 ### 🗄️ **Databáze Neon PostgreSQL**
 - ✅ Kompletní migrace z JSON souborů na Neon PostgreSQL
-- ✅ Nastavení `STORAGE_URL` environment variable
+- ✅ Nastavení `DATABASE_URL` environment variable
 - ✅ SSL připojení s `rejectUnauthorized: false`
 - ✅ UUID primární klíče pro všechny tabulky
 - ✅ Plně funkční CRUD operace
@@ -45,7 +45,7 @@
 ### 🔐 **Environment Variables**
 ```bash
 # .env.local - lokální development
-STORAGE_URL=postgres://neondb_owner:...@ep-gentle-haze-a29ewvo3-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgres://neondb_owner:...@ep-gentle-haze-a29ewvo3-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
 
 # GitHub Secrets (nutné nastavit)
 NEON_PROJECT_ID=your_project_id

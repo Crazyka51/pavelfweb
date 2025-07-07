@@ -6,12 +6,12 @@ const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
 async function setupDatabase() {
-  if (!process.env.STORAGE_URL) {
-    console.error('❌ STORAGE_URL environment variable is not set');
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL environment variable is not set');
     process.exit(1);
   }
 
-  const sql = neon(process.env.STORAGE_URL);
+  const sql = neon(process.env.DATABASE_URL);
 
   try {
     console.log('🔗 Testing database connection...');

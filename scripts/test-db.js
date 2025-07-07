@@ -2,10 +2,10 @@
 require('dotenv').config({ path: '.env.local' });
 const { Client } = require('pg');
 
-const connectionString = process.env.STORAGE_URL;
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error('❌ STORAGE_URL environment variable is not set');
+  console.error('❌ DATABASE_URL environment variable is not set');
   process.exit(1);
 }
 

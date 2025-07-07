@@ -10,6 +10,7 @@ import CategoryManager from "./components/CategoryManager"
 import NewsletterManager from "./components/NewsletterManager"
 import SettingsManager from "./components/SettingsManager"
 import AnalyticsManager from "./components/AnalyticsManager"
+import { articleService } from "../../lib/services/article-service"
 
 type AdminSection =
   | "dashboard"
@@ -21,16 +22,31 @@ type AdminSection =
   | "backup"
   | "settings"
 
+const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
+  const [article, setArticle] = useState<any | null>(null)
 
   useEffect(() => {
     checkAuthentication()
   }, [])
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (editingArticleId) {
+        const fetchedArticle = await articleService.getArticleById(editingArticleId)
+        setArticle(fetchedArticle)
+      } else {
+        setArticle(null)
+      }
+    }
+    fetchArticle()
+  }, [editingArticleId])
 
   const checkAuthentication = async () => {
     try {
@@ -122,9 +138,20 @@ export default function AdminPage() {
       case "new-article":
         return (
           <ArticleEditor
-            articleId={editingArticleId}
-            onBack={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            onSave={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+            article={article}
+            categories={categories}
+            onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+            onSave={async (articleData) => {
+              // Implement save logic here or call existing handlers
+              // For now, just log and go back
+              console.log("Saving article:", articleData)
+              if (editingArticleId) {
+                // Update article logic can be added here
+              } else {
+                // Create new article logic can be added here
+              }
+              (editingArticleId ? handleBackToArticles : handleBackToDashboard)()
+            }}
           />
         )
       case "categories":

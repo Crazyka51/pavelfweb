@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
+import { requireAuth, getAuthUser } from "@/lib/auth-utils"
 import { ArticleService } from "@/lib/services/article-service"
 
 const articleService = new ArticleService()
@@ -63,6 +63,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     requireAuth(request)
+    const user = getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
 
     const articleData = await request.json()
 
@@ -81,7 +88,7 @@ export async function POST(request: NextRequest) {
       published: articleData.published || false,
       image_url: articleData.imageUrl,
       published_at: articleData.publishedAt,
-      created_by: "admin" // Momentálně hardcoded, v budoucnu z auth tokenu
+      created_by: user.username // Use authenticated user's username
     }
 
     const savedArticle = await articleService.createArticle(newArticleData)
