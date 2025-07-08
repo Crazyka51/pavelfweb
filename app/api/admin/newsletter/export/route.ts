@@ -4,7 +4,7 @@ import path from "path"
 import jwt from "jsonwebtoken"
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), "data", "newsletter-subscribers.json")
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
 interface Subscriber {
   id: string

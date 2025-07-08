@@ -1,37 +1,58 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { NewsletterService } from "@/lib/services/newsletter-service"
+import { promises as fs } from 'fs'
+import path from 'path'
+import jwt from 'jsonwebtoken'
 
-const newsletterService = new NewsletterService()
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+const CAMPAIGNS_FILE = path.join(process.cwd(), 'data', 'newsletter-campaigns.json')
+
+interface Campaign {
+  id: string
+  subject: string
+  content: string
+  sentAt: string
+  recipientCount: number
+  openRate: number
+  clickRate: number
+  status?: 'draft' | 'sent' | 'scheduled'
+  createdAt?: string
+  updatedAt?: string
+}
 
 // Helper function to verify admin token
 function verifyAdminToken(request: NextRequest): boolean {
-  const authHeader = request.headers.get("Authorization")
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.substring(7)
   try {
-    const decoded = Buffer.from(token, "base64").toString()
-    const [username, timestamp] = decoded.split(":")
-    const tokenAge = Date.now() - Number.parseInt(timestamp)
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+    const authHeader = request.headers.get("Authorization")
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return false
+    }
 
-    return tokenAge <= maxAge
+    const token = authHeader.substring(7)
+    jwt.verify(token, JWT_SECRET)
+    return true
   } catch (error) {
     return false
   }
 }
 
-// Helper function to calculate campaign stats
-function calculateCampaignStats(campaign: Campaign): CampaignStats {
-  const { recipientCount, openCount, clickCount, bounceCount, unsubscribeCount } = campaign
+// Helper function to read campaigns
+async function readCampaigns(): Promise<Campaign[]> {
+  try {
+    const data = await fs.readFile(CAMPAIGNS_FILE, 'utf8')
+    return JSON.parse(data)
+  } catch (error) {
+    console.error('Error reading campaigns file:', error)
+    return []
+  }
+}
 
-  return {
-    openRate: recipientCount > 0 ? (openCount / recipientCount) * 100 : 0,
-    clickRate: recipientCount > 0 ? (clickCount / recipientCount) * 100 : 0,
-    bounceRate: recipientCount > 0 ? (bounceCount / recipientCount) * 100 : 0,
-    unsubscribeRate: recipientCount > 0 ? (unsubscribeCount / recipientCount) * 100 : 0,
+// Helper function to write campaigns
+async function writeCampaigns(campaigns: Campaign[]): Promise<void> {
+  try {
+    await fs.writeFile(CAMPAIGNS_FILE, JSON.stringify(campaigns, null, 2))
+  } catch (error) {
+    console.error('Error writing campaigns file:', error)
+    throw error
   }
 }
 
@@ -42,69 +63,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get("status")
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const search = searchParams.get("search") || ""
-
-    let campaigns = await campaignManager.read()
-
-    // Filter by status
-    if (status && status !== "all") {
-      campaigns = campaigns.filter((campaign) => campaign.status === status)
-    }
-
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase()
-      campaigns = campaigns.filter(
-        (campaign) =>
-          campaign.name.toLowerCase().includes(searchLower) ||
-          campaign.subject.toLowerCase().includes(searchLower) ||
-          campaign.tags?.some((tag) => tag.toLowerCase().includes(searchLower)),
-      )
-    }
-
+    const campaigns = await readCampaigns()
+    
     // Sort by creation date (newest first)
-    campaigns.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    campaigns.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
 
-    // Pagination
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedCampaigns = campaigns.slice(startIndex, endIndex)
-
-    // Add stats to each campaign
-    const campaignsWithStats = paginatedCampaigns.map((campaign) => ({
-      ...campaign,
-      stats: calculateCampaignStats(campaign),
-    }))
-
-    // Calculate overall stats
-    const totalCampaigns = campaigns.length
-    const sentCampaigns = campaigns.filter((c) => c.status === "sent")
-    const totalRecipients = sentCampaigns.reduce((sum, c) => sum + c.recipientCount, 0)
-    const totalOpens = sentCampaigns.reduce((sum, c) => sum + c.openCount, 0)
-    const totalClicks = sentCampaigns.reduce((sum, c) => sum + c.clickCount, 0)
-
-    const overallStats = {
-      totalCampaigns,
-      sentCampaigns: sentCampaigns.length,
-      totalRecipients,
-      averageOpenRate: totalRecipients > 0 ? (totalOpens / totalRecipients) * 100 : 0,
-      averageClickRate: totalRecipients > 0 ? (totalClicks / totalRecipients) * 100 : 0,
-    }
-
-    return NextResponse.json({
-      campaigns: campaignsWithStats,
-      pagination: {
-        page,
-        limit,
-        total: campaigns.length,
-        pages: Math.ceil(campaigns.length / limit),
-      },
-      stats: overallStats,
-    })
+    return NextResponse.json(campaigns)
   } catch (error) {
     console.error("Error fetching campaigns:", error)
     return NextResponse.json(
@@ -125,51 +89,34 @@ export async function POST(request: NextRequest) {
 
   try {
     const campaignData = await request.json()
-    const { name, subject, content, htmlContent, textContent, templateId, scheduledAt, tags, segmentId } = campaignData
+    const { subject, content, recipients } = campaignData
 
-    if (!name || !subject || !content) {
-      return NextResponse.json({ message: "Název, předmět a obsah kampaně jsou povinné" }, { status: 400 })
+    if (!subject || !content) {
+      return NextResponse.json({ message: "Předmět a obsah kampaně jsou povinné" }, { status: 400 })
     }
 
-    // Validate scheduled date if provided
-    if (scheduledAt) {
-      const scheduledDate = new Date(scheduledAt)
-      if (scheduledDate <= new Date()) {
-        return NextResponse.json({ message: "Datum plánování musí být v budoucnosti" }, { status: 400 })
-      }
-    }
+    const campaigns = await readCampaigns()
 
     const newCampaign: Campaign = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: name.trim(),
       subject: subject.trim(),
       content: content.trim(),
-      htmlContent: htmlContent || content,
-      textContent: textContent,
-      templateId,
-      status: scheduledAt ? "scheduled" : "draft",
-      scheduledAt,
-      recipientCount: 0,
-      openCount: 0,
-      clickCount: 0,
-      bounceCount: 0,
-      unsubscribeCount: 0,
+      sentAt: new Date().toISOString(),
+      recipientCount: recipients?.length || 0,
+      openRate: 0,
+      clickRate: 0,
+      status: 'sent',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      createdBy: "admin", // Would be actual user ID in real implementation
-      tags: tags || [],
-      segmentId,
     }
 
-    await campaignManager.create(newCampaign)
+    campaigns.push(newCampaign)
+    await writeCampaigns(campaigns)
 
     return NextResponse.json(
       {
         message: "Kampaň byla úspěšně vytvořena",
-        campaign: {
-          ...newCampaign,
-          stats: calculateCampaignStats(newCampaign),
-        },
+        campaign: newCampaign,
       },
       { status: 201 },
     )
@@ -184,3 +131,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const dynamic = "force-dynamic"

@@ -6,7 +6,7 @@ import { Resend } from 'resend'
 
 const SUBSCRIBERS_FILE = path.join(process.cwd(), 'data', 'newsletter-subscribers.json')
 const CAMPAIGNS_FILE = path.join(process.cwd(), 'data', 'newsletter-campaigns.json')
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
 // Initialize Resend (it will use mock if no API key provided)
 const resend = new Resend(process.env.RESEND_API_KEY || 'test-key')

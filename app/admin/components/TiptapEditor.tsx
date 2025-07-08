@@ -31,6 +31,7 @@ interface TiptapEditorProps {
 
 export default function TiptapEditor({ content, onChange, placeholder }: TiptapEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false, // Oprava SSR hydration warning
     extensions: [
       StarterKit,
       Link.configure({

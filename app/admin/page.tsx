@@ -10,7 +10,6 @@ import CategoryManager from "./components/CategoryManager"
 import NewsletterManager from "./components/NewsletterManager"
 import SettingsManager from "./components/SettingsManager"
 import AnalyticsManager from "./components/AnalyticsManager"
-import { articleService } from "../../lib/services/article-service"
 
 type AdminSection =
   | "dashboard"
@@ -39,8 +38,19 @@ export default function AdminPage() {
   useEffect(() => {
     const fetchArticle = async () => {
       if (editingArticleId) {
-        const fetchedArticle = await articleService.getArticleById(editingArticleId)
-        setArticle(fetchedArticle)
+        // Nahrazeno API voláním místo přímého database přístupu
+        try {
+          const response = await fetch(`/api/admin/articles/${editingArticleId}`)
+          if (response.ok) {
+            const fetchedArticle = await response.json()
+            setArticle(fetchedArticle)
+          } else {
+            setArticle(null)
+          }
+        } catch (error) {
+          console.error('Error fetching article:', error)
+          setArticle(null)
+        }
       } else {
         setArticle(null)
       }

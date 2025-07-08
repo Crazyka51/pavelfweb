@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
+import jwt from "jsonwebtoken"
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
 const SETTINGS_FILE = path.join(process.cwd(), "data", "cms-settings.json")
 
@@ -35,12 +38,8 @@ function verifyAdminToken(request: NextRequest): boolean {
 
   const token = authHeader.substring(7)
   try {
-    const decoded = Buffer.from(token, "base64").toString()
-    const [username, timestamp] = decoded.split(":")
-    const tokenAge = Date.now() - Number.parseInt(timestamp)
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
-
-    return tokenAge <= maxAge
+    jwt.verify(token, JWT_SECRET)
+    return true
   } catch (error) {
     return false
   }

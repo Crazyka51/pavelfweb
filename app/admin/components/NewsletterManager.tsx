@@ -73,37 +73,52 @@ export default function NewsletterManager({ token }: NewsletterManagerProps) {
 
       if (subscribersResponse.ok) {
         const subscribersData = await subscribersResponse.json()
-        setSubscribers(subscribersData)
+        // API vrací objekt s vnořeným polem subscribers
+        const subscribersList = subscribersData.subscribers || []
+        setSubscribers(subscribersList)
+        
+        // Výpočet statistik na základě skutečných dat
+        const activeSubscribers = subscribersList.filter((sub: Subscriber) => sub.isActive)
+        const thisMonth = new Date()
+        thisMonth.setMonth(thisMonth.getMonth() - 1)
+        
+        const subscribersThisMonth = activeSubscribers.filter((sub: Subscriber) => 
+          new Date(sub.subscribedAt) >= thisMonth
+        )
+
+        // Aktualizace stats po načtení kampaní
+        if (campaignsResponse.ok) {
+          const campaignsData = await campaignsResponse.json()
+          setCampaigns(campaignsData)
+          
+          setStats({
+            total: subscribersList.length,
+            thisMonth: subscribersThisMonth.length,
+            activeSubscribers: activeSubscribers.length,
+            totalCampaigns: campaignsData.length,
+          })
+        } else {
+          console.error('Chyba při načítání kampaní:', campaignsResponse.status)
+          setCampaigns([])
+          
+          setStats({
+            total: subscribersList.length,
+            thisMonth: subscribersThisMonth.length,
+            activeSubscribers: activeSubscribers.length,
+            totalCampaigns: 0,
+          })
+        }
       } else {
         console.error('Chyba při načítání odběratelů:', subscribersResponse.status)
-        // Fallback - prázdné pole místo mock dat
         setSubscribers([])
-      }
-
-      if (campaignsResponse.ok) {
-        const campaignsData = await campaignsResponse.json()
-        setCampaigns(campaignsData)
-      } else {
-        console.error('Chyba při načítání kampaní:', campaignsResponse.status)
-        // Fallback - prázdné pole místo mock dat
         setCampaigns([])
+        setStats({
+          total: 0,
+          thisMonth: 0,
+          activeSubscribers: 0,
+          totalCampaigns: 0,
+        })
       }
-
-      // Výpočet statistik na základě skutečných dat
-      const activeSubscribers = subscribers.filter(sub => sub.isActive)
-      const thisMonth = new Date()
-      thisMonth.setMonth(thisMonth.getMonth() - 1)
-      
-      const subscribersThisMonth = activeSubscribers.filter(sub => 
-        new Date(sub.subscribedAt) >= thisMonth
-      )
-
-      setStats({
-        total: subscribers.length,
-        thisMonth: subscribersThisMonth.length,
-        activeSubscribers: activeSubscribers.length,
-        totalCampaigns: campaigns.length,
-      })
     } catch (error) {
       console.error('Error loading newsletter data:', error)
       // V případě chyby nastavíme prázdná data

@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { DataManager } from "@/lib/data-persistence"
+import jwt from "jsonwebtoken"
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
 interface Category {
   id: string
@@ -16,9 +19,7 @@ interface Category {
   articleCount?: number
 }
 
-const categoryManager = new DataManager<Category>("categories.json", {
-  validateData: (data) => Array.isArray(data) && data.every((cat) => cat.id && cat.name && cat.slug),
-})
+const categoryManager = new DataManager<Category>("categories.json")
 
 // Helper function to verify admin token
 function verifyAdminToken(request: NextRequest): boolean {
@@ -29,12 +30,8 @@ function verifyAdminToken(request: NextRequest): boolean {
 
   const token = authHeader.substring(7)
   try {
-    const decoded = Buffer.from(token, "base64").toString()
-    const [username, timestamp] = decoded.split(":")
-    const tokenAge = Date.now() - Number.parseInt(timestamp)
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
-
-    return tokenAge <= maxAge
+    jwt.verify(token, JWT_SECRET)
+    return true
   } catch (error) {
     return false
   }
