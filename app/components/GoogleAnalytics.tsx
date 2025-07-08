@@ -55,9 +55,10 @@ export function GoogleAnalytics() {
 
 // Consent management
 export interface ConsentSettings {
+  necessary: boolean
   analytics: boolean
   marketing: boolean
-  functional: boolean
+  personalization: boolean
 }
 
 export function handleConsentChange(consent: ConsentSettings) {
@@ -68,15 +69,23 @@ export function handleConsentChange(consent: ConsentSettings) {
       window.gtag("consent", "update", {
         analytics_storage: consent.analytics ? "granted" : "denied",
         ad_storage: consent.marketing ? "granted" : "denied",
-        functionality_storage: consent.functional ? "granted" : "denied",
+        ad_user_data: consent.marketing ? "granted" : "denied",
+        ad_personalization: consent.personalization ? "granted" : "denied",
+        personalization_storage: consent.personalization ? "granted" : "denied",
+        functionality_storage: "granted", // Always granted for necessary cookies
+        security_storage: "granted", // Always granted for necessary cookies
       })
     }
   }
 }
 
-export function trackEvent(eventName: string, parameters?: Record<string, any>) {
+export function trackEvent(action: string, category: string, label?: string, value?: number) {
   if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", eventName, parameters)
+    window.gtag("event", action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+    })
   }
 }
 
@@ -87,7 +96,7 @@ export function shouldShowConsentBanner(): boolean {
 
 export function getCurrentConsentPreferences(): ConsentSettings {
   if (typeof window === "undefined") {
-    return { analytics: false, marketing: false, functional: true }
+    return { necessary: true, analytics: false, marketing: false, personalization: false }
   }
 
   const stored = localStorage.getItem("cookie-consent")
@@ -95,11 +104,11 @@ export function getCurrentConsentPreferences(): ConsentSettings {
     try {
       return JSON.parse(stored)
     } catch {
-      return { analytics: false, marketing: false, functional: true }
+      return { necessary: true, analytics: false, marketing: false, personalization: false }
     }
   }
 
-  return { analytics: false, marketing: false, functional: true }
+  return { necessary: true, analytics: false, marketing: false, personalization: false }
 }
 
 export default GoogleAnalytics

@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { DataManager } from "@/lib/data-persistence"
+import jwt from "jsonwebtoken"
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
 interface Subscriber {
   id: string
@@ -27,10 +30,15 @@ const subscribersManager = new DataManager<Subscriber>("newsletter-subscribers")
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization")
-    const token = authHeader?.replace("Bearer ", "")
+    const authHeader = request.headers.get("Authorization")
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    if (!token || token !== process.env.ADMIN_TOKEN) {
+    const token = authHeader.substring(7)
+    try {
+      jwt.verify(token, JWT_SECRET)
+    } catch (error) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -41,8 +49,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No items selected" }, { status: 400 })
     }
 
-    const subscribers = await subscribersManager.getAll()
-    const targetSubscribers = subscribers.filter((sub) => items.includes(sub.email))
+    const subscribers = await subscribersManager.read()
+    const targetSubscribers = subscribers.filter((sub: any) => items.includes(sub.email))
 
     if (targetSubscribers.length === 0) {
       return NextResponse.json({ error: "No matching subscribers found" }, { status: 404 })
