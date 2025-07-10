@@ -73,9 +73,27 @@ Administrace je plně funkční a připravena pro produkční nasazení na https
 5. Správa kategorií
 
 ## 📋 Poslední kroky
-1. Commit a push do main větve
-2. Deploy na Vercel
-3. Nastavit environment variables
-4. Test funkčnosti na produkci
+1. ✅ Opravena chyba při mazání článků (ArticleService.deleteArticle)
+2. Commit a push do main větve
+3. Deploy na Vercel
+4. Nastavit environment variables
+5. Test funkčnosti na produkci
 
 **Status: READY FOR DEPLOYMENT** ✅
+
+## 🐛 Rychlá oprava - Mazání článků
+
+### Problém identifikován:
+- Chyba "undefined" při mazání článků v administraci
+- ArticleService.deleteArticle() nevracel správný výsledek z PostgreSQL
+
+### Opraveno:
+- ✅ ArticleService: Přidán `RETURNING id` do DELETE query
+- ✅ Vylepšený error handling v ArticleService.deleteArticle()
+- ✅ Lepší chybové zprávy v ArticleManager
+- ✅ Přidáno logování pro debugging mazání
+
+### Testování:
+- Funkčnost mazání jednotlivých článků
+- Funkčnost bulk mazání více článků
+- Správné zobrazení chybových zpráv
