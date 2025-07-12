@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { Calendar, Tag, ArrowRight, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from "react"
+import { Calendar, Tag, ArrowRight, ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 interface Article {
   id: string
@@ -34,18 +34,21 @@ export default function RecentNews() {
 
   const loadRecentArticles = async () => {
     try {
-      // Načti všechny publikované články z admin API
-      const response = await fetch('/api/admin/public/articles')
-      
+      // Ask only for the first 3 published articles
+      const response = await fetch(
+        "/api/admin/public/articles?page=1&limit=3",
+        { next: { revalidate: 60 } }, // cache for 60 s
+      )
+
       if (!response.ok) {
-        throw new Error('Chyba při načítání článků')
+        throw new Error(`Chyba při načítání článků: ${response.status}`)
       }
-      
-      const articles: Article[] = await response.json()
-      setArticles(articles) // Zobraz všechny články
-    } catch (error) {
-      console.error('Error loading articles:', error)
-      setError('Nepodařilo se načíst články')
+
+      const data: ApiResponse = await response.json()
+      setArticles(data.articles)
+    } catch (err) {
+      console.error("Error loading articles:", err)
+      setError("Nepodařilo se načíst články")
       setArticles([])
     } finally {
       setIsLoading(false)
@@ -53,23 +56,23 @@ export default function RecentNews() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('cs-CZ', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("cs-CZ", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     })
   }
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      'Aktuality': 'bg-blue-100 text-blue-800 border border-blue-200',
-      'Městská politika': 'bg-purple-100 text-purple-800 border border-purple-200',
-      'Doprava': 'bg-green-100 text-green-800 border border-green-200',
-      'Životní prostředí': 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-      'Kultura': 'bg-pink-100 text-pink-800 border border-pink-200',
-      'Sport': 'bg-orange-100 text-orange-800 border border-orange-200'
+      Aktuality: "bg-blue-100 text-blue-800 border border-blue-200",
+      "Městská politika": "bg-purple-100 text-purple-800 border border-purple-200",
+      Doprava: "bg-green-100 text-green-800 border border-green-200",
+      "Životní prostředí": "bg-emerald-100 text-emerald-800 border border-emerald-200",
+      Kultura: "bg-pink-100 text-pink-800 border border-pink-200",
+      Sport: "bg-orange-100 text-orange-800 border border-orange-200",
     }
-    return colors[category] || 'bg-gray-100 text-gray-800 border border-gray-200'
+    return colors[category] || "bg-gray-100 text-gray-800 border border-gray-200"
   }
 
   if (isLoading) {
@@ -81,10 +84,13 @@ export default function RecentNews() {
             <div className="h-6 bg-gray-200 rounded w-128 mx-auto mb-8 animate-pulse"></div>
             <div className="w-24 h-1 bg-gray-200 mx-auto animate-pulse"></div>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-pulse"
+              >
                 <div className="h-48 bg-gray-200"></div>
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -99,7 +105,7 @@ export default function RecentNews() {
               </div>
             ))}
           </div>
-          
+
           <div className="text-center">
             <div className="h-12 bg-gray-200 rounded-lg w-64 mx-auto animate-pulse"></div>
           </div>
@@ -132,21 +138,26 @@ export default function RecentNews() {
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {articles.map((article) => (
-            <article key={article.id} className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group overflow-hidden">
+            <article
+              key={article.id}
+              className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group overflow-hidden"
+            >
               {article.imageUrl && (
                 <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={article.imageUrl} 
+                  <img
+                    src={article.imageUrl || "/placeholder.svg"}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 </div>
               )}
-              
+
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}
+                  >
                     {article.category}
                   </span>
                   <div className="flex items-center text-sm text-gray-500">
@@ -154,36 +165,37 @@ export default function RecentNews() {
                     {formatDate(article.updatedAt)}
                   </div>
                 </div>
-                
+
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight">
                   {article.title}
                 </h3>
-                
-                <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
-                  {article.excerpt}
-                </p>
-                
+
+                <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">{article.excerpt}</p>
+
                 {article.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-6">
                     {article.tags.slice(0, 3).map((tag, index) => (
-                      <span key={index} className="inline-flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
+                      <span
+                        key={index}
+                        className="inline-flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md"
+                      >
                         <Tag className="w-3 h-3 mr-1" />
                         {tag}
                       </span>
                     ))}
                   </div>
                 )}
-                
+
                 <div className="flex items-center justify-between">
-                  <Link 
+                  <Link
                     href={`/aktuality/${article.id}`}
                     className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                   >
                     Číst více
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
-                  
-                  <a 
+
+                  <a
                     href={`http://localhost:3002/preview/${article.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -205,7 +217,7 @@ export default function RecentNews() {
             </div>
             <p className="text-red-600 text-lg font-medium mb-2">Chyba při načítání článků</p>
             <p className="text-gray-500 text-sm">Zkuste obnovit stránku nebo se obraťte na administrátora.</p>
-            <button 
+            <button
               onClick={loadRecentArticles}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
@@ -226,7 +238,7 @@ export default function RecentNews() {
 
         {/* Link na všechny články */}
         <div className="text-center">
-          <Link 
+          <Link
             href="/aktuality"
             className="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           >

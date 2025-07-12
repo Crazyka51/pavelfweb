@@ -42,7 +42,7 @@
 ### **1. Environment Variables**
 Vyplňte skutečné hodnoty v `.env.local`:
 
-```env
+\`\`\`env
 # Facebook API Configuration
 NEXT_PUBLIC_FACEBOOK_PAGE_ID=your_actual_facebook_page_id
 FACEBOOK_ACCESS_TOKEN=your_actual_facebook_access_token
@@ -57,7 +57,7 @@ JWT_SECRET=your_secure_jwt_secret_key
 
 # Google Analytics
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-your_actual_ga_id
-```
+\`\`\`
 
 ### **2. Facebook API Setup**
 1. **Facebook Developer Console:** https://developers.facebook.com/
@@ -130,29 +130,29 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-your_actual_ga_id
 ## 🛠️ **POSTUP NASAZENÍ**
 
 ### **Krok 1: API Konfigurace (15 minut)**
-```bash
+\`\`\`bash
 # 1. Nakonfigurujte API klíče v .env.local
 # 2. Testujte lokálně: npm run dev
 # 3. Ověřte všechny funkce
-```
+\`\`\`
 
 ### **Krok 2: Build a Deploy (10 minut)**
-```bash
+\`\`\`bash
 # 1. Production build
 npm run build
 
 # 2. Deploy na Vercel/Netlify
 # 3. Nastavte environment variables na platformě
-```
+\`\`\`
 
 ### **Krok 3: Post-launch Testing (20 minut)**
-```bash
+\`\`\`bash
 # 1. Test contact form
 # 2. Test newsletter signup  
 # 3. Test admin panel
 # 4. Test mobile experience
 # 5. Verify Google Analytics
-```
+\`\`\`
 
 ---
 

@@ -1,30 +1,28 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
-import { Eye, EyeOff, Lock, User, AlertCircle, CheckCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
+import { Loader2 } from "lucide-react"
 
-interface LoginFormProps {
-  onLogin: (token: string) => void
-}
-
-export default function LoginForm({ onLogin }: LoginFormProps) {
+export default function LoginForm() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
+  const { toast } = useToast()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
-    setSuccess("")
 
     try {
-      console.log("Attempting login with:", { username, hasPassword: !!password })
-
       const response = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: {
@@ -33,132 +31,97 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         body: JSON.stringify({ username, password }),
       })
 
-      const data = await response.json()
-      console.log("Login response:", { status: response.status, data })
+      if (!response.ok) {
+        let errorData: { error?: string; message?: string } = {}
+        try {
+          // Attempt to parse JSON error, but be robust to non-JSON responses
+          errorData = await response.json()
+        } catch (jsonError) {
+          console.error("Failed to parse JSON error response:", jsonError)
+          // If parsing fails, use a generic error message
+          errorData.error = `Server error: ${response.statusText || "Unknown error"}`
+        }
 
-      if (response.ok && data.success) {
-        setSuccess("Přihlášení úspěšné! Přesměrovávám...")
-        setTimeout(() => {
-          onLogin("logged-in") // Token se ukládá v HTTP-only cookie
-        }, 1000)
-      } else {
-        setError(data.error || "Chyba při přihlašování")
+        toast({
+          title: "Chyba přihlášení",
+          description: errorData.error || errorData.message || "Nastala neznámá chyba.",
+          variant: "destructive",
+        })
+        return
       }
-    } catch (err) {
-      console.error("Login error:", err)
-      setError("Chyba připojení k serveru")
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: "Přihlášení úspěšné",
+          description: "Vítejte v administraci!",
+        })
+        router.push("/admin")
+      } else {
+        toast({
+          title: "Chyba přihlášení",
+          description: data.error || "Neplatné uživatelské jméno nebo heslo.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      toast({
+        title: "Chyba sítě",
+        description: "Nepodařilo se připojit k serveru. Zkuste to prosím znovu.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-              <Lock className="h-8 w-8 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900">Administrace</h2>
-            <p className="mt-2 text-gray-600">Přihlaste se do admin rozhraní</p>
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl">Přihlášení do administrace</CardTitle>
+        <CardDescription>Zadejte své uživatelské jméno a heslo pro přístup k CMS.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <form onSubmit={handleSubmit} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="username">Uživatelské jméno</Label>
+            <Input
+              id="username"
+              type="text"
+              placeholder="Pavel"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={isLoading}
+            />
           </div>
-
-          {/* Success message */}
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 text-green-800">
-                <CheckCircle className="w-5 h-5" />
-                <span className="font-medium">Úspěch</span>
-              </div>
-              <p className="text-green-700 mt-1 text-sm">{success}</p>
-            </div>
-          )}
-
-          {/* Error message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2 text-red-800">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Chyba přihlášení</span>
-              </div>
-              <p className="text-red-700 mt-1 text-sm">{error}</p>
-            </div>
-          )}
-
-          {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Uživatelské jméno
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="Zadejte uživatelské jméno"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Heslo
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="Zadejte heslo"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || !username || !password}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Přihlašování...</span>
-                </div>
-              ) : (
-                "Přihlásit se"
-              )}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Heslo</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Přihlašování...
+              </>
+            ) : (
+              "Přihlásit se"
+            )}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter>
+        <p className="text-sm text-muted-foreground">Pouze autorizovaní uživatelé mají přístup.</p>
+      </CardFooter>
+    </Card>
   )
 }

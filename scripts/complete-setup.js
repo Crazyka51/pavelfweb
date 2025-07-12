@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Complete Database Setup Script
- * Vytváří kompletní databázové schéma pro web Pavel Fišer
- */
-
 require('dotenv').config({ path: '.env.local' });
 const { Client } = require('pg');
 

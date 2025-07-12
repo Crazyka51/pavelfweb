@@ -1,80 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { DataManager } from "@/lib/data-persistence"
-import jwt from "jsonwebtoken"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
-
-interface AnalyticsData {
-  pageViews: {
-    total: number
-    thisMonth: number
-    thisWeek: number
-    today: number
-    trend: number // percentage change from previous period
-  }
-  visitors: {
-    total: number
-    unique: number
-    returning: number
-    newVisitors: number
-  }
-  topPages: Array<{
-    path: string
-    title: string
-    views: number
-    uniqueViews: number
-  }>
-  referrers: Array<{
-    source: string
-    visits: number
-    percentage: number
-  }>
-  devices: {
-    desktop: number
-    mobile: number
-    tablet: number
-  }
-  locations: Array<{
-    country: string
-    city?: string
-    visits: number
-  }>
-  timeRange: {
-    from: string
-    to: string
-  }
-}
-
-interface AnalyticsEvent {
-  id: string
-  type: "pageview" | "click" | "form_submit" | "download"
-  path: string
-  title?: string
-  userId?: string
-  sessionId: string
-  userAgent: string
-  referrer?: string
-  timestamp: string
-  metadata?: Record<string, any>
-}
-
-const analyticsManager = new DataManager<AnalyticsEvent>("analytics-events.json")
-
-// Helper function to verify admin token
-function verifyAdminToken(request: NextRequest): boolean {
-  const authHeader = request.headers.get("Authorization")
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.substring(7)
-  try {
-    jwt.verify(token, JWT_SECRET)
-    return true
-  } catch (error) {
-    return false
-  }
-}
+import { requireAuth } from "@/lib/auth-utils"
+import { sql, type AnalyticsEvent } from "@/lib/database"
 
 // Helper function to get date ranges
 function getDateRanges() {
@@ -123,23 +49,40 @@ function getReferrerDomain(referrer: string): string {
 
 // GET - Get analytics data
 export async function GET(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {
     const { searchParams } = new URL(request.url)
-    const from = searchParams.get("from")
-    const to = searchParams.get("to")
+    const fromParam = searchParams.get("from")
+    const toParam = searchParams.get("to")
 
-    const events = await analyticsManager.read()
+    let query = sql`SELECT * FROM analytics_events`
+    const whereClauses: string[] = []
+    const queryParams: any[] = []
+
+    if (fromParam && toParam) {
+      whereClauses.push(`timestamp >= $${queryParams.length + 1}`)
+      queryParams.push(new Date(fromParam))
+      whereClauses.push(`timestamp <= $${queryParams.length + 1}`)
+      queryParams.push(new Date(toParam))
+    }
+
+    if (whereClauses.length > 0) {
+      query = sql`${query} WHERE ${sql.join(whereClauses, " AND ")}`
+    }
+
+    const events = (await query) as AnalyticsEvent[]
+
     const dateRanges = getDateRanges()
 
     // Filter events by date range if provided
     let filteredEvents = events
-    if (from && to) {
-      const fromDate = new Date(from)
-      const toDate = new Date(to)
+    if (fromParam && toParam) {
+      const fromDate = new Date(fromParam)
+      const toDate = new Date(toParam)
       filteredEvents = events.filter((event) => {
         const eventDate = new Date(event.timestamp)
         return eventDate >= fromDate && eventDate <= toDate
@@ -165,7 +108,7 @@ export async function GET(request: NextRequest) {
     const trend = lastMonthViews > 0 ? ((thisMonthViews - lastMonthViews) / lastMonthViews) * 100 : 0
 
     // Calculate unique visitors
-    const uniqueSessions = new Set(pageViewEvents.map((event) => event.sessionId))
+    const uniqueSessions = new Set(pageViewEvents.map((event) => event.session_id))
     const uniqueVisitors = uniqueSessions.size
 
     // Calculate top pages
@@ -176,11 +119,11 @@ export async function GET(request: NextRequest) {
         pageStats[event.path] = {
           views: 0,
           uniqueViews: new Set(),
-          title: event.title,
+          title: event.title || undefined,
         }
       }
       pageStats[event.path].views++
-      pageStats[event.path].uniqueViews.add(event.sessionId)
+      pageStats[event.path].uniqueViews.add(event.session_id)
     })
 
     const topPages = Object.entries(pageStats)
@@ -213,7 +156,7 @@ export async function GET(request: NextRequest) {
     // Calculate device types
     const deviceStats = { desktop: 0, mobile: 0, tablet: 0 }
     pageViewEvents.forEach((event) => {
-      const deviceType = getDeviceType(event.userAgent)
+      const deviceType = getDeviceType(event.user_agent)
       deviceStats[deviceType]++
     })
 
@@ -226,7 +169,7 @@ export async function GET(request: NextRequest) {
       { country: "Austria", city: "Vienna", visits: Math.floor(uniqueVisitors * 0.05) },
     ]
 
-    const analyticsData: AnalyticsData = {
+    const analyticsData = {
       pageViews: {
         total: totalPageViews,
         thisMonth: thisMonthViews,
@@ -245,8 +188,8 @@ export async function GET(request: NextRequest) {
       devices: deviceStats,
       locations,
       timeRange: {
-        from: from || dateRanges.thisMonth.toISOString(),
-        to: to || new Date().toISOString(),
+        from: fromParam || dateRanges.thisMonth.toISOString(),
+        to: toParam || new Date().toISOString(),
       },
     }
 
@@ -275,22 +218,32 @@ export async function POST(request: NextRequest) {
 
     const userAgent = request.headers.get("user-agent") || ""
 
-    const newEvent: AnalyticsEvent = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+    const newEvent: Omit<AnalyticsEvent, "id" | "timestamp"> = {
       type,
       path,
-      title,
-      userId,
-      sessionId,
-      userAgent,
-      referrer,
-      timestamp: new Date().toISOString(),
-      metadata,
+      title: title || null,
+      user_id: userId || null,
+      session_id: sessionId,
+      user_agent: userAgent,
+      referrer: referrer || null,
+      metadata: metadata || null,
     }
 
-    await analyticsManager.create(newEvent)
+    await sql`
+      INSERT INTO analytics_events (type, path, title, user_id, session_id, user_agent, referrer, metadata)
+      VALUES (
+        ${newEvent.type},
+        ${newEvent.path},
+        ${newEvent.title},
+        ${newEvent.user_id},
+        ${newEvent.session_id},
+        ${newEvent.user_agent},
+        ${newEvent.referrer},
+        ${newEvent.metadata ? JSON.stringify(newEvent.metadata) : null}
+      )
+    `
 
-    return NextResponse.json({ message: "Událost byla zaznamenána", eventId: newEvent.id }, { status: 201 })
+    return NextResponse.json({ message: "Událost byla zaznamenána" }, { status: 201 })
   } catch (error) {
     console.error("Error tracking analytics event:", error)
     return NextResponse.json(

@@ -6,15 +6,15 @@ import { Users, Mail, TrendingUp, Download, Send, History, Plus, Eye } from "luc
 interface Subscriber {
   id: string
   email: string
-  subscribedAt: string
-  isActive: boolean
+  subscribed_at: string // Matches DB column name
+  is_active: boolean // Matches DB column name
   source: string
 }
 
 interface NewsletterStats {
   total: number
-  thisMonth: number
-  activeSubscribers: number
+  recent: number // Changed from thisMonth to recent (last 30 days)
+  active: number // Changed from activeSubscribers
   totalCampaigns: number
 }
 
@@ -22,23 +22,19 @@ interface Campaign {
   id: string
   subject: string
   content: string
-  sentAt: string
-  recipientCount: number
-  openRate: number
-  clickRate: number
+  sent_at: string // Matches DB column name
+  recipient_count: number // Matches DB column name
+  open_count: number // Matches DB column name
+  click_count: number // Matches DB column name
 }
 
-interface NewsletterManagerProps {
-  // Již nepotřebujeme token prop, používáme HTTP-only cookies
-}
-
-export default function NewsletterManager({}: NewsletterManagerProps = {}) {
+export default function NewsletterManager() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [stats, setStats] = useState<NewsletterStats>({
     total: 0,
-    thisMonth: 0,
-    activeSubscribers: 0,
+    recent: 0,
+    active: 0,
     totalCampaigns: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
@@ -54,78 +50,45 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
   }, [])
 
   const loadData = async () => {
+    setIsLoading(true)
     try {
-      // Načtení skutečných dat z API
       const [subscribersResponse, campaignsResponse] = await Promise.all([
-        fetch('/api/admin/newsletter', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch('/api/admin/newsletter/campaigns', {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+        fetch("/api/admin/newsletter?activeOnly=false"), // Fetch all subscribers to get full stats
+        fetch("/api/admin/newsletter/campaigns"),
       ])
 
       if (subscribersResponse.ok) {
         const subscribersData = await subscribersResponse.json()
-        // API vrací objekt s vnořeným polem subscribers
-        const subscribersList = subscribersData.subscribers || []
-        setSubscribers(subscribersList)
-        
-        // Výpočet statistik na základě skutečných dat
-        const activeSubscribers = subscribersList.filter((sub: Subscriber) => sub.isActive)
-        const thisMonth = new Date()
-        thisMonth.setMonth(thisMonth.getMonth() - 1)
-        
-        const subscribersThisMonth = activeSubscribers.filter((sub: Subscriber) => 
-          new Date(sub.subscribedAt) >= thisMonth
-        )
-
-        // Aktualizace stats po načtení kampaní
-        if (campaignsResponse.ok) {
-          const campaignsData = await campaignsResponse.json()
-          setCampaigns(campaignsData)
-          
-          setStats({
-            total: subscribersList.length,
-            thisMonth: subscribersThisMonth.length,
-            activeSubscribers: activeSubscribers.length,
-            totalCampaigns: campaignsData.length,
-          })
-        } else {
-          console.error('Chyba při načítání kampaní:', campaignsResponse.status)
-          setCampaigns([])
-          
-          setStats({
-            total: subscribersList.length,
-            thisMonth: subscribersThisMonth.length,
-            activeSubscribers: activeSubscribers.length,
-            totalCampaigns: 0,
-          })
-        }
+        setSubscribers(subscribersData.subscribers || [])
+        setStats((prev) => ({
+          ...prev,
+          total: subscribersData.stats.total,
+          recent: subscribersData.stats.recent,
+          active: subscribersData.stats.active,
+        }))
       } else {
-        console.error('Chyba při načítání odběratelů:', subscribersResponse.status)
+        console.error("Chyba při načítání odběratelů:", subscribersResponse.status, await subscribersResponse.text())
         setSubscribers([])
+        setStats((prev) => ({ ...prev, total: 0, recent: 0, active: 0 }))
+      }
+
+      if (campaignsResponse.ok) {
+        const campaignsData = await campaignsResponse.json()
+        setCampaigns(campaignsData || [])
+        setStats((prev) => ({ ...prev, totalCampaigns: campaignsData.length }))
+      } else {
+        console.error("Chyba při načítání kampaní:", campaignsResponse.status, await campaignsResponse.text())
         setCampaigns([])
-        setStats({
-          total: 0,
-          thisMonth: 0,
-          activeSubscribers: 0,
-          totalCampaigns: 0,
-        })
+        setStats((prev) => ({ ...prev, totalCampaigns: 0 }))
       }
     } catch (error) {
-      console.error('Error loading newsletter data:', error)
-      // V případě chyby nastavíme prázdná data
+      console.error("Error loading newsletter data:", error)
       setSubscribers([])
       setCampaigns([])
       setStats({
         total: 0,
-        thisMonth: 0,
-        activeSubscribers: 0,
+        recent: 0,
+        active: 0,
         totalCampaigns: 0,
       })
     } finally {
@@ -134,10 +97,10 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
   }
 
   const handleSelectAll = () => {
-    if (selectedEmails.length === subscribers.length) {
+    if (selectedEmails.length === subscribers.filter((s) => s.is_active).length) {
       setSelectedEmails([])
     } else {
-      setSelectedEmails(subscribers.map((s) => s.email))
+      setSelectedEmails(subscribers.filter((s) => s.is_active).map((s) => s.email))
     }
   }
 
@@ -149,26 +112,24 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
     if (!confirm(`Opravdu chcete odhlásit ${email} z newsletteru?`)) return
 
     try {
-      const response = await fetch('/api/admin/newsletter', {
-        method: 'DELETE',
+      const response = await fetch("/api/admin/newsletter", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }), // Admin unsubscribe uses email in body
       })
 
       if (response.ok) {
-        // Odstranit z lokálního stavu
-        setSubscribers(prev => prev.map(sub => 
-          sub.email === email ? { ...sub, isActive: false } : sub
-        ))
-        alert('Odběratel byl úspěšně odhlášen')
+        await loadData() // Reload all data to reflect changes
+        alert("Odběratel byl úspěšně odhlášen")
       } else {
-        throw new Error('Chyba při odhlašování')
+        const errorData = await response.json()
+        alert(`Chyba při odhlašování: ${errorData.message || response.statusText}`)
       }
     } catch (error) {
-      console.error('Error unsubscribing:', error)
-      alert('Chyba při odhlašování odběratele')
+      console.error("Error unsubscribing:", error)
+      alert("Chyba při odhlašování odběratele")
     }
   }
 
@@ -178,28 +139,44 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
       return
     }
 
-    const recipients = selectedEmails.length > 0 ? selectedEmails : subscribers.map((s) => s.email)
+    const recipients =
+      selectedEmails.length > 0 ? selectedEmails : subscribers.filter((s) => s.is_active).map((s) => s.email)
 
     if (recipients.length === 0) {
-      alert("Nejsou žádní příjemci")
+      alert("Nejsou žádní aktivní příjemci")
       return
     }
 
     if (confirm(`Odeslat kampaň "${newCampaign.subject}" na ${recipients.length} adres?`)) {
-      const newCampaignData: Campaign = {
-        id: Date.now().toString(),
-        subject: newCampaign.subject,
-        content: newCampaign.content,
-        sentAt: new Date().toISOString(),
-        recipientCount: recipients.length,
-        openRate: 0,
-        clickRate: 0,
-      }
+      try {
+        const response = await fetch("/api/admin/newsletter/campaigns", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            subject: newCampaign.subject,
+            content: newCampaign.content,
+            htmlContent: newCampaign.content, // Assuming content is HTML for now
+            recipients: recipients, // This will be used by the send endpoint, not stored in DB directly
+            status: "sent", // Mark as sent immediately for this mock
+            createdBy: "admin", // Replace with actual user ID
+          }),
+        })
 
-      setCampaigns((prev) => [newCampaignData, ...prev])
-      setNewCampaign({ subject: "", content: "" })
-      setActiveTab("campaigns")
-      alert("Kampaň byla odeslána!")
+        if (response.ok) {
+          await loadData() // Reload data to show new campaign
+          setNewCampaign({ subject: "", content: "" })
+          setActiveTab("campaigns")
+          alert("Kampaň byla odeslána!")
+        } else {
+          const errorData = await response.json()
+          alert(`Chyba při odesílání kampaně: ${errorData.message || response.statusText}`)
+        }
+      } catch (error) {
+        console.error("Error sending campaign:", error)
+        alert("Chyba při odesílání kampaně")
+      }
     }
   }
 
@@ -208,9 +185,9 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
       ["Email", "Datum přihlášení", "Zdroj", "Aktivní"],
       ...subscribers.map((sub) => [
         sub.email,
-        new Date(sub.subscribedAt).toLocaleDateString("cs-CZ"),
+        new Date(sub.subscribed_at).toLocaleDateString("cs-CZ"),
         sub.source === "web" ? "Webová stránka" : "Manuální",
-        sub.isActive ? "Ano" : "Ne",
+        sub.is_active ? "Ano" : "Ne",
       ]),
     ]
       .map((row) => row.join(","))
@@ -287,8 +264,8 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
               <TrendingUp className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Nových tento měsíc</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.thisMonth}</p>
+              <p className="text-sm font-medium text-gray-600">Nových (30 dní)</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.recent}</p>
             </div>
           </div>
         </div>
@@ -300,7 +277,7 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Aktivní odběratelé</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeSubscribers}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
             </div>
           </div>
         </div>
@@ -354,11 +331,14 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={selectedEmails.length === subscribers.length && subscribers.length > 0}
+                      checked={
+                        selectedEmails.length === subscribers.filter((s) => s.is_active).length &&
+                        subscribers.filter((s) => s.is_active).length > 0
+                      }
                       onChange={handleSelectAll}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-gray-600">Vybrat vše</span>
+                    <span className="text-sm text-gray-600">Vybrat vše (aktivní)</span>
                   </label>
                   {selectedEmails.length > 0 && (
                     <span className="text-sm text-blue-600">Vybráno: {selectedEmails.length}</span>
@@ -376,6 +356,7 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                         Datum přihlášení
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Zdroj</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stav</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Akce</th>
                     </tr>
                   </thead>
@@ -388,10 +369,11 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                             checked={selectedEmails.includes(subscriber.email)}
                             onChange={() => handleSelectEmail(subscriber.email)}
                             className="rounded border-gray-300"
+                            disabled={!subscriber.is_active} // Disable checkbox for inactive subscribers
                           />
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{subscriber.email}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(subscriber.subscribedAt)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(subscriber.subscribed_at)}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -402,12 +384,23 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => handleUnsubscribe(subscriber.email)}
-                            className="text-red-600 hover:text-red-900 text-sm"
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              subscriber.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                            }`}
                           >
-                            Odhlásit
-                          </button>
+                            {subscriber.is_active ? "Aktivní" : "Odhlášen"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {subscriber.is_active && (
+                            <button
+                              onClick={() => handleUnsubscribe(subscriber.email)}
+                              className="text-red-600 hover:text-red-900 text-sm"
+                            >
+                              Odhlásit
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -439,16 +432,16 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900">{campaign.subject}</h3>
                           <p className="text-sm text-gray-500 mt-1">
-                            Odesláno: {formatDate(campaign.sentAt)} • {campaign.recipientCount} příjemců
+                            Odesláno: {formatDate(campaign.sent_at)} • {campaign.recipient_count} příjemců
                           </p>
                           <div className="flex gap-6 mt-3">
                             <div className="text-sm">
                               <span className="text-gray-500">Otevřeno:</span>
-                              <span className="font-medium text-gray-900 ml-1">{campaign.openRate}%</span>
+                              <span className="font-medium text-gray-900 ml-1">{campaign.open_count}%</span>
                             </div>
                             <div className="text-sm">
                               <span className="text-gray-500">Kliknuto:</span>
-                              <span className="font-medium text-gray-900 ml-1">{campaign.clickRate}%</span>
+                              <span className="font-medium text-gray-900 ml-1">{campaign.click_count}%</span>
                             </div>
                           </div>
                         </div>
@@ -492,7 +485,7 @@ export default function NewsletterManager({}: NewsletterManagerProps = {}) {
                   <strong>Příjemci:</strong>{" "}
                   {selectedEmails.length > 0
                     ? `${selectedEmails.length} vybraných odběratelů`
-                    : `Všichni odběratelé (${subscribers.length})`}
+                    : `Všichni aktivní odběratelé (${subscribers.filter((s) => s.is_active).length})`}
                 </p>
               </div>
 

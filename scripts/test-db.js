@@ -1,4 +1,3 @@
-// scripts/test-database.js
 require('dotenv').config({ path: '.env.local' });
 const { Client } = require('pg');
 

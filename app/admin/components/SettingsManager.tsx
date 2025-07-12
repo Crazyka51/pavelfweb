@@ -12,7 +12,7 @@ interface CMSSettings {
   timezone: string
 
   // Editor nastavení
-  defaultCategory: string
+  defaultCategory: string | null // Now stores category ID
   autoSaveInterval: number
   allowImageUpload: boolean
   maxFileSize: number
@@ -33,6 +33,12 @@ interface CMSSettings {
   // Bezpečnost
   sessionTimeout: number
   maxLoginAttempts: number
+  updatedAt?: string
+}
+
+interface CategoryOption {
+  id: string
+  name: string
 }
 
 export default function SettingsManager() {
@@ -43,7 +49,7 @@ export default function SettingsManager() {
     language: "cs",
     timezone: "Europe/Prague",
 
-    defaultCategory: "Aktuality",
+    defaultCategory: null, // Default to null, will be populated from DB
     autoSaveInterval: 3000,
     allowImageUpload: true,
     maxFileSize: 5,
@@ -65,8 +71,7 @@ export default function SettingsManager() {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("general")
-
-  const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
 
   const colorOptions = [
     { value: "#3B82F6", label: "Modrá", preview: "bg-blue-500" },
@@ -79,20 +84,38 @@ export default function SettingsManager() {
 
   useEffect(() => {
     loadSettings()
+    loadCategoriesForOptions()
   }, [])
 
   const loadSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings')
-      
+      const response = await fetch("/api/admin/settings")
+
       if (response.ok) {
         const data = await response.json()
         setSettings(data)
+        if (data.updatedAt) {
+          setLastSaved(new Date(data.updatedAt).toLocaleString("cs-CZ"))
+        }
       } else {
-        console.error('Failed to load settings')
+        console.error("Failed to load settings", response.status, await response.text())
       }
     } catch (error) {
       console.error("Error loading settings:", error)
+    }
+  }
+
+  const loadCategoriesForOptions = async () => {
+    try {
+      const response = await fetch("/api/admin/categories?activeOnly=true")
+      if (response.ok) {
+        const data = await response.json()
+        setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })))
+      } else {
+        console.error("Failed to load categories for settings", response.status, await response.text())
+      }
+    } catch (error) {
+      console.error("Error loading categories for settings:", error)
     }
   }
 
@@ -100,20 +123,22 @@ export default function SettingsManager() {
     setIsSaving(true)
 
     try {
-      const response = await fetch('/api/admin/settings', {
-        method: 'PUT',
+      const response = await fetch("/api/admin/settings", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(settings),
       })
-      
+
       if (response.ok) {
-        setLastSaved(new Date().toLocaleString("cs-CZ"))
+        const data = await response.json()
+        setSettings(data.settings) // Update with potentially normalized data from backend
+        setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"))
         alert("Nastavení úspěšně uloženo!")
       } else {
         const errorData = await response.json()
-        alert(`Chyba při ukládání nastavení: ${errorData.message}`)
+        alert(`Chyba při ukládání nastavení: ${errorData.message || response.statusText}`)
       }
     } catch (error) {
       console.error("Error saving settings:", error)
@@ -126,17 +151,18 @@ export default function SettingsManager() {
   const handleReset = async () => {
     if (confirm("Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.")) {
       try {
-        const response = await fetch('/api/admin/settings', {
-          method: 'POST',
+        const response = await fetch("/api/admin/settings", {
+          method: "POST", // POST for reset
         })
-        
+
         if (response.ok) {
           const data = await response.json()
           setSettings(data.settings)
+          setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"))
           alert("Nastavení bylo obnoveno na výchozí hodnoty")
         } else {
           const errorData = await response.json()
-          alert(`Chyba při obnovování nastavení: ${errorData.message}`)
+          alert(`Chyba při obnovování nastavení: ${errorData.message || response.statusText}`)
         }
       } catch (error) {
         console.error("Error resetting settings:", error)
@@ -226,13 +252,14 @@ export default function SettingsManager() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Výchozí kategorie</label>
                 <select
-                  value={settings.defaultCategory}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, defaultCategory: e.target.value }))}
+                  value={settings.defaultCategory || ""} // Use empty string for null
+                  onChange={(e) => setSettings((prev) => ({ ...prev, defaultCategory: e.target.value || null }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  <option value="">-- Vyberte kategorii --</option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -243,7 +270,7 @@ export default function SettingsManager() {
                 <input
                   type="number"
                   min="1000"
-                  max="10000"
+                  max="60000"
                   step="1000"
                   value={settings.autoSaveInterval}
                   onChange={(e) => setSettings((prev) => ({ ...prev, autoSaveInterval: Number(e.target.value) }))}
@@ -258,7 +285,7 @@ export default function SettingsManager() {
                 <input
                   type="number"
                   min="1"
-                  max="50"
+                  max="100"
                   value={settings.maxFileSize}
                   onChange={(e) => setSettings((prev) => ({ ...prev, maxFileSize: Number(e.target.value) }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -429,7 +456,7 @@ export default function SettingsManager() {
                 <input
                   type="number"
                   min="1"
-                  max="72"
+                  max="168"
                   value={settings.sessionTimeout}
                   onChange={(e) => setSettings((prev) => ({ ...prev, sessionTimeout: Number(e.target.value) }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -491,7 +518,8 @@ export default function SettingsManager() {
                 <div>
                   <h4 className="text-sm font-semibold text-yellow-900">Poznámka k zálohám</h4>
                   <p className="text-sm text-yellow-700 mt-1">
-                    Funkce zálohování bude plně implementována v budoucí verzi. Aktuálně jsou data ukládána lokálně.
+                    Funkce zálohování bude plně implementována v budoucí verzi. Aktuálně jsou data ukládána v databázi
+                    Neon.
                   </p>
                 </div>
               </div>

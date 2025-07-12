@@ -1,34 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { DataManager } from "@/lib/data-persistence"
 import { requireAuth } from "@/lib/auth-utils"
-
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  color?: string
-  icon?: string
-  parentId?: string
-  order: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-const categoryManager = new DataManager<Category>("categories.json")
-
-// Helper function to generate slug from name
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-    .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .replace(/-+/g, "-") // Replace multiple hyphens with single
-    .trim()
-}
+import { categoryService } from "@/lib/category-service"
 
 // GET - Get single category
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -38,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 
   try {
-    const category = await categoryManager.findById(params.id)
+    const category = await categoryService.getCategoryById(params.id)
 
     if (!category) {
       return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
@@ -66,62 +38,25 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
   try {
     const updateData = await request.json()
-    const { name, description, color, icon, parentId, order, isActive } = updateData
+    // Ensure that the `order` property is mapped to `display_order` for the service
+    if (updateData.order !== undefined) {
+      updateData.display_order = updateData.order
+      delete updateData.order
+    }
+    if (updateData.parentId !== undefined) {
+      updateData.parent_id = updateData.parentId
+      delete updateData.parentId
+    }
+    if (updateData.isActive !== undefined) {
+      updateData.is_active = updateData.isActive
+      delete updateData.isActive
+    }
 
-    const categories = await categoryManager.read()
-    const existingCategory = categories.find((cat) => cat.id === params.id)
+    const updatedCategory = await categoryService.updateCategory(params.id, updateData)
 
-    if (!existingCategory) {
+    if (!updatedCategory) {
       return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
     }
-
-    // Validate name if being updated
-    if (name !== undefined) {
-      if (!name || name.trim() === "") {
-        return NextResponse.json({ message: "Název kategorie je povinný" }, { status: 400 })
-      }
-
-      const slug = generateSlug(name)
-
-      // Check for duplicate name/slug (excluding current category)
-      const duplicateCategory = categories.find(
-        (cat) => cat.id !== params.id && (cat.name.toLowerCase() === name.toLowerCase() || cat.slug === slug),
-      )
-
-      if (duplicateCategory) {
-        return NextResponse.json({ message: "Kategorie s tímto názvem již existuje" }, { status: 400 })
-      }
-
-      updateData.slug = slug
-    }
-
-    // Validate parent category if provided
-    if (parentId !== undefined && parentId !== null) {
-      if (parentId === params.id) {
-        return NextResponse.json({ message: "Kategorie nemůže být nadřazená sama sobě" }, { status: 400 })
-      }
-
-      const parentCategory = categories.find((cat) => cat.id === parentId)
-      if (!parentCategory) {
-        return NextResponse.json({ message: "Nadřazená kategorie nebyla nalezena" }, { status: 400 })
-      }
-
-      // Check for circular reference
-      let currentParent = parentCategory
-      while (currentParent?.parentId) {
-        if (currentParent.parentId === params.id) {
-          return NextResponse.json({ message: "Nelze vytvořit cyklickou závislost kategorií" }, { status: 400 })
-        }
-        const nextParent = categories.find((cat) => cat.id === currentParent!.parentId)
-        if (!nextParent) break
-        currentParent = nextParent
-      }
-    }
-
-    const updatedCategory = await categoryManager.update(params.id, {
-      ...updateData,
-      updatedAt: new Date().toISOString(),
-    })
 
     return NextResponse.json({
       message: "Kategorie byla aktualizována",
@@ -131,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.error("Error updating category:", error)
     return NextResponse.json(
       {
-        message: "Chyba při aktualizaci kategorie",
+        message: error instanceof Error ? error.message : "Chyba při aktualizaci kategorie",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
@@ -147,45 +82,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 
   try {
-    const categories = await categoryManager.read()
-    const categoryToDelete = categories.find((cat) => cat.id === params.id)
-
-    if (!categoryToDelete) {
-      return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
-    }
-
-    // Check if category has child categories
-    const childCategories = categories.filter((cat) => cat.parentId === params.id)
-    if (childCategories.length > 0) {
-      return NextResponse.json(
-        {
-          message: "Nelze smazat kategorii, která má podkategorie",
-          childCategories: childCategories.map((cat) => ({ id: cat.id, name: cat.name })),
-        },
-        { status: 400 },
-      )
-    }
-
-    // Check if category is used by articles
-    try {
-      const articleManager = new DataManager<any>("articles.json")
-      const articles = await articleManager.read()
-      const articlesInCategory = articles.filter((article) => article.category === categoryToDelete.name)
-
-      if (articlesInCategory.length > 0) {
-        return NextResponse.json(
-          {
-            message: "Nelze smazat kategorii, která obsahuje články",
-            articleCount: articlesInCategory.length,
-          },
-          { status: 400 },
-        )
-      }
-    } catch (error) {
-      console.error("Error checking articles:", error)
-    }
-
-    const deleted = await categoryManager.delete(params.id)
+    const deleted = await categoryService.deleteCategory(params.id)
 
     if (!deleted) {
       return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
@@ -198,7 +95,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     console.error("Error deleting category:", error)
     return NextResponse.json(
       {
-        message: "Chyba při mazání kategorie",
+        message: error instanceof Error ? error.message : "Chyba při mazání kategorie",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

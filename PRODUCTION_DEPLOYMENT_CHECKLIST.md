@@ -42,7 +42,7 @@
 ### 1. Environment Variables (Vercel Dashboard)
 Následující proměnné musí být nastaveny v Vercel Dashboard:
 
-```env
+\`\`\`env
 # JWT & Security
 JWT_SECRET=c9f733d944090adced308bd6acbda326da8c2dcaf700988f866a096d0f3cce8d
 
@@ -64,7 +64,7 @@ FACEBOOK_ACCESS_TOKEN=EAAWPfMaYnp4BOxPVdE2gNZAWl9GWlCBRyPDiiZBD1piwTzHjBhcZCvz6L
 # Environment
 NODE_ENV=production
 VERCEL_ENV=production
-```
+\`\`\`
 
 ### 2. Přihlašovací údaje pro administraci
 Aktuální přihlašovací údaje (v souboru `/api/admin/auth/login/route.ts`):
@@ -74,13 +74,13 @@ Aktuální přihlašovací údaje (v souboru `/api/admin/auth/login/route.ts`):
 ## 🔒 BEZPEČNOSTNÍ DOPORUČENÍ PRO PRODUKCI
 
 ### 1. Změna přihlašovacích údajů
-```typescript
+\`\`\`typescript
 // V /app/api/admin/auth/login/route.ts změnit:
 const ADMIN_CREDENTIALS = {
   pavel: "SILNÉ_HESLO_PRO_PRODUKCI", // Změnit!
   admin: "JINÉ_SILNÉ_HESLO",         // Změnit!
 }
-```
+\`\`\`
 
 ### 2. JWT Secret
 - ✅ Aktuální JWT_SECRET je silný (64 znaků hex)
@@ -93,14 +93,14 @@ const ADMIN_CREDENTIALS = {
 ## 📋 INSTRUKCE PRO NASAZENÍ
 
 ### 1. Vercel Deployment
-```bash
+\`\`\`bash
 # 1. Push do main větve
 git add .
 git commit -m "Production ready: All TypeScript errors fixed, JWT auth working"
 git push origin main
 
 # 2. Vercel automaticky deployuje z main větve
-```
+\`\`\`
 
 ### 2. Nastavení Environment Variables na Vercelu
 1. Jít na Vercel Dashboard

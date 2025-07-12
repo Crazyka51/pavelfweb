@@ -1,4 +1,3 @@
-#!/bin/bash
 # Newsletter System Test Script
 # Usage: ./test-newsletter.sh
 

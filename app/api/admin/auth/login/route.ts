@@ -1,60 +1,53 @@
 import { type NextRequest, NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
-
-// Přihlašovací údaje - v produkci by měly být v databázi s hashovanými hesly
-const ADMIN_CREDENTIALS = {
-  pavel: "test123",
-}
+import { serialize } from "cookie"
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
-    // Validace vstupních dat
-    if (!username || !password) {
-      return NextResponse.json({ error: "Uživatelské jméno a heslo jsou povinné" }, { status: 400 })
+    // Získání hesla pro uživatele 'Pavel' z proměnných prostředí
+    const ADMIN_PAVEL_PASSWORD = process.env.ADMIN_PAVEL_PASSWORD
+
+    // Získání JWT Secret z proměnných prostředí
+    const JWT_SECRET = process.env.JWT_SECRET
+
+    if (!ADMIN_PAVEL_PASSWORD || !JWT_SECRET) {
+      console.error("Missing ADMIN_PAVEL_PASSWORD or JWT_SECRET environment variable.")
+      return NextResponse.json({ success: false, error: "Konfigurace serveru není kompletní." }, { status: 500 })
     }
 
-    // Kontrola přihlašovacích údajů
-    const expectedPassword = ADMIN_CREDENTIALS[username as keyof typeof ADMIN_CREDENTIALS]
-    if (!expectedPassword || expectedPassword !== password) {
-      return NextResponse.json({ error: "Neplatné přihlašovací údaje" }, { status: 401 })
+    // Ověření uživatelského jména a hesla
+    // V produkčním prostředí byste zde měli ověřovat hašované heslo z databáze
+    if (username === "Pavel" && password === ADMIN_PAVEL_PASSWORD) {
+      // Generování JWT tokenu
+      const token = jwt.sign(
+        { userId: "pavel_admin_id", username: "Pavel", role: "admin" },
+        JWT_SECRET,
+        { expiresIn: "1h" }, // Token vyprší za 1 hodinu
+      )
+
+      // Nastavení tokenu jako HTTP-only cookie
+      const cookie = serialize("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // Pouze HTTPS v produkci
+        sameSite: "strict",
+        maxAge: 60 * 60, // 1 hodina
+        path: "/",
+      })
+
+      return NextResponse.json(
+        { success: true, message: "Přihlášení úspěšné" },
+        {
+          status: 200,
+          headers: { "Set-Cookie": cookie },
+        },
+      )
+    } else {
+      return NextResponse.json({ success: false, error: "Neplatné uživatelské jméno nebo heslo." }, { status: 401 })
     }
-
-    // Vytvoření JWT tokenu
-    const tokenPayload = {
-      username,
-      role: "admin",
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hodin
-    }
-
-    const token = jwt.sign(tokenPayload, JWT_SECRET)
-
-    // Vytvoření response s HTTP-only cookie
-    const response = NextResponse.json({
-      success: true,
-      message: "Přihlášení úspěšné",
-      user: {
-        username,
-        role: "admin",
-        displayName: username === "pavel" ? "Pavel Fišer" : "Administrátor",
-      },
-    })
-
-    // Nastavení HTTP-only cookie
-    response.cookies.set("admin-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60, // 24 hodin
-      path: "/",
-    })
-
-    return response
   } catch (error) {
-    return NextResponse.json({ error: "Chyba při přihlašování" }, { status: 500 })
+    console.error("Login API error:", error)
+    return NextResponse.json({ success: false, error: "Interní chyba serveru." }, { status: 500 })
   }
 }

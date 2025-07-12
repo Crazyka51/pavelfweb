@@ -40,12 +40,12 @@
 ## 🔧 Konfigurace pro produkci
 
 ### Environment variables na Vercelu:
-```
+\`\`\`
 DATABASE_URL=postgresql://...  (Neon connection string)
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 RESEND_API_KEY=re_...  (pro email)
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
-```
+\`\`\`
 
 ### Domény a přístup:
 - ✅ Admin panel: `https://fiserpavel.cz/admin`

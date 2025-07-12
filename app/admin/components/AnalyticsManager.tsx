@@ -7,47 +7,47 @@ interface AnalyticsData {
   pageViews: {
     total: number
     thisMonth: number
-    change: number
+    thisWeek: number
+    today: number
+    trend: number
   }
-  uniqueVisitors: {
+  visitors: {
     total: number
-    thisMonth: number
-    change: number
-  }
-  avgSessionDuration: {
-    minutes: number
-    change: number
-  }
-  bounceRate: {
-    percentage: number
-    change: number
+    unique: number
+    returning: number
+    newVisitors: number
   }
   topPages: Array<{
     path: string
     views: number
     title: string
+    uniqueViews: number
   }>
-  deviceTypes: Array<{
-    type: string
-    percentage: number
-    count: number
-  }>
-  trafficSources: Array<{
+  referrers: Array<{
     source: string
+    visits: number
     percentage: number
-    count: number
   }>
-  dailyViews: Array<{
-    date: string
-    views: number
-    visitors: number
+  devices: {
+    desktop: number
+    mobile: number
+    tablet: number
+  }
+  locations: Array<{
+    country: string
+    city?: string
+    visits: number
   }>
+  timeRange: {
+    from: string
+    to: string
+  }
 }
 
 export default function AnalyticsManager() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedPeriod, setSelectedPeriod] = useState("30d")
+  const [selectedPeriod, setSelectedPeriod] = useState("30d") // Corresponds to 'thisMonth' in backend logic
 
   useEffect(() => {
     loadAnalyticsData()
@@ -56,60 +56,36 @@ export default function AnalyticsManager() {
   const loadAnalyticsData = async () => {
     setIsLoading(true)
     try {
-      // Mock data pro demonstraci
-      const mockData: AnalyticsData = {
-        pageViews: {
-          total: 12547,
-          thisMonth: 3421,
-          change: 12.5,
-        },
-        uniqueVisitors: {
-          total: 8934,
-          thisMonth: 2156,
-          change: 8.3,
-        },
-        avgSessionDuration: {
-          minutes: 3.2,
-          change: -5.1,
-        },
-        bounceRate: {
-          percentage: 42.8,
-          change: -2.3,
-        },
-        topPages: [
-          { path: "/", views: 4521, title: "Hlavní stránka" },
-          { path: "/aktuality", views: 2134, title: "Aktuality" },
-          { path: "/aktuality/dopravni-opatreni", views: 1876, title: "Dopravní opatření" },
-          { path: "/kontakt", views: 1234, title: "Kontakt" },
-          { path: "/aktuality/mestska-politika", views: 987, title: "Městská politika" },
-        ],
-        deviceTypes: [
-          { type: "Desktop", percentage: 58.3, count: 5208 },
-          { type: "Mobile", percentage: 35.7, count: 3191 },
-          { type: "Tablet", percentage: 6.0, count: 535 },
-        ],
-        trafficSources: [
-          { source: "Přímý přístup", percentage: 45.2, count: 4038 },
-          { source: "Google", percentage: 32.1, count: 2868 },
-          { source: "Facebook", percentage: 12.4, count: 1108 },
-          { source: "Ostatní", percentage: 10.3, count: 920 },
-        ],
-        dailyViews: [
-          { date: "2024-02-01", views: 234, visitors: 187 },
-          { date: "2024-02-02", views: 267, visitors: 201 },
-          { date: "2024-02-03", views: 189, visitors: 156 },
-          { date: "2024-02-04", views: 298, visitors: 234 },
-          { date: "2024-02-05", views: 345, visitors: 267 },
-          { date: "2024-02-06", views: 312, visitors: 245 },
-          { date: "2024-02-07", views: 278, visitors: 221 },
-        ],
+      const now = new Date()
+      let fromDate: Date
+      const toDate: Date = now
+
+      switch (selectedPeriod) {
+        case "7d":
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+          break
+        case "30d":
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+          break
+        case "90d":
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
+          break
+        default:
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30) // Default to 30 days
       }
 
-      // Simulace API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setAnalyticsData(mockData)
+      const response = await fetch(`/api/admin/analytics?from=${fromDate.toISOString()}&to=${toDate.toISOString()}`)
+
+      if (response.ok) {
+        const data: AnalyticsData = await response.json()
+        setAnalyticsData(data)
+      } else {
+        console.error("Failed to load analytics:", response.status, await response.text())
+        setAnalyticsData(null)
+      }
     } catch (error) {
       console.error("Error loading analytics:", error)
+      setAnalyticsData(null)
     } finally {
       setIsLoading(false)
     }
@@ -160,6 +136,17 @@ export default function AnalyticsManager() {
     )
   }
 
+  // Mock daily views for chart, as backend doesn't provide this granular data yet
+  const mockDailyViews = [
+    { date: "2024-02-01", views: 234, visitors: 187 },
+    { date: "2024-02-02", views: 267, visitors: 201 },
+    { date: "2024-02-03", views: 189, visitors: 156 },
+    { date: "2024-02-04", views: 298, visitors: 234 },
+    { date: "2024-02-05", views: 345, visitors: 267 },
+    { date: "2024-02-06", views: 312, visitors: 245 },
+    { date: "2024-02-07", views: 278, visitors: 221 },
+  ]
+
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
@@ -191,7 +178,7 @@ export default function AnalyticsManager() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Zobrazení stránek</p>
               <p className="text-2xl font-bold text-gray-900">{formatNumber(analyticsData.pageViews.total)}</p>
-              <p className="text-sm">{formatChange(analyticsData.pageViews.change)}</p>
+              <p className="text-sm">{formatChange(analyticsData.pageViews.trend)}</p>
             </div>
           </div>
         </div>
@@ -203,8 +190,9 @@ export default function AnalyticsManager() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Unikátní návštěvníci</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(analyticsData.uniqueVisitors.total)}</p>
-              <p className="text-sm">{formatChange(analyticsData.uniqueVisitors.change)}</p>
+              <p className="text-2xl font-bold text-gray-900">{formatNumber(analyticsData.visitors.unique)}</p>
+              <p className="text-sm">{formatChange(analyticsData.pageViews.trend)}</p>{" "}
+              {/* Using pageViews trend for now */}
             </div>
           </div>
         </div>
@@ -216,8 +204,8 @@ export default function AnalyticsManager() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Průměrná doba návštěvy</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.avgSessionDuration.minutes}m</p>
-              <p className="text-sm">{formatChange(analyticsData.avgSessionDuration.change)}</p>
+              <p className="text-2xl font-bold text-gray-900">N/A</p> {/* Not available from current API */}
+              <p className="text-sm">N/A</p>
             </div>
           </div>
         </div>
@@ -229,8 +217,8 @@ export default function AnalyticsManager() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Bounce rate</p>
-              <p className="text-2xl font-bold text-gray-900">{analyticsData.bounceRate.percentage}%</p>
-              <p className="text-sm">{formatChange(analyticsData.bounceRate.change)}</p>
+              <p className="text-2xl font-bold text-gray-900">N/A</p> {/* Not available from current API */}
+              <p className="text-sm">N/A</p>
             </div>
           </div>
         </div>
@@ -268,19 +256,24 @@ export default function AnalyticsManager() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.deviceTypes.map((device) => {
-                const Icon = device.type === "Desktop" ? Monitor : device.type === "Mobile" ? Smartphone : Globe
+              {Object.entries(analyticsData.devices).map(([type, count]) => {
+                const totalDevices =
+                  analyticsData.devices.desktop + analyticsData.devices.mobile + analyticsData.devices.tablet
+                const percentage = totalDevices > 0 ? (count / totalDevices) * 100 : 0
+                const Icon = type === "desktop" ? Monitor : type === "mobile" ? Smartphone : Globe
                 return (
-                  <div key={device.type} className="flex items-center justify-between">
+                  <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Icon className="w-5 h-5 text-gray-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900">{device.type}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${device.percentage}%` }}></div>
+                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
                       </div>
-                      <span className="text-sm text-gray-600 w-12 text-right">{device.percentage}%</span>
+                      <span className="text-sm text-gray-600 w-12 text-right">{percentage.toFixed(1)}%</span>
                     </div>
                   </div>
                 )
@@ -296,14 +289,14 @@ export default function AnalyticsManager() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.trafficSources.map((source) => (
+              {analyticsData.referrers.map((source) => (
                 <div key={source.source} className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-900">{source.source}</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-24 bg-gray-200 rounded-full h-2">
                       <div className="bg-green-600 h-2 rounded-full" style={{ width: `${source.percentage}%` }}></div>
                     </div>
-                    <span className="text-sm text-gray-600 w-12 text-right">{source.percentage}%</span>
+                    <span className="text-sm text-gray-600 w-12 text-right">{source.percentage.toFixed(1)}%</span>
                   </div>
                 </div>
               ))}
@@ -311,14 +304,14 @@ export default function AnalyticsManager() {
           </div>
         </div>
 
-        {/* Daily views chart */}
+        {/* Daily views chart - using mock data for now */}
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Denní návštěvnost</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Denní návštěvnost (Simulovaná)</h3>
           </div>
           <div className="p-6">
             <div className="space-y-3">
-              {analyticsData.dailyViews.map((day) => (
+              {mockDailyViews.map((day) => (
                 <div key={day.date} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">
                     {new Date(day.date).toLocaleDateString("cs-CZ", {
@@ -351,8 +344,8 @@ export default function AnalyticsManager() {
           <div>
             <h4 className="text-sm font-semibold text-blue-900">Poznámka k analytickým datům</h4>
             <p className="text-sm text-blue-700 mt-1">
-              Tato data jsou simulovaná pro demonstraci. V produkční verzi budou připojena skutečná analytická data z
-              Google Analytics nebo jiného nástroje.
+              Tato data jsou nyní načítána z databáze. Denní přehledy a další pokročilé metriky vyžadují další
+              implementaci.
             </p>
           </div>
         </div>

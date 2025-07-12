@@ -29,15 +29,16 @@ export function getAuthUser(request: NextRequest): AuthUser | null {
 }
 
 export function requireAuth(request: NextRequest): NextResponse | null {
-  // Temporarily disabled for testing
+  // Původně dočasně zakomentováno pro testování, nyní aktivujeme
+  const user = getAuthUser(request)
+  if (!user) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Neautorizovaný přístup",
+      },
+      { status: 401 },
+    )
+  }
   return null
-  
-  // const user = getAuthUser(request)
-  // if (!user) {
-  //   return NextResponse.json({ 
-  //     success: false,
-  //     error: "Neautorizovaný přístup" 
-  //   }, { status: 401 })
-  // }
-  // return null
 }

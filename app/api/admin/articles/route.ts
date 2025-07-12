@@ -18,10 +18,9 @@ export async function GET(request: NextRequest) {
     const published = searchParams.get("published")
     const search = searchParams.get("search")
 
-    // Základní filtrování
     const filters: any = {
       limit,
-      offset: (page - 1) * limit
+      offset: (page - 1) * limit,
     }
 
     if (category && category !== "all") {
@@ -32,21 +31,12 @@ export async function GET(request: NextRequest) {
       filters.published = published === "true"
     }
 
-    let articles = await articleService.getArticles(filters)
-
-    // Client-side filtrování pro vyhledávání (dokud nenastavíme full-text search)
     if (search) {
-      const searchLower = search.toLowerCase()
-      articles = articles.filter(
-        (article) =>
-          article.title.toLowerCase().includes(searchLower) ||
-          article.content.toLowerCase().includes(searchLower) ||
-          (article.tags && article.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)))
-      )
+      filters.search = search
     }
 
-    // Získání celkového počtu pro paginaci
-    const total = articles.length // Zjednodušení - v produkci by bylo lepší počítat v DB
+    const articles = await articleService.getArticles(filters)
+    const total = await articleService.getTotalArticleCount(filters) // Získání celkového počtu z DB
 
     return NextResponse.json({
       success: true,
@@ -62,11 +52,14 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error("Articles GET error:", error)
-    return NextResponse.json({ 
-      success: false,
-      error: "Chyba při načítání článků",
-      details: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Chyba při načítání článků",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
 
@@ -79,26 +72,35 @@ export async function POST(request: NextRequest) {
   try {
     const user = getAuthUser(request)
     if (!user) {
-      return NextResponse.json({ 
-        success: false,
-        error: "Neautorizovaný přístup" 
-      }, { status: 401 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Neautorizovaný přístup",
+        },
+        { status: 401 },
+      )
     }
     if (user.role !== "admin") {
-      return NextResponse.json({ 
-        success: false,
-        error: "Nedostatečná oprávnění" 
-      }, { status: 403 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Nedostatečná oprávnění",
+        },
+        { status: 403 },
+      )
     }
 
     const articleData = await request.json()
 
     // Validace povinných polí
     if (!articleData.title || !articleData.content) {
-      return NextResponse.json({ 
-        success: false,
-        error: "Název a obsah jsou povinné" 
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Název a obsah jsou povinné",
+        },
+        { status: 400 },
+      )
     }
 
     // Příprava dat pro vytvoření článku
@@ -109,9 +111,9 @@ export async function POST(request: NextRequest) {
       category: articleData.category || "Aktuality",
       tags: articleData.tags || [],
       published: articleData.published || false,
-      image_url: articleData.imageUrl,
-      published_at: articleData.publishedAt,
-      created_by: user.username // Use authenticated user's username
+      imageUrl: articleData.imageUrl, // Mapped to imageUrl
+      publishedAt: articleData.publishedAt ? new Date(articleData.publishedAt) : null, // Konverze na Date
+      createdBy: user.username, // Use authenticated user's username
     }
 
     const savedArticle = await articleService.createArticle(newArticleData)
@@ -123,10 +125,13 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Articles POST error:", error)
-    return NextResponse.json({ 
-      success: false,
-      error: "Chyba při vytváření článku",
-      details: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Chyba při vytváření článku",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }

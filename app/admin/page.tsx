@@ -24,34 +24,30 @@ type AdminSection =
 const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true) // Temporarily bypassed
-  const [isLoading, setIsLoading] = useState(false) // Skip loading
+  const [isAuthenticated, setIsAuthenticated] = useState(false) // Změněno na false
+  const [isLoading, setIsLoading] = useState(true) // Změněno na true
   const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
-  const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>({
-    username: "pavel",
-    displayName: "Pavel Fišer"
-  })
+  const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
   const [article, setArticle] = useState<any | null>(null)
 
   useEffect(() => {
-    // checkAuthentication() // Temporarily disabled
+    checkAuthentication() // Nyní aktivujeme kontrolu autentizace
   }, [])
 
   useEffect(() => {
     const fetchArticle = async () => {
       if (editingArticleId) {
-        // Nahrazeno API voláním místo přímého database přístupu
         try {
           const response = await fetch(`/api/admin/articles/${editingArticleId}`)
           if (response.ok) {
             const fetchedArticle = await response.json()
-            setArticle(fetchedArticle)
+            setArticle(fetchedArticle.data) // Přístup k datům přes .data
           } else {
             setArticle(null)
           }
         } catch (error) {
-          console.error('Error fetching article:', error)
+          console.error("Error fetching article:", error)
           setArticle(null)
         }
       } else {
@@ -64,13 +60,13 @@ export default function AdminPage() {
   const checkAuthentication = async () => {
     try {
       const response = await fetch("/api/admin/auth/verify", {
-        credentials: 'include', // Použije HTTP-only cookies
+        credentials: "include",
       })
 
       if (response.ok) {
         const userData = await response.json()
         setIsAuthenticated(true)
-        setCurrentUser(userData.user || { username: "admin", displayName: "Pavel Fišer" })
+        setCurrentUser(userData.user)
       } else {
         setIsAuthenticated(false)
       }
@@ -83,17 +79,16 @@ export default function AdminPage() {
   }
 
   const handleLogin = (token: string) => {
-    // Token je nyní v HTTP-only cookie, nepotřebujeme localStorage
     setIsAuthenticated(true)
-    setCurrentUser({ username: "admin", displayName: "Pavel Fišer" })
+    // Po úspěšném přihlášení by se měl uživatel načíst z API /api/admin/auth/verify
+    checkAuthentication()
   }
 
   const handleLogout = async () => {
     try {
-      // Vymazání cookie na serveru
       await fetch("/api/admin/auth/logout", {
         method: "POST",
-        credentials: 'include',
+        credentials: "include",
       })
     } catch (error) {
       console.error("Logout error:", error)
@@ -137,10 +132,10 @@ export default function AdminPage() {
     )
   }
 
-  // Temporarily bypass authentication
-  // if (!isAuthenticated) {
-  //   return <LoginForm onLogin={handleLogin} />
-  // }
+  // Nyní je autentizace aktivní
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={handleLogin} />
+  }
 
   const renderContent = () => {
     switch (currentSection) {
@@ -155,15 +150,30 @@ export default function AdminPage() {
             categories={categories}
             onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
             onSave={async (articleData) => {
-              // Implement save logic here or call existing handlers
-              // For now, just log and go back
               console.log("Saving article:", articleData)
+              let response
               if (editingArticleId) {
-                // Update article logic can be added here
+                response = await fetch(`/api/admin/articles/${editingArticleId}`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(articleData),
+                })
               } else {
-                // Create new article logic can be added here
+                response = await fetch("/api/admin/articles", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(articleData),
+                })
               }
-              (editingArticleId ? handleBackToArticles : handleBackToDashboard)()
+
+              if (response.ok) {
+                console.log("Article saved successfully!")
+                ;(editingArticleId ? handleBackToArticles : handleBackToDashboard)()
+              } else {
+                const errorData = await response.json()
+                console.error("Failed to save article:", errorData.error)
+                alert(`Chyba při ukládání článku: ${errorData.error}`)
+              }
             }}
           />
         )

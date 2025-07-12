@@ -10,14 +10,14 @@
 - ✅ Plně funkční CRUD operace
 
 ### 📊 **Databázové schema**
-```sql
+\`\`\`sql
 ✅ articles - články s UUID, tags[], published status
 ✅ newsletter_subscribers - odběratelé s unsubscribe_token
 ✅ categories - kategorie pro organizaci obsahu  
 ✅ admin_users - autentizace administrátorů
 ✅ newsletter_campaigns - email kampaně
 ✅ newsletter_templates - šablony pro emailing
-```
+\`\`\`
 
 ### 🔧 **API Endpointy - refaktorované na Neon DB**
 - ✅ `/api/articles` - ArticleService + Neon SQL
@@ -27,13 +27,13 @@
 - ✅ Odstraněny všechny mock JSON fallbacky
 
 ### 🚀 **Development & Production Scripts**
-```bash
+\`\`\`bash
 ✅ node scripts/test-database.js     # Test připojení + CRUD
 ✅ node scripts/complete-setup.js    # Kompletní DB setup
 ✅ npm run dev                       # Development server
 ✅ npm run build                     # Production build
 ✅ npm run start                     # Production server
-```
+\`\`\`
 
 ### 🏗️ **GitHub Actions CI/CD**
 - ✅ `.github/workflows/neon_workflow.yml` - aktualizováno
@@ -43,14 +43,14 @@
 - ✅ Automatické mazání branches po merge
 
 ### 🔐 **Environment Variables**
-```bash
+\`\`\`bash
 # .env.local - lokální development
 DATABASE_URL=postgres://neondb_owner:...@ep-gentle-haze-a29ewvo3-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
 
 # GitHub Secrets (nutné nastavit)
 NEON_PROJECT_ID=your_project_id
 NEON_API_KEY=your_api_key
-```
+\`\`\`
 
 ### 📈 **Aktuální stav databáze**
 - **Articles:** 2 články (1 seed + 1 test)
@@ -71,14 +71,14 @@ NEON_API_KEY=your_api_key
 5. **Monitoring & analytics** - Google Analytics již nastaven
 
 ### **Testování v production:**
-```bash
+\`\`\`bash
 # Local development
 npm run dev  # http://localhost:3000
 
 # Database testing
 node scripts/test-database.js
 node scripts/complete-setup.js
-```
+\`\`\`
 
 ---
 

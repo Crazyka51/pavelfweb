@@ -1,9 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { promises as fs } from "fs"
-import path from "path"
 import { requireAuth } from "@/lib/auth-utils"
-
-const SETTINGS_FILE = path.join(process.cwd(), "data", "cms-settings.json")
+import { settingsService } from "@/lib/settings-service"
 
 interface CMSSettings {
   siteName: string
@@ -27,82 +24,6 @@ interface CMSSettings {
   updatedAt?: string
 }
 
-// Helper function to ensure data directory exists
-async function ensureDataDirectory(): Promise<void> {
-  const dataDir = path.dirname(SETTINGS_FILE)
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-}
-
-// Helper function to get default settings
-function getDefaultSettings(): CMSSettings {
-  return {
-    siteName: "Pavel Fišer - Praha 4",
-    siteDescription: "Oficiální web zastupitele Prahy 4",
-    adminEmail: "pavel@praha4.cz",
-    language: "cs",
-    timezone: "Europe/Prague",
-    defaultCategory: "Aktuality",
-    autoSaveInterval: 3000,
-    allowImageUpload: true,
-    maxFileSize: 5,
-    requireApproval: false,
-    defaultVisibility: "draft",
-    enableScheduling: true,
-    emailNotifications: true,
-    newArticleNotification: true,
-    primaryColor: "#3B82F6",
-    darkMode: false,
-    sessionTimeout: 24,
-    maxLoginAttempts: 5,
-  }
-}
-
-// Helper function to read settings
-async function readSettings(): Promise<CMSSettings> {
-  try {
-    await ensureDataDirectory()
-    const data = await fs.readFile(SETTINGS_FILE, "utf8")
-    const settings = JSON.parse(data)
-
-    // Merge with defaults to ensure all properties exist
-    return { ...getDefaultSettings(), ...settings }
-  } catch (error) {
-    console.log("Settings file not found, creating with defaults")
-    const defaultSettings = getDefaultSettings()
-    await writeSettings(defaultSettings)
-    return defaultSettings
-  }
-}
-
-// Helper function to write settings
-async function writeSettings(settings: CMSSettings): Promise<void> {
-  try {
-    await ensureDataDirectory()
-    const tempFile = SETTINGS_FILE + ".tmp"
-
-    // Add timestamp
-    const settingsWithTimestamp = {
-      ...settings,
-      updatedAt: new Date().toISOString(),
-    }
-
-    // Write to temporary file first
-    await fs.writeFile(tempFile, JSON.stringify(settingsWithTimestamp, null, 2))
-
-    // Atomic rename
-    await fs.rename(tempFile, SETTINGS_FILE)
-
-    console.log("Settings saved successfully")
-  } catch (error) {
-    console.error("Error writing settings file:", error)
-    throw new Error("Failed to save settings")
-  }
-}
-
 // GET - Get current settings
 export async function GET(request: NextRequest) {
   const authResponse = requireAuth(request)
@@ -111,8 +32,30 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const settings = await readSettings()
-    return NextResponse.json(settings)
+    const settings = await settingsService.getSettings()
+    // Map DB names to frontend names if necessary
+    const frontendSettings = {
+      siteName: settings.site_name,
+      siteDescription: settings.site_description,
+      adminEmail: settings.admin_email,
+      language: settings.language,
+      timezone: settings.timezone,
+      defaultCategory: settings.default_category_id, // Will need to map ID to name on frontend
+      autoSaveInterval: settings.auto_save_interval,
+      allowImageUpload: settings.allow_image_upload,
+      maxFileSize: settings.max_file_size,
+      requireApproval: settings.require_approval,
+      defaultVisibility: settings.default_visibility,
+      enableScheduling: settings.enable_scheduling,
+      emailNotifications: settings.email_notifications,
+      newArticleNotification: settings.new_article_notification,
+      primaryColor: settings.primary_color,
+      darkMode: settings.dark_mode,
+      sessionTimeout: settings.session_timeout,
+      maxLoginAttempts: settings.max_login_attempts,
+      updatedAt: settings.updated_at.toISOString(),
+    }
+    return NextResponse.json(frontendSettings)
   } catch (error) {
     console.error("Error fetching settings:", error)
     return NextResponse.json(
@@ -135,10 +78,32 @@ export async function PUT(request: NextRequest) {
   try {
     const newSettings = await request.json()
 
+    // Map frontend names to DB names
+    const dbSettings = {
+      site_name: newSettings.siteName,
+      site_description: newSettings.siteDescription,
+      admin_email: newSettings.adminEmail,
+      language: newSettings.language,
+      timezone: newSettings.timezone,
+      default_category_id: newSettings.defaultCategory, // Assuming this is an ID now
+      auto_save_interval: newSettings.autoSaveInterval,
+      allow_image_upload: newSettings.allowImageUpload,
+      max_file_size: newSettings.maxFileSize,
+      require_approval: newSettings.requireApproval,
+      default_visibility: newSettings.defaultVisibility,
+      enable_scheduling: newSettings.enableScheduling,
+      email_notifications: newSettings.emailNotifications,
+      new_article_notification: newSettings.newArticleNotification,
+      primary_color: newSettings.primaryColor,
+      dark_mode: newSettings.darkMode,
+      session_timeout: newSettings.sessionTimeout,
+      max_login_attempts: newSettings.maxLoginAttempts,
+    }
+
     // Validate required fields
-    const requiredFields = ["siteName", "adminEmail"]
+    const requiredFields = ["site_name", "admin_email"]
     for (const field of requiredFields) {
-      if (!newSettings[field] || newSettings[field].trim() === "") {
+      if (!dbSettings[field] || dbSettings[field].trim() === "") {
         return NextResponse.json(
           {
             message: `Pole ${field} je povinné`,
@@ -150,7 +115,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(newSettings.adminEmail)) {
+    if (!emailRegex.test(dbSettings.admin_email)) {
       return NextResponse.json(
         {
           message: "Neplatný formát e-mailové adresy",
@@ -160,7 +125,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate numeric fields
-    if (newSettings.autoSaveInterval && (newSettings.autoSaveInterval < 1000 || newSettings.autoSaveInterval > 60000)) {
+    if (
+      dbSettings.auto_save_interval &&
+      (dbSettings.auto_save_interval < 1000 || dbSettings.auto_save_interval > 60000)
+    ) {
       return NextResponse.json(
         {
           message: "Interval automatického ukládání musí být mezi 1000-60000 ms",
@@ -169,7 +137,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (newSettings.maxFileSize && (newSettings.maxFileSize < 1 || newSettings.maxFileSize > 100)) {
+    if (dbSettings.max_file_size && (dbSettings.max_file_size < 1 || dbSettings.max_file_size > 100)) {
       return NextResponse.json(
         {
           message: "Maximální velikost souboru musí být mezi 1-100 MB",
@@ -178,7 +146,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    if (newSettings.sessionTimeout && (newSettings.sessionTimeout < 1 || newSettings.sessionTimeout > 168)) {
+    if (dbSettings.session_timeout && (dbSettings.session_timeout < 1 || dbSettings.session_timeout > 168)) {
       return NextResponse.json(
         {
           message: "Timeout relace musí být mezi 1-168 hodin",
@@ -187,24 +155,40 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Get current settings and merge with new ones
-    const currentSettings = await readSettings()
-    const updatedSettings: CMSSettings = {
-      ...currentSettings,
-      ...newSettings,
-    }
+    const updatedSettings = await settingsService.updateSettings(dbSettings)
 
-    await writeSettings(updatedSettings)
+    // Map DB names back to frontend names for response
+    const frontendResponseSettings = {
+      siteName: updatedSettings.site_name,
+      siteDescription: updatedSettings.site_description,
+      adminEmail: updatedSettings.admin_email,
+      language: updatedSettings.language,
+      timezone: updatedSettings.timezone,
+      defaultCategory: updatedSettings.default_category_id,
+      autoSaveInterval: updatedSettings.auto_save_interval,
+      allowImageUpload: updatedSettings.allow_image_upload,
+      maxFileSize: updatedSettings.max_file_size,
+      requireApproval: updatedSettings.require_approval,
+      defaultVisibility: updatedSettings.default_visibility,
+      enableScheduling: updatedSettings.enable_scheduling,
+      emailNotifications: updatedSettings.email_notifications,
+      newArticleNotification: updatedSettings.new_article_notification,
+      primaryColor: updatedSettings.primary_color,
+      darkMode: updatedSettings.dark_mode,
+      sessionTimeout: updatedSettings.session_timeout,
+      maxLoginAttempts: updatedSettings.max_login_attempts,
+      updatedAt: updatedSettings.updated_at.toISOString(),
+    }
 
     return NextResponse.json({
       message: "Nastavení bylo úspěšně uloženo",
-      settings: updatedSettings,
+      settings: frontendResponseSettings,
     })
   } catch (error) {
     console.error("Error updating settings:", error)
     return NextResponse.json(
       {
-        message: "Chyba při ukládání nastavení",
+        message: error instanceof Error ? error.message : "Chyba při ukládání nastavení",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
@@ -220,18 +204,38 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const defaultSettings = getDefaultSettings()
-    await writeSettings(defaultSettings)
-
+    const defaultSettings = await settingsService.resetSettings()
+    // Map DB names back to frontend names for response
+    const frontendResponseSettings = {
+      siteName: defaultSettings.site_name,
+      siteDescription: defaultSettings.site_description,
+      adminEmail: defaultSettings.admin_email,
+      language: defaultSettings.language,
+      timezone: defaultSettings.timezone,
+      defaultCategory: defaultSettings.default_category_id,
+      autoSaveInterval: defaultSettings.auto_save_interval,
+      allowImageUpload: defaultSettings.allow_image_upload,
+      maxFileSize: defaultSettings.max_file_size,
+      requireApproval: defaultSettings.require_approval,
+      defaultVisibility: defaultSettings.default_visibility,
+      enableScheduling: defaultSettings.enable_scheduling,
+      emailNotifications: defaultSettings.email_notifications,
+      newArticleNotification: defaultSettings.new_article_notification,
+      primaryColor: defaultSettings.primary_color,
+      darkMode: defaultSettings.dark_mode,
+      sessionTimeout: defaultSettings.session_timeout,
+      maxLoginAttempts: defaultSettings.max_login_attempts,
+      updatedAt: defaultSettings.updated_at.toISOString(),
+    }
     return NextResponse.json({
       message: "Nastavení bylo obnoveno na výchozí hodnoty",
-      settings: defaultSettings,
+      settings: frontendResponseSettings,
     })
   } catch (error) {
     console.error("Error resetting settings:", error)
     return NextResponse.json(
       {
-        message: "Chyba při obnovování nastavení",
+        message: error instanceof Error ? error.message : "Chyba při obnovování nastavení",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

@@ -11,8 +11,12 @@ interface Category {
   slug: string
   description?: string
   color: string
-  articleCount: number
-  createdAt: string
+  articleCount?: number // Optional, added by API if requested
+  parentId?: string
+  display_order: number // Matches DB column name
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export default function CategoryManager() {
@@ -24,6 +28,9 @@ export default function CategoryManager() {
     name: "",
     description: "",
     color: "#3B82F6",
+    parentId: "",
+    displayOrder: 0,
+    isActive: true,
   })
 
   const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"]
@@ -34,20 +41,20 @@ export default function CategoryManager() {
 
   const loadCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories?includeArticleCount=true')
-      
+      const response = await fetch("/api/admin/categories?includeArticleCount=true")
+
       if (response.ok) {
         const data = await response.json()
-        if (data.success) {
-          setCategories(data.data)
+        if (data.categories) {
+          setCategories(data.categories)
         } else {
-          console.error('Error loading categories:', data.error)
+          console.error("Error loading categories: Invalid data format", data)
         }
       } else {
-        console.error('Failed to load categories')
+        console.error("Failed to load categories", response.status, await response.text())
       }
     } catch (error) {
-      console.error('Error loading categories:', error)
+      console.error("Error loading categories:", error)
     } finally {
       setIsLoading(false)
     }
@@ -56,63 +63,63 @@ export default function CategoryManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const slug = formData.name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-
     try {
       if (editingCategory) {
         // Update existing category
         const response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
-          method: 'PUT',
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             name: formData.name,
             description: formData.description,
             color: formData.color,
-            slug,
+            parentId: formData.parentId || null,
+            order: formData.displayOrder, // Map to 'order' for API route
+            isActive: formData.isActive,
           }),
         })
 
         if (response.ok) {
           await loadCategories()
-          alert('Kategorie byla úspěšně aktualizována')
+          alert("Kategorie byla úspěšně aktualizována")
         } else {
           const errorData = await response.json()
-          alert(`Chyba při aktualizaci kategorie: ${errorData.message}`)
+          alert(`Chyba při aktualizaci kategorie: ${errorData.message || response.statusText}`)
         }
       } else {
         // Create new category
-        const response = await fetch('/api/admin/categories', {
-          method: 'POST',
+        const response = await fetch("/api/admin/categories", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             name: formData.name,
             description: formData.description,
             color: formData.color,
+            parentId: formData.parentId || null,
+            displayOrder: formData.displayOrder,
+            isActive: formData.isActive,
           }),
         })
 
         if (response.ok) {
           await loadCategories()
-          alert('Kategorie byla úspěšně vytvořena')
+          alert("Kategorie byla úspěšně vytvořena")
         } else {
           const errorData = await response.json()
-          alert(`Chyba při vytváření kategorie: ${errorData.message}`)
+          alert(`Chyba při vytváření kategorie: ${errorData.message || response.statusText}`)
         }
       }
 
       setIsDialogOpen(false)
       setEditingCategory(null)
-      setFormData({ name: "", description: "", color: "#3B82F6" })
+      setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
     } catch (error) {
-      console.error('Error saving category:', error)
-      alert('Chyba při ukládání kategorie')
+      console.error("Error saving category:", error)
+      alert("Chyba při ukládání kategorie")
     }
   }
 
@@ -121,7 +128,10 @@ export default function CategoryManager() {
     setFormData({
       name: category.name,
       description: category.description || "",
-      color: category.color,
+      color: category.color || "#3B82F6",
+      parentId: category.parent_id || "",
+      displayOrder: category.display_order,
+      isActive: category.is_active,
     })
     setIsDialogOpen(true)
   }
@@ -130,26 +140,26 @@ export default function CategoryManager() {
     if (confirm("Opravdu chcete smazat tuto kategorii?")) {
       try {
         const response = await fetch(`/api/admin/categories/${categoryId}`, {
-          method: 'DELETE',
+          method: "DELETE",
         })
 
         if (response.ok) {
           await loadCategories()
-          alert('Kategorie byla úspěšně smazána')
+          alert("Kategorie byla úspěšně smazána")
         } else {
           const errorData = await response.json()
-          alert(`Chyba při mazání kategorie: ${errorData.message}`)
+          alert(`Chyba při mazání kategorie: ${errorData.message || response.statusText}`)
         }
       } catch (error) {
-        console.error('Error deleting category:', error)
-        alert('Chyba při mazání kategorie')
+        console.error("Error deleting category:", error)
+        alert("Chyba při mazání kategorie")
       }
     }
   }
 
   const handleNewCategory = () => {
     setEditingCategory(null)
-    setFormData({ name: "", description: "", color: "#3B82F6" })
+    setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
     setIsDialogOpen(true)
   }
 
@@ -190,7 +200,7 @@ export default function CategoryManager() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }} />
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color || "#ccc" }} />
                   <h3 className="text-lg font-semibold">{category.name}</h3>
                 </div>
                 <div className="flex space-x-1">
@@ -213,18 +223,20 @@ export default function CategoryManager() {
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">#{category.slug}</span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full">{category.articleCount} článků</span>
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                  {category.articleCount || 0} článků
+                </span>
               </div>
 
               <div className="text-xs text-gray-400 mt-2">
-                Vytvořeno: {new Date(category.createdAt).toLocaleDateString("cs-CZ")}
+                Vytvořeno: {new Date(category.created_at).toLocaleDateString("cs-CZ")}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {categories.length === 0 && (
+      {categories.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Žádné kategorie</h3>
@@ -269,6 +281,19 @@ export default function CategoryManager() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pořadí zobrazení</label>
+                <input
+                  type="number"
+                  value={formData.displayOrder}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, displayOrder: Number.parseInt(e.target.value) || 0 }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Pořadí"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Barva</label>
                 <div className="flex space-x-2">
                   {colors.map((color) => (
@@ -283,6 +308,19 @@ export default function CategoryManager() {
                     />
                   ))}
                 </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+                  Aktivní
+                </label>
               </div>
 
               <div className="flex space-x-3 pt-4">
