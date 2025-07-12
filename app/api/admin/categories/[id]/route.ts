@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
-import { categoryService } from "@/lib/category-service"
+import { categoryService } from "@/lib/services/category-service"
 
 // GET - Get single category
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
