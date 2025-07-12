@@ -33,44 +33,27 @@ export default function CategoryManager() {
   }, [])
 
   const loadCategories = async () => {
-    // Mock data pro demonstraci
-    const mockCategories: Category[] = [
-      {
-        id: "1",
-        name: "Aktuality",
-        slug: "aktuality",
-        description: "Nejnovější zprávy a události",
-        color: "#3B82F6",
-        articleCount: 12,
-        createdAt: "2024-01-15",
-      },
-      {
-        id: "2",
-        name: "Městská politika",
-        slug: "mestska-politika",
-        description: "Politické dění ve městě",
-        color: "#EF4444",
-        articleCount: 8,
-        createdAt: "2024-01-10",
-      },
-      {
-        id: "3",
-        name: "Doprava",
-        slug: "doprava",
-        description: "Dopravní situace a infrastruktura",
-        color: "#10B981",
-        articleCount: 5,
-        createdAt: "2024-01-05",
-      },
-    ]
-
-    setTimeout(() => {
-      setCategories(mockCategories)
+    try {
+      const response = await fetch('/api/admin/categories?includeArticleCount=true')
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setCategories(data.data)
+        } else {
+          console.error('Error loading categories:', data.error)
+        }
+      } else {
+        console.error('Failed to load categories')
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    } finally {
       setIsLoading(false)
-    }, 500)
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const slug = formData.name
@@ -78,30 +61,59 @@ export default function CategoryManager() {
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
 
-    if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === editingCategory.id
-            ? { ...cat, name: formData.name, description: formData.description, color: formData.color, slug }
-            : cat,
-        ),
-      )
-    } else {
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        name: formData.name,
-        slug,
-        description: formData.description,
-        color: formData.color,
-        articleCount: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-      }
-      setCategories((prev) => [...prev, newCategory])
-    }
+    try {
+      if (editingCategory) {
+        // Update existing category
+        const response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            description: formData.description,
+            color: formData.color,
+            slug,
+          }),
+        })
 
-    setIsDialogOpen(false)
-    setEditingCategory(null)
-    setFormData({ name: "", description: "", color: "#3B82F6" })
+        if (response.ok) {
+          await loadCategories()
+          alert('Kategorie byla úspěšně aktualizována')
+        } else {
+          const errorData = await response.json()
+          alert(`Chyba při aktualizaci kategorie: ${errorData.message}`)
+        }
+      } else {
+        // Create new category
+        const response = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            description: formData.description,
+            color: formData.color,
+          }),
+        })
+
+        if (response.ok) {
+          await loadCategories()
+          alert('Kategorie byla úspěšně vytvořena')
+        } else {
+          const errorData = await response.json()
+          alert(`Chyba při vytváření kategorie: ${errorData.message}`)
+        }
+      }
+
+      setIsDialogOpen(false)
+      setEditingCategory(null)
+      setFormData({ name: "", description: "", color: "#3B82F6" })
+    } catch (error) {
+      console.error('Error saving category:', error)
+      alert('Chyba při ukládání kategorie')
+    }
   }
 
   const handleEdit = (category: Category) => {
@@ -114,9 +126,24 @@ export default function CategoryManager() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (categoryId: string) => {
+  const handleDelete = async (categoryId: string) => {
     if (confirm("Opravdu chcete smazat tuto kategorii?")) {
-      setCategories((prev) => prev.filter((cat) => cat.id !== categoryId))
+      try {
+        const response = await fetch(`/api/admin/categories/${categoryId}`, {
+          method: 'DELETE',
+        })
+
+        if (response.ok) {
+          await loadCategories()
+          alert('Kategorie byla úspěšně smazána')
+        } else {
+          const errorData = await response.json()
+          alert(`Chyba při mazání kategorie: ${errorData.message}`)
+        }
+      } catch (error) {
+        console.error('Error deleting category:', error)
+        alert('Chyba při mazání kategorie')
+      }
     }
   }
 

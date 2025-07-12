@@ -83,9 +83,13 @@ export default function SettingsManager() {
 
   const loadSettings = async () => {
     try {
-      const savedSettings = localStorage.getItem("cms_settings")
-      if (savedSettings) {
-        setSettings({ ...settings, ...JSON.parse(savedSettings) })
+      const response = await fetch('/api/admin/settings')
+      
+      if (response.ok) {
+        const data = await response.json()
+        setSettings(data)
+      } else {
+        console.error('Failed to load settings')
       }
     } catch (error) {
       console.error("Error loading settings:", error)
@@ -96,10 +100,21 @@ export default function SettingsManager() {
     setIsSaving(true)
 
     try {
-      localStorage.setItem("cms_settings", JSON.stringify(settings))
-      setLastSaved(new Date().toLocaleString("cs-CZ"))
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      alert("Nastavení úspěšně uloženo!")
+      const response = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      })
+      
+      if (response.ok) {
+        setLastSaved(new Date().toLocaleString("cs-CZ"))
+        alert("Nastavení úspěšně uloženo!")
+      } else {
+        const errorData = await response.json()
+        alert(`Chyba při ukládání nastavení: ${errorData.message}`)
+      }
     } catch (error) {
       console.error("Error saving settings:", error)
       alert("Chyba při ukládání nastavení!")
@@ -108,34 +123,25 @@ export default function SettingsManager() {
     }
   }
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm("Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.")) {
-      const defaultSettings: CMSSettings = {
-        siteName: "Pavel Fišer - Praha 4",
-        siteDescription: "Oficiální web zastupitele Prahy 4",
-        adminEmail: "pavel@praha4.cz",
-        language: "cs",
-        timezone: "Europe/Prague",
-
-        defaultCategory: "Aktuality",
-        autoSaveInterval: 3000,
-        allowImageUpload: true,
-        maxFileSize: 5,
-
-        requireApproval: false,
-        defaultVisibility: "draft",
-        enableScheduling: true,
-
-        emailNotifications: true,
-        newArticleNotification: true,
-
-        primaryColor: "#3B82F6",
-        darkMode: false,
-
-        sessionTimeout: 24,
-        maxLoginAttempts: 5,
+      try {
+        const response = await fetch('/api/admin/settings', {
+          method: 'POST',
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setSettings(data.settings)
+          alert("Nastavení bylo obnoveno na výchozí hodnoty")
+        } else {
+          const errorData = await response.json()
+          alert(`Chyba při obnovování nastavení: ${errorData.message}`)
+        }
+      } catch (error) {
+        console.error("Error resetting settings:", error)
+        alert("Chyba při obnovování nastavení!")
       }
-      setSettings(defaultSettings)
     }
   }
 

@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { DataManager } from "@/lib/data-persistence"
-import jwt from "jsonwebtoken"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+import { requireAuth } from "@/lib/auth-utils"
 
 interface Category {
   id: string
@@ -20,22 +18,6 @@ interface Category {
 }
 
 const categoryManager = new DataManager<Category>("categories.json")
-
-// Helper function to verify admin token
-function verifyAdminToken(request: NextRequest): boolean {
-  const authHeader = request.headers.get("Authorization")
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.substring(7)
-  try {
-    jwt.verify(token, JWT_SECRET)
-    return true
-  } catch (error) {
-    return false
-  }
-}
 
 // Helper function to generate slug from name
 function generateSlug(name: string): string {
@@ -71,8 +53,9 @@ async function getArticleCountForCategories(): Promise<Record<string, number>> {
 
 // GET - Get all categories
 export async function GET(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {
@@ -122,8 +105,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new category
 export async function POST(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {
@@ -190,8 +174,9 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update categories order
 export async function PUT(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {

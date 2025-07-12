@@ -52,12 +52,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
   }
 
-  // Quick login buttons for testing
-  const quickLogin = (user: string, pass: string) => {
-    setUsername(user)
-    setPassword(pass)
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-md w-full space-y-8 p-8">
@@ -163,44 +157,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               )}
             </button>
           </form>
-
-          {/* Test credentials info */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Testovací přihlašovací údaje:</h3>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  <strong>Pavel:</strong> pavel / test123
-                </div>
-                <button
-                  type="button"
-                  onClick={() => quickLogin("pavel", "test123")}
-                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                >
-                  Použít
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-600">
-                  <strong>Admin:</strong> admin / admin123
-                </div>
-                <button
-                  type="button"
-                  onClick={() => quickLogin("admin", "admin123")}
-                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                >
-                  Použít
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Debug info */}
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs text-yellow-800">
-              <strong>Debug:</strong> Klikněte na "Použít" pro rychlé přihlášení nebo zadejte údaje ručně
-            </p>
-          </div>
         </div>
       </div>
     </div>

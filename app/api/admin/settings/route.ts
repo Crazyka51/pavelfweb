@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { promises as fs } from "fs"
 import path from "path"
-import jwt from "jsonwebtoken"
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+import { requireAuth } from "@/lib/auth-utils"
 
 const SETTINGS_FILE = path.join(process.cwd(), "data", "cms-settings.json")
 
@@ -27,22 +25,6 @@ interface CMSSettings {
   sessionTimeout: number
   maxLoginAttempts: number
   updatedAt?: string
-}
-
-// Helper function to verify admin token
-function verifyAdminToken(request: NextRequest): boolean {
-  const authHeader = request.headers.get("Authorization")
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return false
-  }
-
-  const token = authHeader.substring(7)
-  try {
-    jwt.verify(token, JWT_SECRET)
-    return true
-  } catch (error) {
-    return false
-  }
 }
 
 // Helper function to ensure data directory exists
@@ -123,8 +105,9 @@ async function writeSettings(settings: CMSSettings): Promise<void> {
 
 // GET - Get current settings
 export async function GET(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {
@@ -144,8 +127,9 @@ export async function GET(request: NextRequest) {
 
 // PUT - Update settings
 export async function PUT(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {
@@ -230,8 +214,9 @@ export async function PUT(request: NextRequest) {
 
 // POST - Reset settings to default
 export async function POST(request: NextRequest) {
-  if (!verifyAdminToken(request)) {
-    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
+  const authResponse = requireAuth(request)
+  if (authResponse) {
+    return authResponse
   }
 
   try {

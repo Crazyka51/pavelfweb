@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 interface Article {
   id: string
@@ -53,17 +54,16 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
 
   const loadArticles = useCallback(async () => {
     try {
-      const adminToken = localStorage.getItem("adminToken")
-      const response = await fetch("/api/admin/articles", {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setArticles(data.articles)
+      const response = await fetch("/api/admin/articles")
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        setArticles(data.data.articles)
       } else if (response.status === 401) {
         console.error("Unauthorized access - token may be invalid")
+      } else {
+        console.error("Error loading articles:", data.error)
       }
     } catch (error) {
       console.error("Error loading articles:", error)
@@ -160,13 +160,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
 
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
       try {
-        const adminToken = localStorage.getItem("adminToken")
         for (const articleId of selectedArticles) {
           const response = await fetch(`/api/admin/articles/${articleId}`, {
             method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${adminToken}`,
-            },
           })
 
           if (!response.ok) {
@@ -188,7 +184,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     if (selectedArticles.length === 0) return
 
     try {
-      const adminToken = localStorage.getItem("adminToken")
       for (const articleId of selectedArticles) {
         const article = articles.find((a) => a.id === articleId)
         if (article) {
@@ -196,7 +191,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${adminToken}`,
             },
             body: JSON.stringify({ ...article, published: true, publishedAt: undefined }),
           })
@@ -215,7 +209,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     if (selectedArticles.length === 0) return
 
     try {
-      const adminToken = localStorage.getItem("adminToken")
       for (const articleId of selectedArticles) {
         const article = articles.find((a) => a.id === articleId)
         if (article) {
@@ -223,7 +216,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${adminToken}`,
             },
             body: JSON.stringify({ ...article, published: false, publishedAt: undefined }),
           })
@@ -241,25 +233,27 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm("Opravdu chcete smazat tento článek?")) {
       try {
-        const adminToken = localStorage.getItem("adminToken")
-        await fetch(`/api/admin/articles/${articleId}`, {
+        const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-          },
         })
-        await loadArticles()
-        alert("Článek byl úspěšně smazán")
+
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          await loadArticles()
+          alert(data.message || "Článek byl úspěšně smazán")
+        } else {
+          throw new Error(data.error || data.message || "Neznámá chyba při mazání článku")
+        }
       } catch (error) {
         console.error("Error deleting article:", error)
-        alert("Chyba při mazání článku")
+        alert(`Chyba při mazání článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
       }
     }
   }
 
   const handleDuplicateArticle = async (article: Article) => {
     try {
-      const adminToken = localStorage.getItem("adminToken")
       const newArticle = {
         ...article,
         id: undefined,
@@ -274,7 +268,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`,
         },
         body: JSON.stringify(newArticle),
       })
@@ -302,13 +295,17 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("cs-CZ", {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return "Neplatné datum"; // Vrátí informaci o neplatném datu
+    }
+    return date.toLocaleDateString("cs-CZ", {
       day: "numeric",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
+    });
   }
 
   const getStatusBadge = (article: Article) => {

@@ -34,7 +34,7 @@ export default function RecentNews() {
 
   const loadRecentArticles = async () => {
     try {
-      // Načti nejnovější 3 publikované články z admin API
+      // Načti všechny publikované články z admin API
       const response = await fetch('/api/admin/public/articles')
       
       if (!response.ok) {
@@ -42,11 +42,10 @@ export default function RecentNews() {
       }
       
       const articles: Article[] = await response.json()
-      setArticles(articles.slice(0, 3)) // Vezmi pouze první 3 články
+      setArticles(articles) // Zobraz všechny články
     } catch (error) {
       console.error('Error loading articles:', error)
-      setError('Nepodařilo se načíst nejnovější články')
-      // Místo mock dat zobrazíme chybovou zprávu
+      setError('Nepodařilo se načíst články')
       setArticles([])
     } finally {
       setIsLoading(false)

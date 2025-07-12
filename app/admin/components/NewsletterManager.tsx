@@ -29,10 +29,10 @@ interface Campaign {
 }
 
 interface NewsletterManagerProps {
-  token: string
+  // Již nepotřebujeme token prop, používáme HTTP-only cookies
 }
 
-export default function NewsletterManager({ token }: NewsletterManagerProps) {
+export default function NewsletterManager({}: NewsletterManagerProps = {}) {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [stats, setStats] = useState<NewsletterStats>({
@@ -59,13 +59,11 @@ export default function NewsletterManager({ token }: NewsletterManagerProps) {
       const [subscribersResponse, campaignsResponse] = await Promise.all([
         fetch('/api/admin/newsletter', {
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
         fetch('/api/admin/newsletter/campaigns', {
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         })
@@ -154,7 +152,6 @@ export default function NewsletterManager({ token }: NewsletterManagerProps) {
       const response = await fetch('/api/admin/newsletter', {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email })

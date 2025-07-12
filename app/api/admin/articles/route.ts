@@ -5,9 +5,12 @@ import { ArticleService } from "@/lib/services/article-service"
 const articleService = new ArticleService()
 
 export async function GET(request: NextRequest) {
-  try {
-    requireAuth(request)
+  const authError = requireAuth(request)
+  if (authError) {
+    return authError
+  }
 
+  try {
     const { searchParams } = new URL(request.url)
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "10")
@@ -46,36 +49,56 @@ export async function GET(request: NextRequest) {
     const total = articles.length // Zjednodušení - v produkci by bylo lepší počítat v DB
 
     return NextResponse.json({
-      articles,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      success: true,
+      data: {
+        articles,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     })
   } catch (error) {
     console.error("Articles GET error:", error)
-    return NextResponse.json({ error: "Chyba při načítání článků" }, { status: 500 })
+    return NextResponse.json({ 
+      success: false,
+      error: "Chyba při načítání článků",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
+  const authError = requireAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
-    requireAuth(request)
     const user = getAuthUser(request)
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Neautorizovaný přístup" 
+      }, { status: 401 })
     }
     if (user.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Nedostatečná oprávnění" 
+      }, { status: 403 })
     }
 
     const articleData = await request.json()
 
     // Validace povinných polí
     if (!articleData.title || !articleData.content) {
-      return NextResponse.json({ error: "Název a obsah jsou povinné" }, { status: 400 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Název a obsah jsou povinné" 
+      }, { status: 400 })
     }
 
     // Příprava dat pro vytvoření článku
@@ -95,10 +118,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      article: savedArticle,
+      message: "Článek byl úspěšně vytvořen",
+      data: savedArticle,
     })
   } catch (error) {
     console.error("Articles POST error:", error)
-    return NextResponse.json({ error: "Chyba při vytváření článku" }, { status: 500 })
+    return NextResponse.json({ 
+      success: false,
+      error: "Chyba při vytváření článku",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 })
   }
 }
