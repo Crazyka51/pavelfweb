@@ -24,6 +24,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
     try {
       const response = await fetch("/api/admin/auth/login", {
         method: "POST",
@@ -34,12 +38,16 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       })
 
       if (response.ok) {
+<<<<<<< HEAD
         const data = await response.json();
+=======
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
         toast({
           title: "Přihlášení úspěšné",
           description: "Vítejte v administraci!",
           variant: "default",
         })
+<<<<<<< HEAD
         onLogin(data.token || "");
       } else {
         let errorMessage = "Chyba při přihlašování."
@@ -54,6 +62,29 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         toast({
           title: "Chyba přihlášení",
           description: errorMessage,
+=======
+        router.push("/admin") // Přesměrování na základní URL administrace
+      } else {
+        let errorData
+        try {
+          errorData = await response.json()
+        } catch (jsonError) {
+          // If response is not JSON, read as text
+          const textError = await response.text()
+          console.error("Failed to parse JSON response:", textError)
+          toast({
+            title: "Chyba přihlášení",
+            description: `Neočekávaná odpověď ze serveru: ${response.status} ${response.statusText}. Zkuste to prosím znovu.`,
+            variant: "destructive",
+          })
+          setLoading(false)
+          return
+        }
+
+        toast({
+          title: "Chyba přihlášení",
+          description: errorData.message || "Nesprávné uživatelské jméno nebo heslo.",
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
           variant: "destructive",
         })
       }
@@ -61,7 +92,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       console.error("Login error:", error)
       toast({
         title: "Chyba sítě",
-        description: "Nepodařilo se připojit k serveru. Zkuste to prosím znovu.",
+        description: "Nepodařilo se připojit k serveru. Zkontrolujte své připojení.",
         variant: "destructive",
       })
     } finally {
@@ -70,6 +101,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   }
 
   return (
+<<<<<<< HEAD
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 dark:bg-gray-950">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
@@ -79,6 +111,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+=======
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold">Přihlášení do administrace</CardTitle>
+          <CardDescription>Zadejte své přihlašovací údaje pro přístup k CMS.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <div className="grid gap-2">
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
               <Label htmlFor="username">Uživatelské jméno</Label>
               <Input
                 id="username"
@@ -90,7 +133,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 disabled={loading}
               />
             </div>
+<<<<<<< HEAD
             <div className="space-y-2">
+=======
+            <div className="grid gap-2">
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
               <Label htmlFor="password">Heslo</Label>
               <Input
                 id="password"
@@ -102,7 +149,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
+<<<<<<< HEAD
               {loading ? "Přihlašuji se..." : "Přihlásit se"}
+=======
+              {loading ? "Přihlašování..." : "Přihlásit se"}
+>>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
             </Button>
           </form>
         </CardContent>

@@ -1,4 +1,9 @@
+
 import 'dotenv/config'
+
+// scripts/setup-schema.js
+require('dotenv').config();
+
 const { Client } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
