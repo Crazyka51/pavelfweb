@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-i
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("admin-token")?.value
+    const token = request.cookies.get("session")?.value
 
     if (!token) {
       return NextResponse.json({ error: "Token nenalezen" }, { status: 401 })

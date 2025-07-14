@@ -1,15 +1,19 @@
 import { neon } from "@neondatabase/serverless"
+import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http"
+import * as schema from "./schema"
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set")
 }
+
 // Create Neon SQL client
-export const sql = neon(process.env.DATABASE_URL)
+const client = neon(process.env.DATABASE_URL!)
+export const db: NeonHttpDatabase<typeof schema> = drizzle(client, { schema })
 
 // Database connection health check
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
-    const result = await sql`SELECT 1 as health_check`
+    const result = await db`SELECT 1 as health_check`
     return result.length > 0
   } catch (error) {
     console.error("Database connection failed:", error)
@@ -21,7 +25,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 export async function initializeDatabase() {
   try {
     // Enable UUID extension
-    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`
+    await db`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`
 
     console.log("Database initialized successfully")
     return true

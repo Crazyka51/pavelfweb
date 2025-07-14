@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { articleService } from '@/lib/services/article-service';
+import { articleService } from '@/lib/article-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,10 +13,16 @@ export async function GET(request: NextRequest) {
     let articles;
     
     if (search) {
-      articles = await articleService.searchArticles(search, published);
+      // Použijeme getArticles s parametrem search místo searchArticles
+      articles = await articleService.getArticles({
+        isPublished: published,
+        search,
+        limit,
+        offset
+      });
     } else {
       articles = await articleService.getArticles({
-        published,
+        isPublished: published,
         category: category || undefined,
         limit,
         offset
@@ -55,10 +61,10 @@ export async function POST(request: NextRequest) {
       excerpt: body.excerpt || '',
       category: body.category,
       tags: body.tags || [],
-      published: body.published || false,
-      image_url: body.image_url || null,
-      published_at: body.published && body.published_at ? new Date(body.published_at) : null,
-      created_by: body.created_by || 'admin'
+      isPublished: body.published || false, // Změněno z published na isPublished
+      imageUrl: body.image_url || null, // Změněno z image_url na imageUrl
+      publishedAt: body.published && body.published_at ? new Date(body.published_at) : null, // Změněno z published_at na publishedAt
+      createdBy: body.created_by || 'admin' // Změněno z created_by na createdBy
     };
 
     const article = await articleService.createArticle(articleData);

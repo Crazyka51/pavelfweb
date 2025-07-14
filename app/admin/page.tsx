@@ -140,7 +140,7 @@ export default function AdminPage() {
   const renderContent = () => {
     switch (currentSection) {
       case "dashboard":
-        return <Dashboard />
+        return <Dashboard onCreateNew={handleCreateNew} />
       case "articles":
         return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
       case "new-article":
@@ -170,9 +170,14 @@ export default function AdminPage() {
                 console.log("Article saved successfully!")
                 ;(editingArticleId ? handleBackToArticles : handleBackToDashboard)()
               } else {
-                const errorData = await response.json()
-                console.error("Failed to save article:", errorData.error)
-                alert(`Chyba při ukládání článku: ${errorData.error}`)
+                try {
+                  const errorData = await response.json()
+                  console.error("Failed to save article:", errorData.error)
+                  alert(`Chyba při ukládání článku: ${errorData.error || 'Neznámá chyba'}`)
+                } catch (e) {
+                  console.error("Failed to parse error response:", e)
+                  alert(`Chyba při ukládání článku: Neočekávaná chyba serveru`)
+                }
               }
             }}
           />
@@ -198,7 +203,7 @@ export default function AdminPage() {
       case "settings":
         return <SettingsManager />
       default:
-        return <Dashboard />
+        return <Dashboard onCreateNew={handleCreateNew} />
     }
   }
 

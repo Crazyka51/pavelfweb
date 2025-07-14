@@ -1,18 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
-import { ArticleService } from "@/lib/services/article-service"
+import { articleService } from "@/lib/article-service"
 
-const articleService = new ArticleService()
-
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const authError = requireAuth(request)
-  if (authError) {
-    return authError
-  }
-
+export const GET = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
     const article = await articleService.getArticleById(params.id)
-
     if (!article) {
       return NextResponse.json(
         {
@@ -22,7 +14,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         { status: 404 },
       )
     }
-
     return NextResponse.json({
       success: true,
       data: article,
@@ -38,19 +29,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 },
     )
   }
-}
+})
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const authError = requireAuth(request)
-  if (authError) {
-    return authError
-  }
-
+export const PUT = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
     const updates = await request.json()
-
     const updatedArticle = await articleService.updateArticle(params.id, updates)
-
     if (!updatedArticle) {
       return NextResponse.json(
         {
@@ -60,7 +44,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         { status: 404 },
       )
     }
-
     return NextResponse.json({
       success: true,
       message: "Článek byl úspěšně aktualizován",
@@ -77,14 +60,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       { status: 500 },
     )
   }
-}
+})
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const authError = requireAuth(request)
-  if (authError) {
-    console.error("Autentizace selhala při mazání článku.")
-    return authError
-  }
+export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+  console.log(`Autentizace úspěšná pro uživatele: ${authResult.username}`)
 
   try {
     console.log(`Přijat požadavek na mazání článku s ID: ${params.id}`)
@@ -117,4 +96,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       { status: 500 },
     )
   }
-}
+})

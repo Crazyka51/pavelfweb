@@ -1,4 +1,21 @@
-import { sql, Article } from '../database';
+import { sql } from "drizzle-orm";
+import { db } from "@/lib/database";
+import { articles } from "@/lib/schema";
+// Definice typu přesunuta do tohoto souboru pro zabránění kruhových importů
+export type Article = {
+  id: string
+  title: string
+  content: string
+  excerpt?: string | null
+  category: string
+  tags: string[]
+  isPublished: boolean 
+  imageUrl?: string | null 
+  publishedAt?: Date | null
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
 
 export class ArticleService {
   
@@ -10,50 +27,57 @@ export class ArticleService {
     offset?: number;
   } = {}): Promise<Article[]> {
     try {
+      let query;
+      
       if (filters.published !== undefined && filters.category) {
-        const result = await sql`
-          SELECT id, title, content, excerpt, category, tags, published, 
-                 image_url, published_at, created_at, updated_at, created_by
-          FROM articles
-          WHERE published = ${filters.published} AND category = ${filters.category}
-          ORDER BY created_at DESC
-          LIMIT ${filters.limit || 50}
-          OFFSET ${filters.offset || 0}
-        `;
-        return result as Article[];
+        query = db.query.articles.findMany({
+          where: (articles, { eq, and }) => and(
+            eq(articles.isPublished, !!filters.published), // Convert to boolean to avoid undefined
+            eq(articles.category, filters.category || "")  // Convert to string to avoid undefined
+          ),
+          orderBy: (articles, { desc }) => [desc(articles.created_at)],
+          limit: filters.limit || 50,
+          offset: filters.offset || 0
+        });
       } else if (filters.published !== undefined) {
-        const result = await sql`
-          SELECT id, title, content, excerpt, category, tags, published, 
-                 image_url, published_at, created_at, updated_at, created_by
-          FROM articles
-          WHERE published = ${filters.published}
-          ORDER BY created_at DESC
-          LIMIT ${filters.limit || 50}
-          OFFSET ${filters.offset || 0}
-        `;
-        return result as Article[];
+        query = db.query.articles.findMany({
+          where: (articles, { eq }) => eq(articles.isPublished, !!filters.published), // Convert to boolean to avoid undefined
+          orderBy: (articles, { desc }) => [desc(articles.created_at)],
+          limit: filters.limit || 50,
+          offset: filters.offset || 0
+        });
       } else if (filters.category) {
-        const result = await sql`
-          SELECT id, title, content, excerpt, category, tags, published, 
-                 image_url, published_at, created_at, updated_at, created_by
-          FROM articles
-          WHERE category = ${filters.category}
-          ORDER BY created_at DESC
-          LIMIT ${filters.limit || 50}
-          OFFSET ${filters.offset || 0}
-        `;
-        return result as Article[];
+        query = db.query.articles.findMany({
+          where: (articles, { eq }) => eq(articles.category, filters.category || ""), // Convert to string to avoid undefined
+          orderBy: (articles, { desc }) => [desc(articles.created_at)],
+          limit: filters.limit || 50,
+          offset: filters.offset || 0
+        });
       } else {
-        const result = await sql`
-          SELECT id, title, content, excerpt, category, tags, published, 
-                 image_url, published_at, created_at, updated_at, created_by
-          FROM articles
-          ORDER BY created_at DESC
-          LIMIT ${filters.limit || 50}
-          OFFSET ${filters.offset || 0}
-        `;
-        return result as Article[];
+        query = db.query.articles.findMany({
+          orderBy: (articles, { desc }) => [desc(articles.created_at)],
+          limit: filters.limit || 50,
+          offset: filters.offset || 0
+        });
       }
+      
+      const result = await query;
+      
+      // Map database field names to camelCase for the Article type
+      return result.map(article => ({
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        excerpt: article.excerpt,
+        category: article.category,
+        tags: article.tags || [],
+        isPublished: article.isPublished,
+        imageUrl: article.image_url,
+        publishedAt: article.published_at,
+        createdAt: article.created_at,
+        updatedAt: article.updated_at,
+        createdBy: article.created_by
+      })) as Article[];
     } catch (error) {
       console.error('Failed to get articles:', error);
       throw new Error('Failed to fetch articles');
@@ -63,14 +87,27 @@ export class ArticleService {
   // Get single article by ID
   async getArticleById(id: string): Promise<Article | null> {
     try {
-      const result = await sql`
-        SELECT id, title, content, excerpt, category, tags, published, 
-               image_url, published_at, created_at, updated_at, created_by
-        FROM articles 
-        WHERE id = ${id}
-      `;
+      const result = await db.query.articles.findFirst({
+        where: (articles, { eq }) => eq(articles.id, id)
+      });
       
-      return result.length > 0 ? result[0] as Article : null;
+      if (!result) return null;
+      
+      // Map database field names to camelCase for the Article type
+      return {
+        id: result.id,
+        title: result.title,
+        content: result.content,
+        excerpt: result.excerpt,
+        category: result.category,
+        tags: result.tags || [],
+        isPublished: result.isPublished,
+        imageUrl: result.image_url,
+        publishedAt: result.published_at,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+        createdBy: result.created_by
+      } as Article;
     } catch (error) {
       console.error('Failed to get article by ID:', error);
       return null;
@@ -78,28 +115,37 @@ export class ArticleService {
   }
 
   // Create new article
-  async createArticle(articleData: Omit<Article, 'id' | 'created_at' | 'updated_at'>): Promise<Article> {
+  async createArticle(articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>): Promise<Article> {
     try {
-      const result = await sql`
-        INSERT INTO articles (
-          title, content, excerpt, category, tags, published,
-          image_url, published_at, created_by
-        ) VALUES (
-          ${articleData.title},
-          ${articleData.content},
-          ${articleData.excerpt || null},
-          ${articleData.category},
-          ${JSON.stringify(articleData.tags)},
-          ${articleData.published},
-          ${articleData.image_url || null},
-          ${articleData.published_at || null},
-          ${articleData.created_by}
-        )
-        RETURNING id, title, content, excerpt, category, tags, published, 
-                  image_url, published_at, created_at, updated_at, created_by
-      `;
+      const newArticle = await db.insert(articles).values({
+        title: articleData.title,
+        content: articleData.content,
+        excerpt: articleData.excerpt || null,
+        category: articleData.category,
+        tags: articleData.tags,
+        isPublished: articleData.isPublished,
+        image_url: articleData.imageUrl || null,
+        published_at: articleData.publishedAt || null,
+        created_by: articleData.createdBy
+      }).returning();
       
-      return result[0] as Article;
+      const result = newArticle[0];
+      
+      // Map database field names to camelCase for the Article type
+      return {
+        id: result.id,
+        title: result.title,
+        content: result.content,
+        excerpt: result.excerpt,
+        category: result.category,
+        tags: result.tags || [],
+        isPublished: result.isPublished,
+        imageUrl: result.image_url,
+        publishedAt: result.published_at,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+        createdBy: result.created_by
+      } as Article;
     } catch (error) {
       console.error('Failed to create article:', error);
       throw new Error('Failed to create article');
@@ -107,25 +153,47 @@ export class ArticleService {
   }
 
   // Update existing article
-  async updateArticle(id: string, updates: Partial<Omit<Article, 'id' | 'created_at'>>): Promise<Article | null> {
+  async updateArticle(id: string, updates: Partial<Omit<Article, 'id' | 'createdAt'>>): Promise<Article | null> {
     try {
-      const result = await sql`
-        UPDATE articles SET
-          title = COALESCE(${updates.title}, title),
-          content = COALESCE(${updates.content}, content),
-          excerpt = COALESCE(${updates.excerpt}, excerpt),
-          category = COALESCE(${updates.category}, category),
-          tags = COALESCE(${updates.tags ? JSON.stringify(updates.tags) : null}, tags),
-          published = COALESCE(${updates.published}, published),
-          image_url = COALESCE(${updates.image_url}, image_url),
-          published_at = COALESCE(${updates.published_at}, published_at),
-          updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING id, title, content, excerpt, category, tags, published, 
-                  image_url, published_at, created_at, updated_at, created_by
-      `;
+      // Prepare the update data with proper field names
+      const updateData: any = {};
       
-      return result.length > 0 ? result[0] as Article : null;
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if (updates.excerpt !== undefined) updateData.excerpt = updates.excerpt;
+      if (updates.category !== undefined) updateData.category = updates.category;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
+      if (updates.isPublished !== undefined) updateData.isPublished = updates.isPublished;
+      if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl;
+      if (updates.publishedAt !== undefined) updateData.published_at = updates.publishedAt;
+      
+      // Always update the updated_at timestamp
+      updateData.updated_at = new Date();
+      
+      const result = await db.update(articles)
+        .set(updateData)
+        .where(sql`${articles.id} = ${id}`)
+        .returning();
+      
+      if (result.length === 0) return null;
+      
+      const updatedArticle = result[0];
+      
+      // Map database field names to camelCase for the Article type
+      return {
+        id: updatedArticle.id,
+        title: updatedArticle.title,
+        content: updatedArticle.content,
+        excerpt: updatedArticle.excerpt,
+        category: updatedArticle.category,
+        tags: updatedArticle.tags || [],
+        isPublished: updatedArticle.isPublished,
+        imageUrl: updatedArticle.image_url,
+        publishedAt: updatedArticle.published_at,
+        createdAt: updatedArticle.created_at,
+        updatedAt: updatedArticle.updated_at,
+        createdBy: updatedArticle.created_by
+      } as Article;
     } catch (error) {
       console.error('Failed to update article:', error);
       throw new Error('Failed to update article');
@@ -135,7 +203,10 @@ export class ArticleService {
   // Delete article
   async deleteArticle(id: string): Promise<boolean> {
     try {
-      const result = await sql`DELETE FROM articles WHERE id = ${id}`;
+      const result = await db.delete(articles)
+        .where(sql`${articles.id} = ${id}`)
+        .returning();
+      
       return result.length > 0;
     } catch (error) {
       console.error('Failed to delete article:', error);
@@ -151,16 +222,33 @@ export class ArticleService {
   // Search articles by title or content
   async searchArticles(searchTerm: string, published: boolean = true): Promise<Article[]> {
     try {
-      const result = await sql`
-        SELECT id, title, content, excerpt, category, tags, published, 
-               image_url, published_at, created_at, updated_at, created_by
-        FROM articles 
-        WHERE published = ${published}
-          AND (title ILIKE ${'%' + searchTerm + '%'} OR content ILIKE ${'%' + searchTerm + '%'})
-        ORDER BY created_at DESC
-      `;
+      const result = await db.query.articles.findMany({
+        where: (articles, { eq, or, ilike, and }) => 
+          and(
+            eq(articles.isPublished, !!published), // Convert to boolean to avoid undefined
+            or(
+              ilike(articles.title, `%${searchTerm || ""}%`), // Convert to string to avoid undefined
+              ilike(articles.content, `%${searchTerm || ""}%`) // Convert to string to avoid undefined
+            )
+          ),
+        orderBy: (articles, { desc }) => [desc(articles.created_at)]
+      });
       
-      return result as Article[];
+      // Map database field names to camelCase for the Article type
+      return result.map(article => ({
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        excerpt: article.excerpt,
+        category: article.category,
+        tags: article.tags || [],
+        isPublished: article.isPublished,
+        imageUrl: article.image_url,
+        publishedAt: article.published_at,
+        createdAt: article.created_at,
+        updatedAt: article.updated_at,
+        createdBy: article.created_by
+      })) as Article[];
     } catch (error) {
       console.error('Failed to search articles:', error);
       return [];

@@ -1,14 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth, getAuthUser } from "@/lib/auth-utils"
-import { ArticleService } from "@/lib/services/article-service"
+import { articleService } from "@/lib/article-service"
 
-const articleService = new ArticleService()
-
-export async function GET(request: NextRequest) {
-  const authError = requireAuth(request)
-  if (authError) {
-    return authError
-  }
+export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
 
   try {
     const { searchParams } = new URL(request.url)
@@ -28,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (published !== null && published !== undefined) {
-      filters.published = published === "true"
+      filters.isPublished = published === "true"
     }
 
     if (search) {
@@ -61,26 +55,12 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     )
   }
-}
+})
 
-export async function POST(request: NextRequest) {
-  const authError = requireAuth(request)
-  if (authError) {
-    return authError
-  }
-
+export const POST = requireAuth(async (request: NextRequest, authResult: any) => {
   try {
-    const user = getAuthUser(request)
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Neautorizovaný přístup",
-        },
-        { status: 401 },
-      )
-    }
-    if (user.role !== "admin") {
+    // Nyní máme autentizovaného uživatele v authResult
+    if (authResult.role !== "admin") {
       return NextResponse.json(
         {
           success: false,
@@ -110,10 +90,10 @@ export async function POST(request: NextRequest) {
       excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
       category: articleData.category || "Aktuality",
       tags: articleData.tags || [],
-      published: articleData.published || false,
+      isPublished: articleData.published || false, // Upraveno na isPublished
       imageUrl: articleData.imageUrl, // Mapped to imageUrl
       publishedAt: articleData.publishedAt ? new Date(articleData.publishedAt) : null, // Konverze na Date
-      createdBy: user.username, // Use authenticated user's username
+      createdBy: authResult.username, // Použití authResult místo user
     }
 
     const savedArticle = await articleService.createArticle(newArticleData)
@@ -134,4 +114,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
-}
+})

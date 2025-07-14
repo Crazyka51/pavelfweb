@@ -8,7 +8,7 @@ export async function POST() {
     })
 
     // Smazání HTTP-only cookie
-    response.cookies.set("admin-token", "", {
+    response.cookies.set("session", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

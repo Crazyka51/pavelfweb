@@ -35,7 +35,11 @@ interface DashboardStats {
   }>
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  onCreateNew?: () => void;
+}
+
+export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
   const [stats, setStats] = useState<DashboardStats>({
     totalArticles: 0,
     publishedArticles: 0,
@@ -209,7 +213,9 @@ export default function Dashboard() {
             <p className="text-blue-100">Přehled vašeho CMS systému a posledních aktivit</p>
           </div>
           <div className="hidden lg:block">
-            <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+            <button 
+              onClick={onCreateNew}
+              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
               + Nový článek
             </button>
           </div>
@@ -270,7 +276,9 @@ export default function Dashboard() {
       {/* Quick actions for mobile */}
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-4">
-          <button className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={onCreateNew}
+            className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <PlusCircle className="w-5 h-5 mr-2" />
             Nový článek
           </button>
@@ -296,7 +304,9 @@ export default function Dashboard() {
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">Zatím nemáte žádné články</p>
-                <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={onCreateNew}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                   Vytvořit první článek
                 </button>
               </div>

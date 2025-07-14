@@ -1,23 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Calendar, Tag, ArrowRight, ExternalLink } from "lucide-react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { Article } from "@/lib/article-service" // Import Article type from service
 
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-}
-
-interface ApiResponse {
+interface ArticlesResponse {
   articles: Article[]
   total: number
   hasMore: boolean
@@ -25,227 +17,128 @@ interface ApiResponse {
 
 export default function RecentNews() {
   const [articles, setArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+
+  const loadRecentArticles = async (pageNumber: number) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/admin/public/articles?page=${pageNumber}&limit=6`)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Chyba při načítání článků: ${response.status} - ${errorText}`)
+      }
+      const data: ArticlesResponse = await response.json()
+
+      // The Article type from lib/services/article-service.ts already handles mapping
+      // from DB snake_case to camelCase, so we can use it directly.
+      setArticles((prevArticles) => (pageNumber === 1 ? data.articles : [...prevArticles, ...data.articles]))
+      setHasMore(data.hasMore)
+    } catch (err: any) {
+      console.error("Error loading articles:", err)
+      setError(err.message || "Nepodařilo se načíst nejnovější články.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    loadRecentArticles()
+    loadRecentArticles(1)
   }, [])
 
-  const loadRecentArticles = async () => {
-    try {
-      // Ask only for the first 3 published articles
-      const response = await fetch(
-        "/api/admin/public/articles?page=1&limit=3",
-        { next: { revalidate: 60 } }, // cache for 60 s
-      )
-
-      if (!response.ok) {
-        throw new Error(`Chyba při načítání článků: ${response.status}`)
-      }
-
-      const data: ApiResponse = await response.json()
-      setArticles(data.articles)
-    } catch (err) {
-      console.error("Error loading articles:", err)
-      setError("Nepodařilo se načíst články")
-      setArticles([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("cs-CZ", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
-
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      Aktuality: "bg-blue-100 text-blue-800 border border-blue-200",
-      "Městská politika": "bg-purple-100 text-purple-800 border border-purple-200",
-      Doprava: "bg-green-100 text-green-800 border border-green-200",
-      "Životní prostředí": "bg-emerald-100 text-emerald-800 border border-emerald-200",
-      Kultura: "bg-pink-100 text-pink-800 border border-pink-200",
-      Sport: "bg-orange-100 text-orange-800 border border-orange-200",
-    }
-    return colors[category] || "bg-gray-100 text-gray-800 border border-gray-200"
-  }
-
-  if (isLoading) {
-    return (
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="h-10 bg-gray-200 rounded w-96 mx-auto mb-6 animate-pulse"></div>
-            <div className="h-6 bg-gray-200 rounded w-128 mx-auto mb-8 animate-pulse"></div>
-            <div className="w-24 h-1 bg-gray-200 mx-auto animate-pulse"></div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-pulse"
-              >
-                <div className="h-48 bg-gray-200"></div>
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-6 bg-gray-200 rounded-full w-20"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  </div>
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <div className="h-12 bg-gray-200 rounded-lg w-64 mx-auto animate-pulse"></div>
-          </div>
-        </div>
-      </section>
-    )
+  const handleLoadMore = () => {
+    setPage((prevPage) => prevPage + 1)
+    loadRecentArticles(page + 1)
   }
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">Aktuální novinky z Prahy 4</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Sledujte nejnovější informace o dění v naší městské části, projektech a rozhodnutích zastupitelstva
-          </p>
-          <div className="w-24 h-1 bg-blue-600 mx-auto"></div>
-        </div>
-
-        {error && (
-          <div className="mb-12 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-yellow-800 font-medium">Upozornění</p>
-                <p className="text-yellow-700 mt-1">{error}</p>
-              </div>
-            </div>
+    <section className="w-full py-12 md:py-24 lg:py-32">
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Nejnovější zprávy a články</h2>
+            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+              Zůstaňte informováni o nejnovějších událostech a poznatcích.
+            </p>
           </div>
-        )}
-
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {articles.map((article) => (
-            <article
-              key={article.id}
-              className="bg-white rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group overflow-hidden"
-            >
-              {article.imageUrl && (
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={article.imageUrl || "/placeholder.svg"}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-              )}
-
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}
-                  >
-                    {article.category}
-                  </span>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {formatDate(article.updatedAt)}
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight">
-                  {article.title}
-                </h3>
-
-                <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">{article.excerpt}</p>
-
-                {article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {article.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md"
-                      >
-                        <Tag className="w-3 h-3 mr-1" />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <Link
-                    href={`/aktuality/${article.id}`}
-                    className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors"
-                  >
-                    Číst více
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-
-                  <a
-                    href={`http://localhost:3002/preview/${article.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-blue-600 transition-colors"
-                    title="Otevřít v novém okně"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
         </div>
-
-        {error && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-8 h-8 text-red-400" />
-            </div>
-            <p className="text-red-600 text-lg font-medium mb-2">Chyba při načítání článků</p>
-            <p className="text-gray-500 text-sm">Zkuste obnovit stránku nebo se obraťte na administrátora.</p>
-            <button
-              onClick={loadRecentArticles}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
+        {loading && articles.length === 0 ? (
+          <div className="grid gap-6 py-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="flex flex-col gap-4 p-4">
+                  <Skeleton className="h-[200px] w-full rounded-md" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="py-12 text-center text-red-500">
+            <p>{error}</p>
+            <Button onClick={() => loadRecentArticles(1)} className="mt-4">
               Zkusit znovu
-            </button>
+            </Button>
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="py-12 text-center text-gray-500">
+            <p>Žádné články k zobrazení.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 py-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+            {articles.map((article) => (
+              <Card key={article.id}>
+                <CardContent className="flex flex-col gap-4 p-4">
+                  <Link className="block" href={`/aktuality/${article.id}`}>
+                    <Image
+                      alt={article.title}
+                      className="aspect-video overflow-hidden rounded-md object-cover"
+                      height={200}
+                      src={article.imageUrl || "/placeholder.svg"}
+                      width={350}
+                    />
+                  </Link>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Badge variant="secondary">{article.category}</Badge>
+                    <span>
+                      {article.publishedAt
+                        ? new Date(article.publishedAt).toLocaleDateString("cs-CZ", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : new Date(article.createdAt).toLocaleDateString("cs-CZ", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                    </span>
+                  </div>
+                  <Link className="block" href={`/aktuality/${article.id}`}>
+                    <h3 className="text-xl font-bold tracking-tight">{article.title}</h3>
+                  </Link>
+                  <p className="text-gray-500 dark:text-gray-400">{article.excerpt}</p>
+                  <Link className="block" href={`/aktuality/${article.id}`}>
+                    <Button variant="outline">Číst více</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
-
-        {!error && articles.length === 0 && !isLoading && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="text-gray-600 text-lg">Zatím nejsou k dispozici žádné články.</p>
-            <p className="text-gray-500 text-sm mt-2">Nové články budou zobrazeny automaticky po publikování.</p>
+        {hasMore && !loading && articles.length > 0 && (
+          <div className="flex justify-center py-4">
+            <Button onClick={handleLoadMore} disabled={loading}>
+              {loading ? "Načítám..." : "Načíst další"}
+            </Button>
           </div>
         )}
-
-        {/* Link na všechny články */}
-        <div className="text-center">
-          <Link
-            href="/aktuality"
-            className="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
-            Zobrazit všechny novinky
-            <ArrowRight className="w-5 h-5 ml-3" />
-          </Link>
-        </div>
       </div>
     </section>
   )

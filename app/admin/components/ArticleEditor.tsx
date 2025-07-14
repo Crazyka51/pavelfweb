@@ -340,7 +340,7 @@ export default function ArticleEditor({ article, categories, onSave, onCancel }:
                 disabled={isSaving || !title.trim() || !content.trim()}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
-                <Save className="w-4 w-4" />
+                <Save className="w-4" />
                 {isSaving ? "Ukládání..." : "Uložit"}
               </button>
             </div>

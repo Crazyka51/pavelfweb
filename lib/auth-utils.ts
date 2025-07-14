@@ -1,44 +1,92 @@
-import jwt from "jsonwebtoken"
-import type { NextRequest } from "next/server"
-import { NextResponse } from "next/server"
+import { jwtVerify, SignJWT } from "jose"
+import { cookies } from "next/headers"
+import { type NextRequest, NextResponse } from "next/server"
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+const SECRET_KEY = process.env.JWT_SECRET
+const KEY = new TextEncoder().encode(SECRET_KEY)
 
-export interface AuthUser {
-  username: string
-  role: string
+export async function encrypt(payload: any) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("2h") // Token expires in 2 hours
+    .sign(KEY)
 }
 
-export function verifyToken(token: string): AuthUser | null {
+export async function decrypt(session: string | undefined = "") {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
-    return {
-      username: decoded.username,
-      role: decoded.role,
-    }
+    const { payload } = await jwtVerify(session, KEY, {
+      algorithms: ["HS256"],
+    })
+    return payload
   } catch (error) {
+    console.error("Failed to decrypt session:", error)
     return null
   }
 }
 
-export function getAuthUser(request: NextRequest): AuthUser | null {
-  const token = request.cookies.get("admin-token")?.value
-  if (!token) return null
+export async function createSession(userId: string, username: string, role: string) {
+  const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000) // 2 hours
+  const session = await encrypt({ userId, username, role, expiresAt })
 
-  return verifyToken(token)
+  cookies().set("session", session, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    expires: expiresAt,
+    sameSite: "lax",
+    path: "/",
+  })
 }
 
-export function requireAuth(request: NextRequest): NextResponse | null {
-  // Původně dočasně zakomentováno pro testování, nyní aktivujeme
-  const user = getAuthUser(request)
-  if (!user) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Neautorizovaný přístup",
-      },
-      { status: 401 },
-    )
+export async function deleteSession() {
+  cookies().delete("session")
+}
+
+export async function getAuthUser() {
+  const session = cookies().get("session")?.value
+  if (!session) return null
+  const decrypted = await decrypt(session)
+  if (!decrypted) return null
+  return {
+    userId: decrypted.userId as string,
+    username: decrypted.username as string,
+    role: decrypted.role as string,
   }
-  return null
+}
+
+export async function verifyAuth(request: NextRequest) {
+  const session = request.cookies.get("session")?.value
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const decrypted = await decrypt(session)
+  if (!decrypted) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  // Check if session is expired
+  if (decrypted.expiresAt && new Date(decrypted.expiresAt as number) < new Date()) {
+    return NextResponse.json({ message: "Session expired" }, { status: 401 })
+  }
+
+  return decrypted
+}
+
+export function requireAuth(handler: Function, roles?: string[]) {
+  return async (request: NextRequest, ...args: any[]) => {
+    const authResult = await verifyAuth(request)
+
+    if (authResult instanceof NextResponse) {
+      return authResult // Unauthorized response from verifyAuth
+    }
+
+    if (roles && !roles.includes(authResult.role as string)) {
+      return NextResponse.json({ message: "Forbidden: Insufficient role" }, { status: 403 })
+    }
+
+    // Attach user info to the request if needed by the handler
+    // For Next.js Route Handlers, you might pass it as an argument or use context
+    return handler(request, authResult, ...args)
+  }
 }
