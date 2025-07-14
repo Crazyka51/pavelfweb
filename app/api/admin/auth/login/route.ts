@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { NextResponse } from "next/server"
 import { createSession } from "@/lib/auth-utils"
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Login API error:", error)
     return NextResponse.json({ message: "Interní chyba serveru." }, { status: 500 })
-=======
+
 import { type NextRequest, NextResponse } from "next/server"
 import { serialize } from "cookie"
 import { SignJWT } from "jose"
@@ -62,6 +62,6 @@ export async function POST(req: NextRequest) {
     })
   } else {
     return new NextResponse(JSON.stringify({ message: "Nesprávné uživatelské jméno nebo heslo." }), { status: 401 })
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
+
   }
 }
