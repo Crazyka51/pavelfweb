@@ -27,138 +27,116 @@ This document provides an overview and usage instructions for the administration
 
 ---
 
-## 1. Overview
+1. Přehled
+Administrační panel je centralizovaný redakční systém (CMS) navržený tak, aby Pavel Fišer a pověření uživatelé mohli spravovat obsah webu, včetně článků, kategorií, odběratelů newsletteru, kampaní a šablon.
 
-The admin panel is a centralized content management system (CMS) designed to allow Pavel Fišer and authorized users to manage the website's content, including articles, categories, newsletter subscribers, and general site settings. It provides a user-friendly interface for common administrative tasks.
+2. Přístup do administrace
+Administrační panel je dostupný na adrese /admin na webu. Při přístupu budete vyzváni k přihlášení.
 
-## 2. Accessing the Admin Panel
+Přihlašovací údaje:
 
-The admin panel is accessible via the `/admin` route of the website.
-You will be prompted to log in with your credentials.
+Uživatelské jméno: admin (nebo podle nastavení v environment proměnných)
+Heslo: Nastaveno v proměnné ADMIN_PAVEL_PASSWORD.
+Důležité: Uchovávejte své přihlašovací údaje v bezpečí. Nesdílejte je veřejně.
 
-**Login Credentials:**
-*   **Username**: `admin` (or as configured in environment variables)
-*   **Password**: Set via `ADMIN_PAVEL_PASSWORD` environment variable.
+3. Dashboard
+Po úspěšném přihlášení budete přesměrováni na Dashboard. Tato sekce poskytuje rychlý přehled klíčových metrik a posledních aktivit, například:
 
-**Important**: Keep your login credentials secure. Do not share them publicly.
+Celkový počet článků
+Počet publikovaných článků
+Poslední komentáře (pokud jsou implementovány)
+Počet odběratelů newsletteru
+Rychlé odkazy na běžné úkoly (např. „Nový článek“, „Zobrazit analytiku“)
+4. Správa článků
+Tato sekce umožňuje vytvářet, upravovat, publikovat a spravovat všechny články na webu.
 
-## 3. Dashboard
+4.1. Zobrazení článků
+Přejděte na záložku „Články“. Zobrazí se tabulka se všemi články.
 
-Upon successful login, you will be redirected to the Dashboard. This section provides a quick overview of key metrics and recent activities, such as:
-*   Total number of articles
-*   Number of published articles
-*   Recent comments (if implemented)
-*   Newsletter subscriber count
-*   Quick links to common tasks (e.g., "New Article", "View Analytics").
+Vyhledávání: Použijte vyhledávací pole pro hledání článků podle názvu, obsahu nebo štítků.
+Filtrovat podle kategorie: Filtrovat lze podle přiřazené kategorie.
+Filtrovat podle stavu: Filtrovat lze podle „Publikováno“, „Koncept“ nebo „Archivováno“.
+Stránkování: Pomocí tlačítek „Předchozí“ a „Další“ můžete přecházet mezi stránkami článků.
+4.2. Vytvoření nového článku
+Klikněte na tlačítko „Nový článek“. Budete přesměrováni do editoru článku. Vyplňte následující pole:
 
-## 4. Article Management
+Název článku: Hlavní název článku.
+URL Slug: Automaticky generovaná adresa z názvu, lze upravit pro SEO.
+Úryvek: Krátké shrnutí článku, používá se pro náhledy.
+Obsah článku: Hlavní text článku. Použijte editor Tiptap pro formátování.
+Kategorie: Vyberte existující kategorii.
+URL obrázku: Odkaz na hlavní obrázek.
+Stav: Nastavte na „Koncept“, „Publikováno“ nebo „Archivováno“.
+Datum publikace: Volitelně naplánujte datum publikace.
+Doporučený článek: Označte, pokud má být článek zvýrazněn.
+Meta titulek: Pro SEO, zobrazuje se ve výsledcích vyhledávání.
+Meta popis: Pro SEO, popis ve výsledcích vyhledávání.
+Klikněte na „Vytvořit koncept“ pro uložení jako koncept, nebo „Publikovat“ pro okamžité zveřejnění.
 
-This section allows you to create, edit, publish, and manage all articles on the website.
+4.3. Úprava článků
+V seznamu článků klikněte na „Upravit“ vedle požadovaného článku. Editor se načte s existujícím obsahem. Proveďte změny a klikněte na „Uložit změny“.
 
-### 4.1. Viewing Articles
+4.4. Mazání článků
+V seznamu článků klikněte na „Smazat“ vedle článku. Zobrazí se potvrzovací dialog. Potvrzením článek trvale smažete. Tato akce je nevratná.
 
-Navigate to the "Články" (Articles) tab. Here you will see a table listing all articles.
-*   **Search**: Use the search bar to find articles by title, content, or tags.
-*   **Filter by Category**: Filter articles by their assigned category.
-*   **Filter by Status**: Filter by "Publikováno" (Published), "Koncept" (Draft), or "Archivováno" (Archived).
-*   **Pagination**: Use the "Předchozí" and "Další" buttons to navigate through pages of articles.
+4.5. Publikace a koncepty
+Koncepty: Články uložené jako „Koncept“ nejsou veřejně viditelné.
+Publikováno: Články se stavem „Publikováno“ jsou zveřejněné na webu.
+Naplánováno: Články s budoucím datem publikace se automaticky zveřejní v daný čas.
+5. Správa kategorií
+Tato sekce umožňuje organizovat články do kategorií.
 
-### 4.2. Creating New Articles
+5.1. Zobrazení kategorií
+Přejděte na záložku „Kategorie“. Zobrazí se seznam všech kategorií a počet článků v každé z nich.
 
-Click the "Nový článek" (New Article) button. You will be taken to the Article Editor.
-Fill in the following fields:
-*   **Název článku (Article Title)**: The main title of your article.
-*   **URL Slug**: Automatically generated from the title, but can be edited for SEO-friendly URLs.
-*   **Úryvek (Excerpt)**: A short summary of the article, used for previews.
-*   **Obsah článku (Article Content)**: The main body of the article. Use the Tiptap editor for rich text formatting.
-*   **Kategorie (Category)**: Select an existing category for the article.
-*   **URL obrázku (Image URL)**: Link to a featured image for the article.
-*   **Stav (Status)**: Set to "Koncept" (Draft), "Publikováno" (Published), or "Archivováno" (Archived).
-*   **Datum publikace (Publication Date)**: Optionally schedule a future publication date.
-*   **Doporučený článek (Featured Article)**: Mark as featured to highlight it on the homepage or other prominent sections.
-*   **Meta Titulek (Meta Title)**: For SEO, the title that appears in search engine results.
-*   **Meta Popis (Meta Description)**: For SEO, the description that appears in search engine results.
+5.2. Vytvoření/úprava kategorií
+Klikněte na „Nová kategorie“ pro vytvoření nové, nebo „Upravit“ vedle existující.
 
-Click "Vytvořit koncept" to save as a draft, or "Publikovat" to immediately publish the article.
+Název: Název kategorie (např. „Aktuality“, „Doprava“).
+Popis: Volitelný popis kategorie.
+Klikněte na „Vytvořit“ nebo „Uložit změny“ pro uložení.
 
-### 4.3. Editing Articles
+5.3. Mazání kategorií
+Klikněte na „Smazat“ vedle kategorie. Potvrďte smazání. Články, které byly v této kategorii, budou mít kategorii nastavenou na NULL.
 
-From the article list, click the "Upravit" (Edit) button next to the article you wish to modify. The Article Editor will load with the existing content. Make your changes and click "Uložit změny".
+6. Správa newsletteru
+Spravujte odběratele newsletteru, vytvářejte a rozesílejte kampaně, spravujte e-mailové šablony.
 
-### 4.4. Deleting Articles
+6.1. Odběratelé
+Přejděte na záložku „Odběratelé“.
 
-From the article list, click the "Smazat" (Delete) button next to the article. A confirmation dialog will appear. Confirm to permanently delete the article. This action is irreversible.
+Zobrazte seznam všech odběratelů, datum přihlášení, zdroj a stav (aktivní/odhlášen).
+Můžete ručně odhlásit uživatele.
+Export CSV: Stáhněte si CSV soubor se všemi odběrateli.
+6.2. Kampaně
+Přejděte na záložku „Kampaně“.
 
-### 4.5. Publishing and Drafts
+Nová kampaň: Vytvořte novou e-mailovou kampaň.
+Předmět e-mailu: Předmět newsletteru.
+Obsah e-mailu: Tělo newsletteru, podpora HTML.
+Lze vybrat jednotlivé aktivní odběratele nebo všechny aktivní.
+Klikněte na „Odeslat kampaň“ pro rozeslání.
+Historie kampaní: Seznam všech odeslaných kampaní, včetně předmětu, data odeslání a základních statistik (počet příjemců, otevření, prokliky).
+6.3. Šablony
+Přejděte na záložku „Šablony“.
 
-*   **Drafts**: Articles saved with "Koncept" status are not visible to the public.
-*   **Published**: Articles with "Publikováno" status are live on the website.
-*   **Scheduled**: Articles with a future "Datum publikace" will automatically become "Publikováno" at the specified time.
+Vytvářejte a spravujte znovupoužitelné e-mailové šablony pro kampaně.
+7. Analytika
+Přejděte na záložku „Analytika“.
 
-## 5. Category Management
+Zobrazte základní statistiky návštěvnosti webu, např. počet zobrazení stránek a návštěvníků.
+(Poznámka: Pokročilé metriky a denní trendy mohou vyžadovat další integraci.)
+8. Nastavení
+Přejděte na záložku „Nastavení“.
 
-This section allows you to organize your articles into categories.
+Obecná nastavení: Nastavte název webu, popis, kontaktní e-mail a ID integrací (Google Analytics, Facebook Page ID).
+Nastavení administrátora: Zobrazte uživatelské jméno administrátora. Změnu hesla lze provést zde (ponechte prázdné pro zachování současného).
+Povolit newsletter: Zapněte/vypněte newsletter pro veřejný web.
+Nezapomeňte po změnách kliknout na „Uložit nastavení“.
 
-### 5.1. Viewing Categories
+9. Řešení problémů
+Problémy s přihlášením: Zkontrolujte zadané uživatelské jméno a heslo. Ujistěte se, že proměnná ADMIN_PAVEL_PASSWORD je správně nastavena na vaší produkční platformě (např. Vercel).
+Data se nenačítají: Zkontrolujte konzoli prohlížeče pro případné chyby. Ověřte, že vaše Neon PostgreSQL databáze běží a že DATABASE_URL je správně nastavená.
+Chyby API: Pokud narazíte na chyby při ukládání nebo načítání dat, zkontrolujte serverové logy na Vercelu pro podrobnější informace.
+Grafické chyby: Zkuste vymazat cache prohlížeče nebo provést tvrdé obnovení stránky.
 
-Navigate to the "Kategorie" (Categories) tab. You will see a list of all defined categories along with the number of articles in each.
-
-### 5.2. Creating/Editing Categories
-
-Click "Nová kategorie" to create a new one, or "Upravit" next to an existing category.
-*   **Název (Name)**: The name of the category (e.g., "Aktuality", "Doprava").
-*   **Popis (Description)**: An optional description for the category.
-
-Click "Vytvořit" or "Uložit změny" to save.
-
-### 5.3. Deleting Categories
-
-Click "Smazat" next to a category. Confirm to delete. Articles previously assigned to this category will have their category set to `NULL`.
-
-## 6. Newsletter Management
-
-Manage your newsletter subscribers, create and send campaigns, and manage email templates.
-
-### 6.1. Subscribers
-
-Navigate to the "Odběratelé" (Subscribers) tab.
-*   View a list of all subscribers, their subscription date, source, and status (active/unsubscribed).
-*   You can manually unsubscribe users.
-*   **Export CSV**: Download a CSV file of all subscribers.
-
-### 6.2. Campaigns
-
-Navigate to the "Kampaně" (Campaigns) tab.
-*   **Nová kampaň (New Campaign)**: Create a new email campaign.
-    *   **Předmět e-mailu (Email Subject)**: The subject line of your newsletter.
-    *   **Obsah e-mailu (Email Content)**: The body of your newsletter. HTML content is supported.
-    *   You can choose to send to selected active subscribers or all active subscribers.
-    *   Click "Odeslat kampaň" to send.
-*   **Historie kampaní (Campaign History)**: View a list of all previously sent campaigns, including subject, send date, and basic statistics (recipients, opens, clicks).
-
-### 6.3. Templates
-
-Navigate to the "Šablony" (Templates) tab.
-*   Create and manage reusable email templates for your campaigns.
-
-## 7. Analytics
-
-Navigate to the "Analytika" (Analytics) tab.
-*   View basic website traffic statistics, such as page views and visitors.
-*   (Note: Advanced metrics and daily trends may require further integration.)
-
-## 8. Settings
-
-Navigate to the "Nastavení" (Settings) tab.
-*   **Obecná nastavení (General Settings)**: Configure site title, description, contact email, and integration IDs (Google Analytics, Facebook Page ID).
-*   **Nastavení administrátora (Admin Settings)**: View the admin username. You can change the admin password here (leave blank to keep current).
-*   **Povolit newsletter (Enable Newsletter)**: Toggle the newsletter functionality on/off for the public website.
-
-Remember to click "Uložit nastavení" after making any changes.
-
-## 9. Troubleshooting
-
-*   **Login Issues**: Double-check your username and password. Ensure the `ADMIN_PAVEL_PASSWORD` environment variable is correctly set on your deployment platform (Vercel).
-*   **Data Not Loading**: Check your browser's developer console for network errors. Ensure your Neon PostgreSQL database is running and accessible, and `DATABASE_URL` is correctly configured.
-*   **API Errors**: If you encounter errors when saving or fetching data, check the server logs on Vercel for more detailed error messages.
-*   **UI Glitches**: Try clearing your browser cache or performing a hard refresh.
