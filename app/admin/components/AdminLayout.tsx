@@ -17,8 +17,8 @@ import {
   MenuIcon,
   LayoutGridIcon,
   LogOutIcon,
+  PieChartIcon,
 } from "lucide-react"
-import { signOut } from "@/lib/auth-utils"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -34,8 +34,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleSignOut = async () => {
     try {
-      await signOut()
-      router.push("/admin/login")
+      // Simple logout without external auth utils
+      document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+      router.push("/admin")
       toast({
         title: "Odhlášení úspěšné",
         description: "Byli jste úspěšně odhlášeni z administrace.",
@@ -53,6 +54,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const navItems = [
     { href: "/admin", icon: HomeIcon, label: "Přehled" },
+    { href: "/admin/dashboard", icon: PieChartIcon, label: "Dashboard" },
     { href: "/admin?tab=articles", icon: NewspaperIcon, label: "Články" },
     { href: "/admin?tab=newsletter", icon: MailIcon, label: "Newsletter" },
     { href: "/admin?tab=analytics", icon: BarChartIcon, label: "Analytika" },
@@ -75,8 +77,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <Link
                   key={item.href}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 ${
-                    pathname === item.href.split("?")[0] &&
-                    (pathname === "/admin" || pathname.includes(item.href.split("?")[0]))
+                    pathname === item.href.split("?")[0] ||
+                    (item.href.includes("?") && pathname === "/admin" && item.href.includes("tab=")) ||
+                    pathname === item.href
                       ? "bg-gray-200 dark:bg-gray-700"
                       : ""
                   }`}
@@ -113,8 +116,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <Link
                     key={item.href}
                     className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-gray-900 hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 ${
-                      pathname === item.href.split("?")[0] &&
-                      (pathname === "/admin" || pathname.includes(item.href.split("?")[0]))
+                      pathname === item.href.split("?")[0] ||
+                      (item.href.includes("?") && pathname === "/admin" && item.href.includes("tab=")) ||
+                      pathname === item.href
                         ? "bg-gray-200 dark:bg-gray-700"
                         : ""
                     }`}

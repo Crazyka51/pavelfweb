@@ -69,4 +69,24 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/data-deletion" className="\
+              <Link href="/data-deletion" className="hover:text-white transition-colors">
+                Mazání osobních údajů
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-white">Kontakt</h3>
+          <p className="text-sm">
+            Email: info@pavelfiser.cz
+            <br />
+            Telefon: +420 123 456 789
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+        <p>&copy; {new Date().getFullYear()} Pavel Fišer. Všechna práva vyhrazena.</p>
+      </div>
+    </footer>
+  )
+}
