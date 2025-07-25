@@ -19,7 +19,6 @@ import {
   LogOutIcon,
   PieChartIcon,
 } from "lucide-react"
-import { signOut } from "@/lib/auth-utils"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -35,8 +34,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleSignOut = async () => {
     try {
-      await signOut()
-      router.push("/admin/login")
+      // Simple logout without external auth utils
+      document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+      router.push("/admin")
       toast({
         title: "Odhlášení úspěšné",
         description: "Byli jste úspěšně odhlášeni z administrace.",
