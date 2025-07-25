@@ -100,6 +100,7 @@
     "jsonwebtoken": "latest",
     "knex": "latest",
     "kysely": "latest",
+    "lucia": "latest",
     "lucide-react": "^0.454.0",
     "mysql2": "latest",
     "next": "15.2.4",

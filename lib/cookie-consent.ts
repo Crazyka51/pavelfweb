@@ -1,4 +1,5 @@
-// Cookie consent management with Google Consent Mode v2
+"use client"
+
 export interface ConsentState {
   analytics_storage: "granted" | "denied"
   ad_storage: "granted" | "denied"

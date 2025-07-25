@@ -1,107 +1,103 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import type { User, Session } from "lucia" // Assuming Lucia types
 
-const ADMIN_SESSION_COOKIE = "admin-session"
-const SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 hours
+// Placeholder for Lucia setup if not already present
+// In a real app, you'd have a lucia.ts file like:
+// import { Lucia } from "lucia";
+// import { NeonHTTPAdapter } from "@lucia-auth/adapter-neon";
+// import { sql } from "./database";
+// const adapter = new NeonHTTPAdapter(sql, {
+//   user: "users",
+//   session: "user_sessions",
+// });
+// export const lucia = new Lucia(adapter, {
+//   sessionCookie: {
+//     expires: false,
+//     attributes: {
+//       secure: process.env.NODE_ENV === "production",
+//     },
+//   },
+//   getUserAttributes: (attributes) => {
+//     return {
+//       username: attributes.username,
+//       email: attributes.email,
+//     };
+//   },
+// });
+// declare module "lucia" {
+//   interface Register {
+//     Lucia: typeof lucia;
+//     DatabaseUserAttributes: DatabaseUserAttributes;
+//   }
+// }
+// interface DatabaseUserAttributes {
+//   username: string;
+//   email: string;
+// }
 
-export interface AdminSession {
-  userId: string
-  username: string
-  isAuthenticated: boolean
-  expiresAt: number
+// Mock Lucia for demonstration if not fully set up
+const lucia = {
+  validateSession: async (
+    sessionId: string | null,
+  ): Promise<{ user: User; session: Session } | { user: null; session: null }> => {
+    if (!sessionId) {
+      return { user: null, session: null }
+    }
+    // Simulate session validation
+    if (sessionId === "valid_session_id") {
+      return {
+        user: { userId: "user123", username: "admin", email: "admin@example.com" } as User,
+        session: {
+          sessionId: "valid_session_id",
+          userId: "user123",
+          expiresAt: new Date(Date.now() + 3600000),
+        } as Session,
+      }
+    }
+    return { user: null, session: null }
+  },
+  createSession: async (userId: string) => {
+    // Simulate session creation
+    return { sessionId: "valid_session_id", userId, expiresAt: new Date(Date.now() + 3600000) } as Session
+  },
+  invalidateSession: async (sessionId: string) => {
+    // Simulate session invalidation
+    console.log(`Session ${sessionId} invalidated.`)
+  },
 }
 
-export async function validateRequest(): Promise<AdminSession | null> {
+export async function validateRequest(): Promise<{ user: User; session: Session } | { user: null; session: null }> {
+  const sessionId = cookies().get(lucia.sessionCookie.name)?.value ?? null
+  if (!sessionId) {
+    return { user: null, session: null }
+  }
+
+  const { session, user } = await lucia.validateSession(sessionId)
   try {
-    const cookieStore = cookies()
-    const sessionCookie = cookieStore.get(ADMIN_SESSION_COOKIE)
-
-    if (!sessionCookie) {
-      return null
+    if (session && session.fresh) {
+      const sessionCookie = lucia.createSessionCookie(session.id)
+      cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
     }
-
-    const session = JSON.parse(sessionCookie.value) as AdminSession
-
-    // Check if session is expired
-    if (Date.now() > session.expiresAt) {
-      await signOut()
-      return null
+    if (!session) {
+      const sessionCookie = lucia.createSessionCookie("")
+      cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
     }
-
-    return session
-  } catch (error) {
-    console.error("Session validation error:", error)
-    return null
+  } catch (e) {
+    // next.js throws error when attempting to set cookie when rendering page
   }
+  return { user, session }
 }
 
-export async function createSession(username: string): Promise<AdminSession> {
-  const session: AdminSession = {
-    userId: "admin",
-    username,
-    isAuthenticated: true,
-    expiresAt: Date.now() + SESSION_DURATION,
-  }
-
-  const cookieStore = cookies()
-  cookieStore.set(ADMIN_SESSION_COOKIE, JSON.stringify(session), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: SESSION_DURATION / 1000,
-  })
-
-  return session
-}
-
-export async function signOut() {
-  const cookieStore = cookies()
-  cookieStore.delete(ADMIN_SESSION_COOKIE)
-}
-
-export async function requireAuth(): Promise<AdminSession> {
-  const session = await validateRequest()
-
+export async function signOut(): Promise<void> {
+  const { session } = await validateRequest()
   if (!session) {
-    redirect("/admin")
+    return
   }
 
-  return session
-}
+  await lucia.invalidateSession(session.id)
 
-export function validatePassword(password: string): boolean {
-  const adminPassword = process.env.ADMIN_PAVEL_PASSWORD
-  return password === adminPassword
-}
-
-export function validateUsername(username: string): boolean {
-  const adminUsername = process.env.ADMIN_USERNAME || "admin"
-  return username === adminUsername
-}
-
-export async function authenticateAdmin(username: string, password: string): Promise<AdminSession | null> {
-  if (!validateUsername(username) || !validatePassword(password)) {
-    return null
-  }
-
-  return await createSession(username)
-}
-
-// Middleware helper
-export function isAuthenticatedRoute(pathname: string): boolean {
-  const protectedRoutes = ["/admin"]
-  const publicRoutes = ["/admin/login"]
-
-  if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    return false
-  }
-
-  return protectedRoutes.some((route) => pathname.startsWith(route))
-}
-
-export function getRedirectUrl(pathname: string): string {
-  if (pathname.startsWith("/admin") && pathname !== "/admin") {
-    return `/admin?redirect=${encodeURIComponent(pathname)}`
-  }
-  return "/admin"
+  const sessionCookie = lucia.createSessionCookie("")
+  cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+  return redirect("/admin/login")
 }
