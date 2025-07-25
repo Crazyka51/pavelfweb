@@ -1,4 +1,3 @@
-
 import 'dotenv/config'
 
 // scripts/setup-schema.js

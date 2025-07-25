@@ -1,18 +1,23 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { 
-  MoreVertical, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Copy, 
-  Share, 
+import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import {
+  MoreVertical,
+  Eye,
+  Edit,
+  Trash2,
+  Copy,
+  Share,
   Download,
   Globe,
   EyeOff,
-  Calendar
-} from 'lucide-react'
+  PlusCircleIcon,
+  MailIcon,
+  BarChartIcon,
+  SettingsIcon,
+} from "lucide-react"
 
 interface Article {
   id: string
@@ -21,7 +26,7 @@ interface Article {
   excerpt: string
   category: string
   tags: string[]
-  published: boolean
+  status: "draft" | "published" | "archived"
   createdAt: string
   updatedAt: string
   imageUrl?: string
@@ -37,14 +42,14 @@ interface QuickActionsProps {
   onCopyUrl?: () => void
 }
 
-export default function QuickActions({ 
-  article, 
-  onEdit, 
-  onPreview, 
-  onDelete, 
-  onDuplicate, 
+export function QuickActions({
+  article,
+  onEdit,
+  onPreview,
+  onDelete,
+  onDuplicate,
   onTogglePublish,
-  onCopyUrl 
+  onCopyUrl,
 }: QuickActionsProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -55,110 +60,135 @@ export default function QuickActions({
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        title="Více akcí"
-      >
-        <MoreVertical className="w-4 h-4" />
-      </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/admin/articles/new">
+          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center bg-transparent">
+            <PlusCircleIcon className="h-6 w-6 mb-2" />
+            Nový článek
+          </Button>
+        </Link>
+        <Link href="/admin?tab=newsletter">
+          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center bg-transparent">
+            <MailIcon className="h-6 w-6 mb-2" />
+            Odeslat newsletter
+          </Button>
+        </Link>
+        <Link href="/admin?tab=analytics">
+          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center bg-transparent">
+            <BarChartIcon className="h-6 w-6 mb-2" />
+            Zobrazit analytiku
+          </Button>
+        </Link>
+        <Link href="/admin?tab=settings">
+          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center bg-transparent">
+            <SettingsIcon className="h-6 w-6 mb-2" />
+            Nastavení
+          </Button>
+        </Link>
+        <div className="relative">
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Více akcí"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </Button>
 
-      {isOpen && (
-        <>
-          {/* Overlay pro zavření menu */}
-          <div 
-            className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Dropdown menu */}
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-            <div className="py-1">
-              {/* Náhled */}
-              <button
-                onClick={() => handleAction(onPreview)}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                Náhled
-              </button>
+          {isOpen && (
+            <>
+              {/* Overlay pro zavření menu */}
+              <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
 
-              {/* Upravit */}
-              <button
-                onClick={() => handleAction(onEdit)}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Edit className="w-4 h-4" />
-                Upravit
-              </button>
+              {/* Dropdown menu */}
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                <div className="py-1">
+                  {/* Náhled */}
+                  <Button
+                    onClick={() => handleAction(onPreview)}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Náhled
+                  </Button>
 
-              <hr className="my-1 border-gray-200" />
+                  {/* Upravit */}
+                  <Button
+                    onClick={() => handleAction(onEdit)}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Upravit
+                  </Button>
 
-              {/* Publikovat/Zrušit publikování */}
-              <button
-                onClick={() => handleAction(onTogglePublish)}
-                className={`flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors ${
-                  article.published 
-                    ? 'text-orange-700 hover:bg-orange-50' 
-                    : 'text-green-700 hover:bg-green-50'
-                }`}
-              >
-                {article.published ? (
-                  <>
-                    <EyeOff className="w-4 h-4" />
-                    Zrušit publikování
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-4 h-4" />
-                    Publikovat
-                  </>
-                )}
-              </button>
+                  <hr className="my-1 border-gray-200" />
 
-              {/* Duplikovat */}
-              <button
-                onClick={() => handleAction(onDuplicate)}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Copy className="w-4 h-4" />
-                Duplikovat
-              </button>
+                  {/* Publikovat/Zrušit publikování */}
+                  <Button
+                    onClick={() => handleAction(onTogglePublish)}
+                    className={`flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors ${
+                      article.status === "published"
+                        ? "text-orange-700 hover:bg-orange-50"
+                        : "text-green-700 hover:bg-green-50"
+                    }`}
+                  >
+                    {article.status === "published" ? (
+                      <>
+                        <EyeOff className="w-4 h-4" />
+                        Zrušit publikování
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="w-4 h-4" />
+                        Publikovat
+                      </>
+                    )}
+                  </Button>
 
-              {/* Kopírovat URL (pouze pro publikované) */}
-              {article.published && onCopyUrl && (
-                <button
-                  onClick={() => handleAction(onCopyUrl)}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Share className="w-4 h-4" />
-                  Kopírovat URL
-                </button>
-              )}
+                  {/* Duplikovat */}
+                  <Button
+                    onClick={() => handleAction(onDuplicate)}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Duplikovat
+                  </Button>
 
-              {/* Export */}
-              <button
-                onClick={() => handleAction(() => exportArticle(article))}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Exportovat
-              </button>
+                  {/* Kopírovat URL (pouze pro publikované) */}
+                  {article.status === "published" && onCopyUrl && (
+                    <Button
+                      onClick={() => handleAction(onCopyUrl)}
+                      className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Share className="w-4 h-4" />
+                      Kopírovat URL
+                    </Button>
+                  )}
 
-              <hr className="my-1 border-gray-200" />
+                  {/* Export */}
+                  <Button
+                    onClick={() => handleAction(() => exportArticle(article))}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportovat
+                  </Button>
 
-              {/* Smazat */}
-              <button
-                onClick={() => handleAction(onDelete)}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                Smazat
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+                  <hr className="my-1 border-gray-200" />
+
+                  {/* Smazat */}
+                  <Button
+                    onClick={() => handleAction(onDelete)}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Smazat
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -167,17 +197,17 @@ export default function QuickActions({
 function exportArticle(article: Article) {
   const exportData = {
     ...article,
-    exportedAt: new Date().toISOString()
+    exportedAt: new Date().toISOString(),
   }
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-    type: 'application/json'
+    type: "application/json",
   })
 
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
+  const a = document.createElement("a")
   a.href = url
-  a.download = `clanek-${article.title.toLowerCase().replace(/[^a-z0-9]/gi, '-')}.json`
+  a.download = `clanek-${article.title.toLowerCase().replace(/[^a-z0-9]/gi, "-")}.json`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

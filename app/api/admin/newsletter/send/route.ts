@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import jwt from 'jsonwebtoken'
-import { Resend } from 'resend'
+import { type NextRequest, NextResponse } from "next/server"
+import { promises as fs } from "fs"
+import path from "path"
+import jwt from "jsonwebtoken"
+import { Resend } from "resend"
+import { createNewsletterCampaign } from "@/lib/services/newsletter-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-const SUBSCRIBERS_FILE = path.join(process.cwd(), 'data', 'newsletter-subscribers.json')
-const CAMPAIGNS_FILE = path.join(process.cwd(), 'data', 'newsletter-campaigns.json')
+const SUBSCRIBERS_FILE = path.join(process.cwd(), "data", "newsletter-subscribers.json")
+const CAMPAIGNS_FILE = path.join(process.cwd(), "data", "newsletter-campaigns.json")
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
-
-// Initialize Resend (it will use mock if no API key provided)
-const resend = new Resend(process.env.RESEND_API_KEY || 'test-key')
+const resend = new Resend(process.env.RESEND_API_KEY)
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
 interface Subscriber {
   id: string
@@ -37,7 +38,7 @@ interface Campaign {
   subject: string
   recipients: string[]
   sentAt: string
-  status: 'sent' | 'failed' | 'sending'
+  status: "sent" | "failed" | "sending"
   stats: {
     sent: number
     delivered: number
@@ -45,47 +46,41 @@ interface Campaign {
   }
 }
 
-// Helper function to read subscribers
 async function readSubscribers(): Promise<Subscriber[]> {
   try {
-    const data = await fs.readFile(SUBSCRIBERS_FILE, 'utf8')
+    const data = await fs.readFile(SUBSCRIBERS_FILE, "utf8")
     return JSON.parse(data)
   } catch (error) {
-    console.error('Error reading subscribers file:', error)
+    console.error("Error reading subscribers file:", error)
     return []
   }
 }
 
-// Helper function to read campaigns
 async function readCampaigns(): Promise<Campaign[]> {
   try {
-    const data = await fs.readFile(CAMPAIGNS_FILE, 'utf8')
+    const data = await fs.readFile(CAMPAIGNS_FILE, "utf8")
     return JSON.parse(data)
   } catch (error) {
-    console.error('Error reading campaigns file:', error)
+    console.error("Error reading campaigns file:", error)
     return []
   }
 }
 
-// Helper function to write campaigns
 async function writeCampaigns(campaigns: Campaign[]): Promise<void> {
   try {
-    // Ensure data directory exists
     const dataDir = path.dirname(CAMPAIGNS_FILE)
     await fs.mkdir(dataDir, { recursive: true })
-    
     await fs.writeFile(CAMPAIGNS_FILE, JSON.stringify(campaigns, null, 2))
   } catch (error) {
-    console.error('Error writing campaigns file:', error)
+    console.error("Error writing campaigns file:", error)
     throw error
   }
 }
 
-// Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest): Promise<boolean> {
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const authHeader = request.headers.get("Authorization")
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return false
     }
 
@@ -97,22 +92,20 @@ async function verifyAdminToken(request: NextRequest): Promise<boolean> {
   }
 }
 
-// Function for sending emails with Resend or mock
 async function sendNewsletterEmail(
-  to: string, 
-  subject: string, 
-  htmlContent: string, 
+  to: string,
+  subject: string,
+  htmlContent: string,
   textContent: string,
-  unsubscribeToken?: string
+  unsubscribeToken?: string,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  
-  // Add unsubscribe link to content
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined)
   if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
+    throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.")
   }
   const unsubscribeUrl = `${baseUrl}/api/admin/newsletter?token=${unsubscribeToken}`
-  
+
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -175,202 +168,151 @@ async function sendNewsletterEmail(
     </body>
     </html>
   `
-  
-  // Try to send with Resend API if key is available
-  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'test-key') {
+
+  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== "test-key") {
     try {
       const result = await resend.emails.send({
-        from: 'Pavel Fišer <no-reply@pavelfiser.cz>',
+        from: "Pavel Fišer <no-reply@pavelfiser.cz>",
         to: [to],
         subject: subject,
         html: emailHtml,
         text: textContent + `\n\nOdhlásit se z odběru: ${unsubscribeUrl}`,
         headers: {
-          'List-Unsubscribe': `<${unsubscribeUrl}>`,
-          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-        }
+          "List-Unsubscribe": `<${unsubscribeUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
       })
-      
+
       if (result.data) {
         console.log(`✅ E-mail úspěšně odeslán na: ${to} (ID: ${result.data.id})`)
-        return { 
-          success: true, 
-          messageId: result.data.id 
+        return {
+          success: true,
+          messageId: result.data.id,
         }
       } else {
-        throw new Error(result.error?.message || 'Unknown error')
+        throw new Error(result.error?.message || "Unknown error")
       }
     } catch (error: any) {
       console.error(`❌ Chyba při odesílání na ${to}:`, error.message)
-      return { 
-        success: false, 
-        error: error.message 
+      return {
+        success: false,
+        error: error.message,
       }
     }
   } else {
-    // Mock sending for development/testing
     console.log(`📧 [MOCK] Sending newsletter to: ${to}`)
     console.log(`📧 [MOCK] Subject: ${subject}`)
-    
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 100))
-    
-    // Simulate 95% success rate
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
     const success = Math.random() > 0.05
-    
+
     if (success) {
-      return { 
-        success: true, 
-        messageId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` 
+      return {
+        success: true,
+        messageId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       }
     } else {
-      return { 
-        success: false, 
-        error: 'Mock email delivery failed' 
+      return {
+        success: false,
+        error: "Mock email delivery failed",
       }
     }
   }
 }
 
-// POST - Send newsletter campaign (admin only)
 export async function POST(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
-  if (!isAdmin) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
   try {
-    const { template, recipients }: { 
-      template: EmailTemplate, 
-      recipients: string[] 
-    } = await request.json()
+    const { subject, content, htmlContent, recipients, createdBy, templateId, tags, segmentId } = await request.json()
 
-    if (!template || !template.subject || !template.htmlContent) {
+    if (!subject || !content || !recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json(
-        { message: 'Neplatná šablona e-mailu' },
-        { status: 400 }
+        { message: "Missing required fields: subject, content, and recipients" },
+        { status: 400 },
       )
     }
 
-    // Get active subscribers if no specific recipients provided
-    let targetRecipients = recipients
-    if (!recipients || recipients.length === 0) {
-      const subscribers = await readSubscribers()
-      targetRecipients = subscribers
-        .filter(sub => sub.isActive)
-        .map(sub => sub.email)
-    }
-
-    if (targetRecipients.length === 0) {
-      return NextResponse.json(
-        { message: 'Žádní odběratelé k odeslání' },
-        { status: 400 }
-      )
-    }
-
-    // Create campaign record
-    const campaign: Campaign = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      templateId: template.id,
-      name: template.name,
-      subject: template.subject,
-      recipients: targetRecipients,
-      sentAt: new Date().toISOString(),
-      status: 'sending',
-      stats: {
-        sent: 0,
-        delivered: 0,
-        failed: 0
-      }
-    }
-
-    // Save campaign
-    const campaigns = await readCampaigns()
-    campaigns.push(campaign)
-    await writeCampaigns(campaigns)
-
-    // Send emails (in production, this should be done in background/queue)
-    const subscribers = await readSubscribers()
-    const sendResults = await Promise.allSettled(
-      targetRecipients.map(async (email) => {
-        const subscriber = subscribers.find(sub => sub.email === email)
-        const result = await sendNewsletterEmail(
-          email,
-          template.subject,
-          template.htmlContent,
-          template.textContent,
-          subscriber?.unsubscribeToken
-        )
-        
-        if (result.success) {
-          campaign.stats.delivered++
-        } else {
-          campaign.stats.failed++
-        }
-        
-        campaign.stats.sent++
-        return result
-      })
-    )
-
-    // Update campaign status
-    campaign.status = campaign.stats.failed === 0 ? 'sent' : 'sent'
-    
-    // Update campaigns file
-    const updatedCampaigns = campaigns.map(c => 
-      c.id === campaign.id ? campaign : c
-    )
-    await writeCampaigns(updatedCampaigns)
-
-    const successCount = sendResults.filter(
-      result => result.status === 'fulfilled' && result.value.success
-    ).length
-
-    return NextResponse.json({
-      message: `Newsletter byl odeslán! Úspěšně doručeno: ${successCount}/${targetRecipients.length}`,
-      campaign: {
-        id: campaign.id,
-        sent: campaign.stats.sent,
-        delivered: campaign.stats.delivered,
-        failed: campaign.stats.failed
-      }
+    // Send emails via Resend
+    const { data, error } = await resend.emails.send({
+      from: RESEND_FROM_EMAIL,
+      to: recipients,
+      subject: subject,
+      html: htmlContent || content,
+      text: content, // Fallback to text content if htmlContent is not provided
     })
 
+    if (error) {
+      console.error("Resend email error:", error)
+      // Record campaign as failed if Resend fails
+      await createNewsletterCampaign({
+        name: subject, // Using subject as name for simplicity
+        subject,
+        content,
+        html_content: htmlContent || content,
+        text_content: content,
+        template_id: templateId,
+        status: "failed",
+        scheduled_at: null,
+        sent_at: new Date(),
+        recipient_count: recipients.length,
+        open_count: 0, // Resend webhooks would update these later
+        click_count: 0,
+        bounce_count: 0,
+        unsubscribe_count: 0,
+        created_by: createdBy || "system",
+        tags: tags || [],
+        segment_id: segmentId,
+      })
+      return NextResponse.json({ message: "Failed to send emails", error: error.message }, { status: 500 })
+    }
+
+    // Record campaign as sent in the database
+    const newCampaign = await createNewsletterCampaign({
+      name: subject, // Using subject as name for simplicity
+      subject,
+      content,
+      html_content: htmlContent || content,
+      text_content: content,
+      template_id: templateId,
+      status: "sent",
+      scheduled_at: null,
+      sent_at: new Date(),
+      recipient_count: recipients.length,
+      open_count: 0, // Resend webhooks would update these later
+      click_count: 0,
+      bounce_count: 0,
+      unsubscribe_count: 0,
+      created_by: createdBy || "system",
+      tags: tags || [],
+      segment_id: segmentId,
+    })
+
+    return NextResponse.json({ message: "Emails sent successfully", data, campaign: newCampaign }, { status: 200 })
   } catch (error) {
-    console.error('Error sending newsletter:', error)
-    return NextResponse.json(
-      { message: 'Chyba při odesílání newsletteru' },
-      { status: 500 }
-    )
+    console.error("Error in newsletter send API:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }
 
-// GET - Get campaign history (admin only)
 export async function GET(request: NextRequest) {
   const isAdmin = await verifyAdminToken(request)
   if (!isAdmin) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
+    return NextResponse.json({ message: "Neautorizovaný přístup" }, { status: 401 })
   }
 
   try {
-    const campaigns = await readCampaigns();
-    const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
+    const campaigns = await readCampaigns()
+    const safeCampaigns = Array.isArray(campaigns) ? campaigns : []
     return NextResponse.json({
-      campaigns: safeCampaigns.sort((a, b) => 
-        new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
-      )
-    });
+      campaigns: safeCampaigns.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()),
+    })
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
-    return NextResponse.json(
-      { campaigns: [] },
-      { status: 500 }
-    );
+    console.error("Error fetching campaigns:", error)
+    return NextResponse.json({ campaigns: [] }, { status: 500 })
   }
 }

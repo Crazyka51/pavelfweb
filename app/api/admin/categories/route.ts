@@ -1,70 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server"
-<<<<<<< HEAD
-import { categoryService } from "@/lib/category-service"
-import { requireAuth } from "@/lib/auth-utils"
+import { NextResponse } from "next/server"
+import { getCategories, createCategory } from "@/lib/services/category-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-// GET /api/admin/categories
-export const GET = requireAuth(
-  async (request: NextRequest) => {
-    try {
-      const categories = await categoryService.getCategories()
-      return NextResponse.json(categories)
-    } catch (error) {
-      console.error("Error fetching categories:", error)
-      return NextResponse.json({ message: "Failed to fetch categories" }, { status: 500 })
-    }
-  },
-  ["admin", "editor"],
-)
+export async function GET(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
-// POST /api/admin/categories
-export const POST = requireAuth(
-  async (request: NextRequest) => {
-    try {
-      const data = await request.json()
-      const newCategory = await categoryService.createCategory(data)
-      if (!newCategory) {
-        return NextResponse.json({ message: "Failed to create category" }, { status: 500 })
-      }
-      return NextResponse.json(newCategory, { status: 201 })
-    } catch (error) {
-      console.error("Error creating category:", error)
-      return NextResponse.json({ message: "Failed to create category" }, { status: 500 })
-    }
-  },
-  ["admin"],
-)
-=======
-import { categoryService } from "@/lib/services/category-service"
-import { requireAuth } from "@/lib/auth-utils" // Assuming requireAuth is for API routes
+  const { searchParams } = new URL(request.url)
+  const page = Number.parseInt(searchParams.get("page") || "1")
+  const limit = Number.parseInt(searchParams.get("limit") || "10")
+  const activeOnly = searchParams.get("activeOnly") === "true"
 
-// GET /api/admin/categories
-const getCategories = async (req: NextRequest) => {
   try {
-    const categories = await categoryService.getAllCategories()
-    return NextResponse.json(categories, { status: 200 })
+    const { categories, total, hasMore } = await getCategories({ page, limit, activeOnly })
+    return NextResponse.json({ categories, total, hasMore })
   } catch (error) {
     console.error("Error fetching categories:", error)
-    return NextResponse.json({ message: "Failed to fetch categories." }, { status: 500 })
+    return NextResponse.json({ message: "Error fetching categories" }, { status: 500 })
   }
 }
 
-// POST /api/admin/categories
-const createCategory = async (req: NextRequest) => {
+export async function POST(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    const data = await req.json()
-    const newCategory = await categoryService.createCategory(data)
-    if (newCategory) {
-      return NextResponse.json(newCategory, { status: 201 })
-    } else {
-      return NextResponse.json({ message: "Failed to create category." }, { status: 500 })
-    }
+    const body = await request.json()
+    const newCategory = await createCategory({ ...body, created_by: authResult.user?.username || "admin" })
+    return NextResponse.json(newCategory, { status: 201 })
   } catch (error) {
     console.error("Error creating category:", error)
-    return NextResponse.json({ message: "Failed to create category." }, { status: 500 })
+    return NextResponse.json({ message: "Error creating category" }, { status: 500 })
   }
 }
-
-export const GET = requireAuth(getCategories)
-export const POST = requireAuth(createCategory)
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230

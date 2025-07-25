@@ -1,104 +1,61 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { categoryService } from "@/lib/services/category-service"
+import { NextResponse } from "next/server"
+import { getCategoryById, updateCategory, deleteCategory } from "@/lib/services/category-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-// GET - Get single category
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResponse = requireAuth(request)
-  if (authResponse) {
-    return authResponse
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
+  const { id } = params
   try {
-    const category = await categoryService.getCategoryById(params.id)
-
+    const category = await getCategoryById(id)
     if (!category) {
-      return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
+      return NextResponse.json({ message: "Category not found" }, { status: 404 })
     }
-
     return NextResponse.json(category)
   } catch (error) {
     console.error("Error fetching category:", error)
-    return NextResponse.json(
-      {
-        message: "Chyba při načítání kategorie",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ message: "Error fetching category" }, { status: 500 })
   }
 }
 
-// PUT - Update category
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResponse = requireAuth(request)
-  if (authResponse) {
-    return authResponse
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
+  const { id } = params
   try {
-    const updateData = await request.json()
-    // Ensure that the `order` property is mapped to `display_order` for the service
-    if (updateData.order !== undefined) {
-      updateData.display_order = updateData.order
-      delete updateData.order
+    const body = await request.json()
+    const updated = await updateCategory(id, body)
+    if (!updated) {
+      return NextResponse.json({ message: "Category not found or failed to update" }, { status: 404 })
     }
-    if (updateData.parentId !== undefined) {
-      updateData.parent_id = updateData.parentId
-      delete updateData.parentId
-    }
-    if (updateData.isActive !== undefined) {
-      updateData.is_active = updateData.isActive
-      delete updateData.isActive
-    }
-
-    const updatedCategory = await categoryService.updateCategory(params.id, updateData)
-
-    if (!updatedCategory) {
-      return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      message: "Kategorie byla aktualizována",
-      category: updatedCategory,
-    })
+    return NextResponse.json(updated)
   } catch (error) {
     console.error("Error updating category:", error)
-    return NextResponse.json(
-      {
-        message: error instanceof Error ? error.message : "Chyba při aktualizaci kategorie",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ message: "Error updating category" }, { status: 500 })
   }
 }
 
-// DELETE - Delete category
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResponse = requireAuth(request)
-  if (authResponse) {
-    return authResponse
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
+  const { id } = params
   try {
-    const deleted = await categoryService.deleteCategory(params.id)
-
-    if (!deleted) {
-      return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
+    const success = await deleteCategory(id)
+    if (!success) {
+      return NextResponse.json({ message: "Category not found or failed to delete" }, { status: 404 })
     }
-
-    return NextResponse.json({
-      message: "Kategorie byla úspěšně smazána",
-    })
+    return NextResponse.json({ message: "Category deleted successfully" })
   } catch (error) {
     console.error("Error deleting category:", error)
-    return NextResponse.json(
-      {
-        message: error instanceof Error ? error.message : "Chyba při mazání kategorie",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ message: "Error deleting category" }, { status: 500 })
   }
 }

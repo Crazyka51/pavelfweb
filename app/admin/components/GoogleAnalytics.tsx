@@ -1,57 +1,19 @@
-'use client'
+"use client"
 
-import { useEffect } from 'react'
-import Script from 'next/script'
-
-const GA_TRACKING_ID = 'G-Z5Y3C04P25'
-
-declare global {
-  interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
-  }
-}
+import { useEffect } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { pageview } from "@/lib/google-analytics"
 
 export function GoogleAnalytics() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.dataLayer = window.dataLayer || []
-      const gtag = (...args: any[]) => {
-        window.dataLayer.push(args)
-      }
-      window.gtag = gtag
-      gtag('js', new Date())
-      gtag('config', GA_TRACKING_ID)
+    if (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
+      const url = pathname + searchParams.toString()
+      pageview(url)
     }
-  }, [])
+  }, [pathname, searchParams])
 
-  return (
-    <>
-      <Script
-        strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-      />
-    </>
-  )
-}
-
-// Utility function pro tracking events
-export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    })
-  }
-}
-
-// Utility function pro tracking page views
-export const trackPageView = (url: string, title: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_TRACKING_ID, {
-      page_title: title,
-      page_location: url,
-    })
-  }
+  return null
 }

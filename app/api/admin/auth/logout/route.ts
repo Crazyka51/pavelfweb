@@ -1,23 +1,12 @@
 import { NextResponse } from "next/server"
+import { signOut } from "@/lib/auth-utils"
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const response = NextResponse.json({
-      success: true,
-      message: "Odhlášení úspěšné",
-    })
-
-    // Smazání HTTP-only cookie
-    response.cookies.set("session", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 0,
-      path: "/",
-    })
-
-    return response
+    await signOut()
+    return NextResponse.json({ message: "Logout successful" })
   } catch (error) {
-    return NextResponse.json({ error: "Chyba při odhlašování" }, { status: 500 })
+    console.error("Logout API error:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

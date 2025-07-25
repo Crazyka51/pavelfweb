@@ -3,345 +3,288 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Tag } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { MoreHorizontalIcon, PlusCircleIcon, Loader2 } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  type Category,
+} from "@/lib/services/category-service"
 
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  color: string
-  articleCount?: number // Optional, added by API if requested
-  parentId?: string
-  display_order: number // Matches DB column name
-  is_active: boolean
-  created_at: string
-  updated_at: string
+interface CategoriesResponse {
+  categories: Category[]
+  total: number
+  hasMore: boolean
 }
 
-export default function CategoryManager() {
+export function CategoryManager() {
   const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [hasMore, setHasMore] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    color: "#3B82F6",
-    parentId: "",
-    displayOrder: 0,
-    isActive: true,
-  })
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"]
+  const { toast } = useToast()
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  const loadCategories = async () => {
+  const fetchCategoriesData = async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const response = await fetch("/api/admin/categories?includeArticleCount=true")
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.categories) {
-          setCategories(data.categories)
-        } else {
-          console.error("Error loading categories: Invalid data format", data)
-        }
-      } else {
-        console.error("Failed to load categories", response.status, await response.text())
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error)
+      const { categories, total, hasMore } = await getCategories({ page, limit })
+      setCategories(categories)
+      setHasMore(hasMore)
+    } catch (err: any) {
+      console.error("Error fetching categories:", err)
+      setError(err.message || "Nepodařilo se načíst kategorie.")
+      toast({
+        title: "Chyba",
+        description: err.message || "Nepodařilo se načíst kategorie.",
+        variant: "destructive",
+      })
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchCategoriesData()
+  }, [page, limit])
+
+  const handleCreateOrUpdateCategory = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSaving(true)
+    setError(null)
 
     try {
       if (editingCategory) {
-        // Update existing category
-        const response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            description: formData.description,
-            color: formData.color,
-            parentId: formData.parentId || null,
-            order: formData.displayOrder, // Map to 'order' for API route
-            isActive: formData.isActive,
-          }),
-        })
-
-        if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně aktualizována")
-        } else {
-          const errorData = await response.json()
-          alert(`Chyba při aktualizaci kategorie: ${errorData.message || response.statusText}`)
-        }
+        await updateCategory(editingCategory.id, { name: newCategoryName })
       } else {
-        // Create new category
-        const response = await fetch("/api/admin/categories", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            description: formData.description,
-            color: formData.color,
-            parentId: formData.parentId || null,
-            displayOrder: formData.displayOrder,
-            isActive: formData.isActive,
-          }),
-        })
-
-        if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně vytvořena")
-        } else {
-          const errorData = await response.json()
-          alert(`Chyba při vytváření kategorie: ${errorData.message || response.statusText}`)
-        }
+        await createCategory({ name: newCategoryName })
       }
 
-      setIsDialogOpen(false)
+      toast({
+        title: "Úspěch",
+        description: `Kategorie byla úspěšně ${editingCategory ? "aktualizována" : "vytvořena"}.`,
+        variant: "default",
+      })
+      setNewCategoryName("")
       setEditingCategory(null)
-      setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
-    } catch (error) {
-      console.error("Error saving category:", error)
-      alert("Chyba při ukládání kategorie")
+      fetchCategoriesData() // Refresh the list
+    } catch (err: any) {
+      setError(err.message)
+      toast({
+        title: "Chyba",
+        description: err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category)
-    setFormData({
-      name: category.name,
-      description: category.description || "",
-      color: category.color || "#3B82F6",
-      parentId: category.parent_id || "",
-      displayOrder: category.display_order,
-      isActive: category.is_active,
-    })
-    setIsDialogOpen(true)
-  }
+  const handleDeleteCategory = async () => {
+    if (!deleteCategoryId) return
 
-  const handleDelete = async (categoryId: string) => {
-    if (confirm("Opravdu chcete smazat tuto kategorii?")) {
-      try {
-        const response = await fetch(`/api/admin/categories/${categoryId}`, {
-          method: "DELETE",
-        })
+    setIsDeleting(true)
+    try {
+      const success = await deleteCategory(deleteCategoryId)
 
-        if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně smazána")
-        } else {
-          const errorData = await response.json()
-          alert(`Chyba při mazání kategorie: ${errorData.message || response.statusText}`)
-        }
-      } catch (error) {
-        console.error("Error deleting category:", error)
-        alert("Chyba při mazání kategorie")
+      if (!success) {
+        throw new Error("Failed to delete category.")
       }
+
+      toast({
+        title: "Úspěch",
+        description: "Kategorie byla úspěšně smazána.",
+        variant: "default",
+      })
+      setDeleteCategoryId(null)
+      fetchCategoriesData() // Refresh the list
+    } catch (err: any) {
+      console.error("Error deleting category:", err)
+      setError(err.message || "Nepodařilo se smazat kategorii.")
+      toast({
+        title: "Chyba",
+        description: err.message || "Nepodařilo se smazat kategorii.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
-  const handleNewCategory = () => {
-    setEditingCategory(null)
-    setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
-    setIsDialogOpen(true)
+  const openEditDialog = (category: Category) => {
+    setEditingCategory(category)
+    setNewCategoryName(category.name)
   }
 
-  if (isLoading) {
-    return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+  const closeEditDialog = () => {
+    setEditingCategory(null)
+    setNewCategoryName("")
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Kategorie</h1>
-          <p className="text-gray-600 mt-1">Správa kategorií a štítků pro články</p>
-        </div>
-        <button
-          onClick={handleNewCategory}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Správa kategorií</h2>
+        <Button
+          onClick={() => {
+            setEditingCategory(null)
+            setNewCategoryName("")
+          }}
         >
-          <Plus className="h-4 w-4" />
+          <PlusCircleIcon className="mr-2 h-4 w-4" />
           Nová kategorie
-        </button>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <div key={category.id} className="bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color || "#ccc" }} />
-                  <h3 className="text-lg font-semibold">{category.name}</h3>
-                </div>
-                <div className="flex space-x-1">
-                  <button
-                    onClick={() => handleEdit(category)}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(category.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {category.description && <p className="text-gray-600 text-sm mb-3">{category.description}</p>}
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">#{category.slug}</span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
-                  {category.articleCount || 0} článků
-                </span>
-              </div>
-
-              <div className="text-xs text-gray-400 mt-2">
-                Vytvořeno: {new Date(category.created_at).toLocaleDateString("cs-CZ")}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {categories.length === 0 && !isLoading && (
-        <div className="text-center py-12">
-          <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Žádné kategorie</h3>
-          <p className="text-gray-600 mb-4">Začněte vytvořením první kategorie pro vaše články</p>
-          <button
-            onClick={handleNewCategory}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      {loading ? (
+        <div className="text-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="mt-2">Načítám kategorie...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-500">
+          <p>{error}</p>
+          <Button onClick={fetchCategoriesData} className="mt-4">
+            Zkusit znovu
+          </Button>
+        </div>
+      ) : categories.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>Žádné kategorie k zobrazení.</p>
+          <Button
+            onClick={() => {
+              setEditingCategory(null)
+              setNewCategoryName("")
+            }}
+            className="mt-4"
           >
             Vytvořit první kategorii
-          </button>
+          </Button>
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Název kategorie</TableHead>
+                <TableHead>Počet článků</TableHead>
+                <TableHead className="text-right">Akce</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {categories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell>{category.articleCount}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontalIcon className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => openEditDialog(category)}>Upravit</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setDeleteCategoryId(category.id)}>Smazat</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
-      {/* Modal */}
-      {isDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-semibold mb-4">{editingCategory ? "Upravit kategorii" : "Nová kategorie"}</h2>
+      <div className="flex justify-end space-x-2">
+        <Button
+          variant="outline"
+          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+          disabled={page === 1 || loading}
+        >
+          Předchozí
+        </Button>
+        <Button variant="outline" onClick={() => setPage((prev) => prev + 1)} disabled={!hasMore || loading}>
+          Další
+        </Button>
+      </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Název</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Název kategorie"
-                  required
-                />
-              </div>
+      <Dialog open={newCategoryName !== "" || !!editingCategory} onOpenChange={closeEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingCategory ? "Upravit kategorii" : "Nová kategorie"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateOrUpdateCategory} className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="categoryName" className="text-right">
+                Název
+              </Label>
+              <Input
+                id="categoryName"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeEditDialog} disabled={isSaving}>
+                Zrušit
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingCategory ? "Uložit změny" : "Vytvořit"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Popis</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Popis kategorie (volitelné)"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Pořadí zobrazení</label>
-                <input
-                  type="number"
-                  value={formData.displayOrder}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, displayOrder: Number.parseInt(e.target.value) || 0 }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Pořadí"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Barva</label>
-                <div className="flex space-x-2">
-                  {colors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        formData.color === color ? "border-gray-900" : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-                  Aktivní
-                </label>
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Zrušit
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingCategory ? "Uložit" : "Vytvořit"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={!!deleteCategoryId} onOpenChange={(open) => !open && setDeleteCategoryId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Opravdu chcete smazat tuto kategorii?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Kategorie bude trvale odstraněna. Všechny články přiřazené k této kategorii budou
+              mít kategorii nastavenou na NULL.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Zrušit</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCategory} disabled={isDeleting}>
+              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

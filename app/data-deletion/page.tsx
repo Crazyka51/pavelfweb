@@ -121,7 +121,7 @@ export default function DataDeletionPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Jak požádat o smazání</h2>
             <p className="text-gray-700 mb-6">
-              Vyberte způsob, který vám vyhovuje. Všechny žádosti mají stejnou právní váhu.
+              Vyberte zp��sob, který vám vyhovuje. Všechny žádosti mají stejnou právní váhu.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6 mb-8">

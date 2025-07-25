@@ -4,27 +4,33 @@ import { useState, useEffect } from "react"
 
 interface TypewriterTextProps {
   text: string
-  speed?: number
   delay?: number
+  speed?: number
+  onComplete?: () => void
 }
 
-export function TypewriterText({ text, speed = 50, delay = 0 }: TypewriterTextProps) {
-  const [displayText, setDisplayText] = useState("")
-  const [currentIndex, setCurrentIndex] = useState(0)
+export function TypewriterText({ text, delay = 0, speed = 50, onComplete }: TypewriterTextProps) {
+  const [displayedText, setDisplayedText] = useState("")
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    if (currentIndex < text.length) {
-      const timeout = setTimeout(
-        () => {
-          setDisplayText((prev) => prev + text[currentIndex])
-          setCurrentIndex((prev) => prev + 1)
-        },
-        currentIndex === 0 ? delay : speed,
-      )
+    const timer = setTimeout(() => {
+      if (index < text.length) {
+        setDisplayedText((prev) => prev + text.charAt(index))
+        setIndex((prev) => prev + 1)
+      } else {
+        onComplete?.()
+      }
+    }, speed)
 
-      return () => clearTimeout(timeout)
-    }
-  }, [currentIndex, text, speed, delay])
+    return () => clearTimeout(timer)
+  }, [index, text, speed, onComplete])
 
-  return <span>{displayText}</span>
+  useEffect(() => {
+    // Reset when text changes
+    setDisplayedText("")
+    setIndex(0)
+  }, [text])
+
+  return <>{displayedText}</>
 }

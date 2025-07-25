@@ -1,161 +1,173 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react'
+import { useState, useEffect } from "react"
+import { Bell, XCircle, CheckCircle, Info, AlertTriangle } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
 
-export type NotificationType = 'success' | 'error' | 'warning' | 'info'
-
-export interface Notification {
+interface Notification {
   id: string
-  type: NotificationType
-  title: string
-  message?: string
-  duration?: number
-  actions?: Array<{
-    label: string
-    onClick: () => void
-    variant?: 'primary' | 'secondary'
-  }>
+  type: "success" | "error" | "info" | "warning"
+  message: string
+  timestamp: Date
+  read: boolean
 }
 
-interface NotificationSystemProps {
-  notifications: Notification[]
-  onRemove: (id: string) => void
-}
+export function NotificationSystem() {
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [showAll, setShowAll] = useState(false)
 
-export default function NotificationSystem({ notifications, onRemove }: NotificationSystemProps) {
   useEffect(() => {
-    notifications.forEach(notification => {
-      if (notification.duration && notification.duration > 0) {
-        const timer = setTimeout(() => {
-          onRemove(notification.id)
-        }, notification.duration)
+    // Simulate fetching notifications
+    const fetchedNotifications: Notification[] = [
+      {
+        id: "1",
+        type: "success",
+        message: "Článek 'Novinky z radnice' byl úspěšně publikován.",
+        timestamp: new Date(Date.now() - 3600000),
+        read: false,
+      },
+      {
+        id: "2",
+        type: "error",
+        message: "Chyba při odesílání newsletteru: Neplatná adresa příjemce.",
+        timestamp: new Date(Date.now() - 7200000),
+        read: false,
+      },
+      {
+        id: "3",
+        type: "info",
+        message: "Systémová aktualizace je naplánována na zítra v 02:00.",
+        timestamp: new Date(Date.now() - 10800000),
+        read: true,
+      },
+      {
+        id: "4",
+        type: "warning",
+        message: "Nízké místo na disku: Zbývá méně než 10% volného místa.",
+        timestamp: new Date(Date.now() - 14400000),
+        read: false,
+      },
+    ]
+    setNotifications(fetchedNotifications)
+  }, [])
 
-        return () => clearTimeout(timer)
-      }
-    })
-  }, [notifications, onRemove])
+  const markAsRead = (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  }
 
-  const getIcon = (type: NotificationType) => {
+  const deleteNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
+
+  const getIcon = (type: Notification["type"]) => {
     switch (type) {
-      case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
-      case 'error':
-        return <XCircle className="w-5 h-5 text-red-500" />
-      case 'warning':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />
-      case 'info':
-        return <Info className="w-5 h-5 text-blue-500" />
+      case "success":
+        return <CheckCircle className="h-5 w-5 text-green-500" />
+      case "error":
+        return <XCircle className="h-5 w-5 text-red-500" />
+      case "info":
+        return <Info className="h-5 w-5 text-blue-500" />
+      case "warning":
+        return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+      default:
+        return null
     }
   }
 
-  const getStyles = (type: NotificationType) => {
+  const getBackgroundColor = (type: Notification["type"]) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200 text-green-900'
-      case 'error':
-        return 'bg-red-50 border-red-200 text-red-900'
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-900'
-      case 'info':
-        return 'bg-blue-50 border-blue-200 text-blue-900'
+      case "success":
+        return "bg-green-50 border-green-200"
+      case "error":
+        return "bg-red-50 border-red-200"
+      case "info":
+        return "bg-blue-50 border-blue-200"
+      case "warning":
+        return "bg-yellow-50 border-yellow-200"
+      default:
+        return "bg-gray-50 border-gray-200"
     }
   }
 
-  if (notifications.length === 0) return null
+  const unreadCount = notifications.filter((n) => !n.read).length
+  const displayedNotifications = showAll ? notifications : notifications.filter((n) => !n.read)
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
-      {notifications.map(notification => (
-        <div
-          key={notification.id}
-          className={`border rounded-lg shadow-lg p-4 transition-all duration-300 ${getStyles(notification.type)}`}
-        >
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              {getIcon(notification.type)}
-            </div>
-            
-            <div className="ml-3 flex-1">
-              <h4 className="text-sm font-medium">
-                {notification.title}
-              </h4>
-              
-              {notification.message && (
-                <p className="text-sm mt-1 opacity-90">
-                  {notification.message}
-                </p>
-              )}
-              
-              {notification.actions && notification.actions.length > 0 && (
-                <div className="mt-3 flex gap-2">
-                  {notification.actions.map((action, index) => (
-                    <button
-                      key={index}
-                      onClick={action.onClick}
-                      className={`text-xs px-3 py-1 rounded-md font-medium transition-colors ${
-                        action.variant === 'primary'
-                          ? 'bg-white bg-opacity-20 hover:bg-opacity-30'
-                          : 'text-current opacity-75 hover:opacity-100'
-                      }`}
-                    >
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <button
-              onClick={() => onRemove(notification.id)}
-              className="flex-shrink-0 ml-2 text-current opacity-50 hover:opacity-100 transition-opacity"
-            >
-              <X className="w-4 h-4" />
-            </button>
+    <div className="p-8 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Notifikace</h1>
+          <p className="text-gray-600 mt-1">Přehled systémových upozornění a událostí</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowAll(!showAll)} className="text-sm text-blue-600 hover:text-blue-700">
+            {showAll ? "Zobrazit jen nepřečtené" : `Zobrazit všechny (${notifications.length})`}
+          </button>
+          <div className="relative">
+            <Bell className="h-6 w-6 text-gray-600" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                {unreadCount}
+              </span>
+            )}
           </div>
         </div>
-      ))}
+      </div>
+
+      <div className="space-y-4">
+        <AnimatePresence>
+          {displayedNotifications.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="text-center py-12 text-gray-500"
+            >
+              <Bell className="h-12 w-12 mx-auto mb-4" />
+              <p>Žádné notifikace k zobrazení.</p>
+            </motion.div>
+          ) : (
+            displayedNotifications.map((notification) => (
+              <motion.div
+                key={notification.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -100, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex items-start gap-4 p-4 rounded-lg border ${getBackgroundColor(notification.type)} ${
+                  notification.read ? "opacity-70" : ""
+                }`}
+              >
+                <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
+                <div className="flex-1">
+                  <p className={`font-medium ${notification.read ? "text-gray-600" : "text-gray-900"}`}>
+                    {notification.message}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{notification.timestamp.toLocaleString("cs-CZ")}</p>
+                </div>
+                <div className="flex-shrink-0 flex gap-2">
+                  {!notification.read && (
+                    <button
+                      onClick={() => markAsRead(notification.id)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      title="Označit jako přečtené"
+                    >
+                      Označit jako přečtené
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteNotification(notification.id)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                    title="Smazat notifikaci"
+                  >
+                    Smazat
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
-}
-
-// Hook pro snadné používání notifikací
-export function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-
-  const addNotification = (notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-    setNotifications(prev => [...prev, { ...notification, id }])
-  }
-
-  const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id))
-  }
-
-  const clearAll = () => {
-    setNotifications([])
-  }
-
-  // Předpřipravené metody pro různé typy notifikací
-  const notify = {
-    success: (title: string, message?: string, duration = 5000) => 
-      addNotification({ type: 'success', title, message, duration }),
-    
-    error: (title: string, message?: string, duration = 0) => 
-      addNotification({ type: 'error', title, message, duration }),
-    
-    warning: (title: string, message?: string, duration = 7000) => 
-      addNotification({ type: 'warning', title, message, duration }),
-    
-    info: (title: string, message?: string, duration = 5000) => 
-      addNotification({ type: 'info', title, message, duration }),
-  }
-
-  return {
-    notifications,
-    addNotification,
-    removeNotification,
-    clearAll,
-    notify
-  }
 }

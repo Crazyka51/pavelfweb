@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import LoginForm from "./components/LoginForm"
 import AdminLayout from "./components/AdminLayout"
-import Dashboard from "./components/Dashboard"
+import AdminDashboard from "./components/AdminDashboard"
 import ArticleManager from "./components/ArticleManager"
 import ArticleEditor from "./components/ArticleEditor"
 import CategoryManager from "./components/CategoryManager"
@@ -26,36 +27,14 @@ const categories = ["Aktuality", "Městská politika", "Doprava", "Životní pro
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false) // Změněno na false
   const [isLoading, setIsLoading] = useState(true) // Změněno na true
-  const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard")
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null)
-  const [article, setArticle] = useState<any | null>(null)
+  const searchParams = useSearchParams()
+  const tab = searchParams.get("tab")
+  const articleId = searchParams.get("articleId")
 
   useEffect(() => {
     checkAuthentication() // Nyní aktivujeme kontrolu autentizace
   }, [])
-
-  useEffect(() => {
-    const fetchArticle = async () => {
-      if (editingArticleId) {
-        try {
-          const response = await fetch(`/api/admin/articles/${editingArticleId}`)
-          if (response.ok) {
-            const fetchedArticle = await response.json()
-            setArticle(fetchedArticle.data) // Přístup k datům přes .data
-          } else {
-            setArticle(null)
-          }
-        } catch (error) {
-          console.error("Error fetching article:", error)
-          setArticle(null)
-        }
-      } else {
-        setArticle(null)
-      }
-    }
-    fetchArticle()
-  }, [editingArticleId])
 
   const checkAuthentication = async () => {
     try {
@@ -94,34 +73,8 @@ export default function AdminPage() {
       console.error("Logout error:", error)
     } finally {
       setIsAuthenticated(false)
-      setCurrentSection("dashboard")
       setCurrentUser(null)
     }
-  }
-
-  const handleSectionChange = (section: string) => {
-    setCurrentSection(section as AdminSection)
-    setEditingArticleId(null)
-  }
-
-  const handleCreateNew = () => {
-    setEditingArticleId(null)
-    setCurrentSection("new-article")
-  }
-
-  const handleEditArticle = (article: any) => {
-    setEditingArticleId(article.id)
-    setCurrentSection("new-article")
-  }
-
-  const handleBackToDashboard = () => {
-    setCurrentSection("dashboard")
-    setEditingArticleId(null)
-  }
-
-  const handleBackToArticles = () => {
-    setCurrentSection("articles")
-    setEditingArticleId(null)
   }
 
   if (isLoading) {
@@ -138,82 +91,27 @@ export default function AdminPage() {
   }
 
   const renderContent = () => {
-    switch (currentSection) {
-      case "dashboard":
-        return <Dashboard onCreateNew={handleCreateNew} />
+    if (tab === "articles" && articleId) {
+      return <ArticleEditor articleId={articleId} categories={categories} />
+    }
+    switch (tab) {
       case "articles":
-        return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
-      case "new-article":
-        return (
-          <ArticleEditor
-            article={article}
-            categories={categories}
-            onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            onSave={async (articleData) => {
-              console.log("Saving article:", articleData)
-              let response
-              if (editingArticleId) {
-                response = await fetch(`/api/admin/articles/${editingArticleId}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(articleData),
-                })
-              } else {
-                response = await fetch("/api/admin/articles", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(articleData),
-                })
-              }
-
-              if (response.ok) {
-                console.log("Article saved successfully!")
-                ;(editingArticleId ? handleBackToArticles : handleBackToDashboard)()
-              } else {
-                try {
-                  const errorData = await response.json()
-                  console.error("Failed to save article:", errorData.error)
-                  alert(`Chyba při ukládání článku: ${errorData.error || 'Neznámá chyba'}`)
-                } catch (e) {
-                  console.error("Failed to parse error response:", e)
-                  alert(`Chyba při ukládání článku: Neočekávaná chyba serveru`)
-                }
-              }
-            }}
-          />
-        )
-      case "categories":
-        return <CategoryManager />
+        return <ArticleManager />
       case "newsletter":
         return <NewsletterManager />
       case "analytics":
         return <AnalyticsManager />
-      case "backup":
-        return (
-          <div className="p-8">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-2xl font-bold mb-4">Zálohy</h2>
-              <p className="text-gray-600">Export a import dat systému</p>
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800">Funkce zálohování bude implementována v budoucí verzi.</p>
-              </div>
-            </div>
-          </div>
-        )
+      case "categories":
+        return <CategoryManager />
       case "settings":
         return <SettingsManager />
       default:
-        return <Dashboard onCreateNew={handleCreateNew} />
+        return <AdminDashboard />
     }
   }
 
   return (
-    <AdminLayout
-      currentSection={currentSection}
-      onSectionChange={handleSectionChange}
-      onLogout={handleLogout}
-      currentUser={currentUser}
-    >
+    <AdminLayout currentSection={tab as AdminSection} onLogout={handleLogout} currentUser={currentUser}>
       {renderContent()}
     </AdminLayout>
   )

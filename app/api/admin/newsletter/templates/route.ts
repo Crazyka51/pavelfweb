@@ -1,188 +1,78 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import jwt from 'jsonwebtoken'
+import { NextResponse } from "next/server"
+import {
+  getNewsletterTemplates,
+  createNewsletterTemplate,
+  updateNewsletterTemplate,
+  deleteNewsletterTemplate,
+} from "@/lib/services/newsletter-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-const TEMPLATES_FILE = path.join(process.cwd(), 'data', 'newsletter-templates.json')
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+export async function GET(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
-interface EmailTemplate {
-  id: string
-  name: string
-  subject: string
-  htmlContent: string
-  textContent: string
-  createdAt: string
-  updatedAt: string
-}
-
-// Helper function to read templates
-async function readTemplates(): Promise<EmailTemplate[]> {
   try {
-    const data = await fs.readFile(TEMPLATES_FILE, 'utf8')
-    return JSON.parse(data)
+    const templates = await getNewsletterTemplates()
+    return NextResponse.json(templates)
   } catch (error) {
-    console.error('Error reading templates file:', error)
-    return []
+    console.error("Error fetching newsletter templates:", error)
+    return NextResponse.json({ message: "Error fetching templates" }, { status: 500 })
   }
 }
 
-// Helper function to write templates
-async function writeTemplates(templates: EmailTemplate[]): Promise<void> {
+export async function POST(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    // Ensure data directory exists
-    const dataDir = path.dirname(TEMPLATES_FILE)
-    await fs.mkdir(dataDir, { recursive: true })
-    
-    await fs.writeFile(TEMPLATES_FILE, JSON.stringify(templates, null, 2))
+    const body = await request.json()
+    const newTemplate = await createNewsletterTemplate({ ...body, created_by: authResult.user?.username || "admin" })
+    return NextResponse.json(newTemplate, { status: 201 })
   } catch (error) {
-    console.error('Error writing templates file:', error)
-    throw error
+    console.error("Error creating newsletter template:", error)
+    return NextResponse.json({ message: "Error creating template" }, { status: 500 })
   }
 }
 
-// Helper function to verify admin token
-async function verifyAdminToken(request: NextRequest): Promise<boolean> {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id } = params
   try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return false
+    const body = await request.json()
+    const updatedTemplate = await updateNewsletterTemplate(id, body)
+    if (!updatedTemplate) {
+      return NextResponse.json({ message: "Template not found" }, { status: 404 })
     }
-
-    const token = authHeader.substring(7)
-    jwt.verify(token, JWT_SECRET)
-    return true
+    return NextResponse.json(updatedTemplate)
   } catch (error) {
-    return false
+    console.error("Error updating newsletter template:", error)
+    return NextResponse.json({ message: "Error updating template" }, { status: 500 })
   }
 }
 
-// GET - Get all templates (admin only)
-export async function GET(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
-  if (!isAdmin) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
+  const { id } = params
   try {
-    const templates = await readTemplates()
-    
-    return NextResponse.json({
-      templates: templates
-    })
-
+    const success = await deleteNewsletterTemplate(id)
+    if (!success) {
+      return NextResponse.json({ message: "Template not found or failed to delete" }, { status: 404 })
+    }
+    return NextResponse.json({ message: "Template deleted successfully" })
   } catch (error) {
-    console.error('Error fetching templates:', error)
-    return NextResponse.json(
-      { message: 'Chyba při načítání šablon' },
-      { status: 500 }
-    )
-  }
-}
-
-// POST - Create or update template (admin only)
-export async function POST(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
-  if (!isAdmin) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
-  }
-
-  try {
-    const templateData: EmailTemplate = await request.json()
-
-    if (!templateData.name || !templateData.subject || !templateData.htmlContent) {
-      return NextResponse.json(
-        { message: 'Chybí povinné údaje' },
-        { status: 400 }
-      )
-    }
-
-    const templates = await readTemplates()
-
-    // Check if updating existing template
-    const existingIndex = templates.findIndex(t => t.id === templateData.id)
-    
-    if (existingIndex >= 0) {
-      // Update existing template
-      templates[existingIndex] = {
-        ...templateData,
-        updatedAt: new Date().toISOString()
-      }
-    } else {
-      // Create new template
-      const newTemplate: EmailTemplate = {
-        ...templateData,
-        id: templateData.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-      templates.push(newTemplate)
-    }
-
-    await writeTemplates(templates)
-
-    return NextResponse.json({
-      message: 'Šablona byla úspěšně uložena',
-      template: templates[existingIndex] || templates[templates.length - 1]
-    })
-
-  } catch (error) {
-    console.error('Error saving template:', error)
-    return NextResponse.json(
-      { message: 'Chyba při ukládání šablony' },
-      { status: 500 }
-    )
-  }
-}
-
-// DELETE - Delete template (admin only)
-export async function DELETE(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
-  if (!isAdmin) {
-    return NextResponse.json(
-      { message: 'Neautorizovaný přístup' },
-      { status: 401 }
-    )
-  }
-
-  try {
-    const { searchParams } = new URL(request.url)
-    const templateId = searchParams.get('id')
-
-    if (!templateId) {
-      return NextResponse.json(
-        { message: 'ID šablony je povinné' },
-        { status: 400 }
-      )
-    }
-
-    const templates = await readTemplates()
-    const filteredTemplates = templates.filter(t => t.id !== templateId)
-    
-    if (filteredTemplates.length === templates.length) {
-      return NextResponse.json(
-        { message: 'Šablona nebyla nalezena' },
-        { status: 404 }
-      )
-    }
-
-    await writeTemplates(filteredTemplates)
-
-    return NextResponse.json({
-      message: 'Šablona byla úspěšně smazána'
-    })
-
-  } catch (error) {
-    console.error('Error deleting template:', error)
-    return NextResponse.json(
-      { message: 'Chyba při mazání šablony' },
-      { status: 500 }
-    )
+    console.error("Error deleting newsletter template:", error)
+    return NextResponse.json({ message: "Error deleting template" }, { status: 500 })
   }
 }

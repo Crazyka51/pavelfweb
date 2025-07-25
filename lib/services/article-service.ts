@@ -1,285 +1,5 @@
-<<<<<<< HEAD
-import { sql } from "drizzle-orm";
-import { db } from "@/lib/database";
-import { articles } from "@/lib/schema";
-// Definice typu přesunuta do tohoto souboru pro zabránění kruhových importů
-export type Article = {
-  id: string
-  title: string
-  content: string
-  excerpt?: string | null
-  category: string
-  tags: string[]
-  isPublished: boolean 
-  imageUrl?: string | null 
-  publishedAt?: Date | null
-  createdAt: Date
-  updatedAt: Date
-  createdBy: string
-}
-
-export class ArticleService {
-  
-  // Get all articles with optional filtering
-  async getArticles(filters: {
-    published?: boolean;
-    category?: string;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<Article[]> {
-    try {
-      let query;
-      
-      if (filters.published !== undefined && filters.category) {
-        query = db.query.articles.findMany({
-          where: (articles, { eq, and }) => and(
-            eq(articles.isPublished, !!filters.published), // Convert to boolean to avoid undefined
-            eq(articles.category, filters.category || "")  // Convert to string to avoid undefined
-          ),
-          orderBy: (articles, { desc }) => [desc(articles.created_at)],
-          limit: filters.limit || 50,
-          offset: filters.offset || 0
-        });
-      } else if (filters.published !== undefined) {
-        query = db.query.articles.findMany({
-          where: (articles, { eq }) => eq(articles.isPublished, !!filters.published), // Convert to boolean to avoid undefined
-          orderBy: (articles, { desc }) => [desc(articles.created_at)],
-          limit: filters.limit || 50,
-          offset: filters.offset || 0
-        });
-      } else if (filters.category) {
-        query = db.query.articles.findMany({
-          where: (articles, { eq }) => eq(articles.category, filters.category || ""), // Convert to string to avoid undefined
-          orderBy: (articles, { desc }) => [desc(articles.created_at)],
-          limit: filters.limit || 50,
-          offset: filters.offset || 0
-        });
-      } else {
-        query = db.query.articles.findMany({
-          orderBy: (articles, { desc }) => [desc(articles.created_at)],
-          limit: filters.limit || 50,
-          offset: filters.offset || 0
-        });
-      }
-      
-      const result = await query;
-      
-      // Map database field names to camelCase for the Article type
-      return result.map(article => ({
-        id: article.id,
-        title: article.title,
-        content: article.content,
-        excerpt: article.excerpt,
-        category: article.category,
-        tags: article.tags || [],
-        isPublished: article.isPublished,
-        imageUrl: article.image_url,
-        publishedAt: article.published_at,
-        createdAt: article.created_at,
-        updatedAt: article.updated_at,
-        createdBy: article.created_by
-      })) as Article[];
-    } catch (error) {
-      console.error('Failed to get articles:', error);
-      throw new Error('Failed to fetch articles');
-    }
-  }
-
-  // Get single article by ID
-  async getArticleById(id: string): Promise<Article | null> {
-    try {
-      const result = await db.query.articles.findFirst({
-        where: (articles, { eq }) => eq(articles.id, id)
-      });
-      
-      if (!result) return null;
-      
-      // Map database field names to camelCase for the Article type
-      return {
-        id: result.id,
-        title: result.title,
-        content: result.content,
-        excerpt: result.excerpt,
-        category: result.category,
-        tags: result.tags || [],
-        isPublished: result.isPublished,
-        imageUrl: result.image_url,
-        publishedAt: result.published_at,
-        createdAt: result.created_at,
-        updatedAt: result.updated_at,
-        createdBy: result.created_by
-      } as Article;
-    } catch (error) {
-      console.error('Failed to get article by ID:', error);
-      return null;
-    }
-  }
-
-  // Create new article
-  async createArticle(articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>): Promise<Article> {
-    try {
-      const newArticle = await db.insert(articles).values({
-        title: articleData.title,
-        content: articleData.content,
-        excerpt: articleData.excerpt || null,
-        category: articleData.category,
-        tags: articleData.tags,
-        isPublished: articleData.isPublished,
-        image_url: articleData.imageUrl || null,
-        published_at: articleData.publishedAt || null,
-        created_by: articleData.createdBy
-      }).returning();
-      
-      const result = newArticle[0];
-      
-      // Map database field names to camelCase for the Article type
-      return {
-        id: result.id,
-        title: result.title,
-        content: result.content,
-        excerpt: result.excerpt,
-        category: result.category,
-        tags: result.tags || [],
-        isPublished: result.isPublished,
-        imageUrl: result.image_url,
-        publishedAt: result.published_at,
-        createdAt: result.created_at,
-        updatedAt: result.updated_at,
-        createdBy: result.created_by
-      } as Article;
-    } catch (error) {
-      console.error('Failed to create article:', error);
-      throw new Error('Failed to create article');
-    }
-  }
-
-  // Update existing article
-  async updateArticle(id: string, updates: Partial<Omit<Article, 'id' | 'createdAt'>>): Promise<Article | null> {
-    try {
-      // Prepare the update data with proper field names
-      const updateData: any = {};
-      
-      if (updates.title !== undefined) updateData.title = updates.title;
-      if (updates.content !== undefined) updateData.content = updates.content;
-      if (updates.excerpt !== undefined) updateData.excerpt = updates.excerpt;
-      if (updates.category !== undefined) updateData.category = updates.category;
-      if (updates.tags !== undefined) updateData.tags = updates.tags;
-      if (updates.isPublished !== undefined) updateData.isPublished = updates.isPublished;
-      if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl;
-      if (updates.publishedAt !== undefined) updateData.published_at = updates.publishedAt;
-      
-      // Always update the updated_at timestamp
-      updateData.updated_at = new Date();
-      
-      const result = await db.update(articles)
-        .set(updateData)
-        .where(sql`${articles.id} = ${id}`)
-        .returning();
-      
-      if (result.length === 0) return null;
-      
-      const updatedArticle = result[0];
-      
-      // Map database field names to camelCase for the Article type
-      return {
-        id: updatedArticle.id,
-        title: updatedArticle.title,
-        content: updatedArticle.content,
-        excerpt: updatedArticle.excerpt,
-        category: updatedArticle.category,
-        tags: updatedArticle.tags || [],
-        isPublished: updatedArticle.isPublished,
-        imageUrl: updatedArticle.image_url,
-        publishedAt: updatedArticle.published_at,
-        createdAt: updatedArticle.created_at,
-        updatedAt: updatedArticle.updated_at,
-        createdBy: updatedArticle.created_by
-      } as Article;
-    } catch (error) {
-      console.error('Failed to update article:', error);
-      throw new Error('Failed to update article');
-    }
-  }
-
-  // Delete article
-  async deleteArticle(id: string): Promise<boolean> {
-    try {
-      const result = await db.delete(articles)
-        .where(sql`${articles.id} = ${id}`)
-        .returning();
-      
-      return result.length > 0;
-    } catch (error) {
-      console.error('Failed to delete article:', error);
-      return false;
-    }
-  }
-
-  // Get published articles for public display
-  async getPublishedArticles(limit: number = 10): Promise<Article[]> {
-    return this.getArticles({ published: true, limit });
-  }
-
-  // Search articles by title or content
-  async searchArticles(searchTerm: string, published: boolean = true): Promise<Article[]> {
-    try {
-      const result = await db.query.articles.findMany({
-        where: (articles, { eq, or, ilike, and }) => 
-          and(
-            eq(articles.isPublished, !!published), // Convert to boolean to avoid undefined
-            or(
-              ilike(articles.title, `%${searchTerm || ""}%`), // Convert to string to avoid undefined
-              ilike(articles.content, `%${searchTerm || ""}%`) // Convert to string to avoid undefined
-            )
-          ),
-        orderBy: (articles, { desc }) => [desc(articles.created_at)]
-      });
-      
-      // Map database field names to camelCase for the Article type
-      return result.map(article => ({
-        id: article.id,
-        title: article.title,
-        content: article.content,
-        excerpt: article.excerpt,
-        category: article.category,
-        tags: article.tags || [],
-        isPublished: article.isPublished,
-        imageUrl: article.image_url,
-        publishedAt: article.published_at,
-        createdAt: article.created_at,
-        updatedAt: article.updated_at,
-        createdBy: article.created_by
-      })) as Article[];
-    } catch (error) {
-      console.error('Failed to search articles:', error);
-      return [];
-    }
-  }
-
-  // Get articles by category
-  async getArticlesByCategory(category: string, published: boolean = true): Promise<Article[]> {
-    return this.getArticles({ category, published });
-=======
 import { sql } from "@/lib/database"
-
-/* -------------------------------------------------------------------------- */
-/*                                Typy                                        */
-/* -------------------------------------------------------------------------- */
-
-export interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt?: string | null
-  category: string
-  tags: string[]
-  published: boolean
-  imageUrl?: string | null
-  publishedAt?: Date | null
-  createdAt: Date
-  updatedAt: Date
-  createdBy: string
-}
+import type { Article } from "@/lib/types"
 
 /* -------------------------------------------------------------------------- */
 /*                          Mapování DB <-> JS                                */
@@ -314,7 +34,6 @@ function mapDbToArticle(row: DbArticle): Article {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     createdBy: row.created_by,
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
   }
 }
 
@@ -325,13 +44,15 @@ function mapDbToArticle(row: DbArticle): Article {
 export class ArticleService {
   /* ---- veřejné metody ---------------------------------------------------- */
 
-  async getArticles(opts: {
-    limit?: number
-    offset?: number
-    category?: string
-    published?: boolean
-    search?: string
-  }): Promise<Article[]> {
+  async getArticles(
+    opts: {
+      limit?: number
+      offset?: number
+      category?: string
+      published?: boolean
+      search?: string
+    } = {},
+  ): Promise<Article[]> {
     const { limit, offset, category, published, search } = opts
 
     // Dynamicky skládáme WHERE podmínky
@@ -367,13 +88,105 @@ export class ArticleService {
       params.push(offset)
     }
 
-    const { rows } = await sql<DbArticle[]>(query, params)
+    const rows = (await sql(query, params)) as DbArticle[]
     return rows.map(mapDbToArticle)
   }
 
   async getArticleById(id: string): Promise<Article | null> {
-    const { rows } = await sql<DbArticle[]>(`SELECT * FROM articles WHERE id = $1 LIMIT 1`, [id])
+    const rows = (await sql(`SELECT * FROM articles WHERE id = $1 LIMIT 1`, [id])) as DbArticle[]
     return rows.length ? mapDbToArticle(rows[0]) : null
+  }
+
+  async createArticle(articleData: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<Article> {
+    const rows = (await sql(
+      `
+      INSERT INTO articles (title, content, excerpt, category, tags, published, image_url, published_at, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `,
+      [
+        articleData.title,
+        articleData.content,
+        articleData.excerpt || null,
+        articleData.category,
+        JSON.stringify(articleData.tags),
+        articleData.published,
+        articleData.imageUrl || null,
+        articleData.publishedAt || null,
+        articleData.createdBy,
+      ],
+    )) as DbArticle[]
+
+    return mapDbToArticle(rows[0])
+  }
+
+  async updateArticle(id: string, updates: Partial<Omit<Article, "id" | "createdAt">>): Promise<Article | null> {
+    const setParts: string[] = []
+    const params: any[] = []
+    let p = 1
+
+    if (updates.title !== undefined) {
+      setParts.push(`title = $${p++}`)
+      params.push(updates.title)
+    }
+    if (updates.content !== undefined) {
+      setParts.push(`content = $${p++}`)
+      params.push(updates.content)
+    }
+    if (updates.excerpt !== undefined) {
+      setParts.push(`excerpt = $${p++}`)
+      params.push(updates.excerpt)
+    }
+    if (updates.category !== undefined) {
+      setParts.push(`category = $${p++}`)
+      params.push(updates.category)
+    }
+    if (updates.tags !== undefined) {
+      setParts.push(`tags = $${p++}`)
+      params.push(JSON.stringify(updates.tags))
+    }
+    if (updates.published !== undefined) {
+      setParts.push(`published = $${p++}`)
+      params.push(updates.published)
+    }
+    if (updates.imageUrl !== undefined) {
+      setParts.push(`image_url = $${p++}`)
+      params.push(updates.imageUrl)
+    }
+    if (updates.publishedAt !== undefined) {
+      setParts.push(`published_at = $${p++}`)
+      params.push(updates.publishedAt)
+    }
+
+    setParts.push(`updated_at = NOW()`)
+    params.push(id)
+
+    const query = `
+      UPDATE articles 
+      SET ${setParts.join(", ")}
+      WHERE id = $${p}
+      RETURNING *
+    `
+
+    const rows = (await sql(query, params)) as DbArticle[]
+    return rows.length ? mapDbToArticle(rows[0]) : null
+  }
+
+  async deleteArticle(id: string): Promise<boolean> {
+    const rows = await sql(`DELETE FROM articles WHERE id = $1 RETURNING id`, [id])
+    return rows.length > 0
+  }
+
+  async getPublishedArticles(limit = 10): Promise<Article[]> {
+    return this.getArticles({ published: true, limit })
+  }
+
+  async searchArticles(searchTerm: string, published = true): Promise<Article[]> {
+    return this.getArticles({ search: searchTerm, published })
+  }
+
+  async getArticlesByCategory(category: string, published = true): Promise<Article[]> {
+    return this.getArticles({ category, published })
   }
 }
 
@@ -400,9 +213,49 @@ export async function getPublishedArticles(
   })
 
   // Celkový počet
-  const { rows } = await sql<{ count: string }[]>(`SELECT COUNT(*) FROM articles WHERE published = true`)
+  const rows = (await sql(`SELECT COUNT(*) FROM articles WHERE published = true`)) as { count: string }[]
   const total = Number.parseInt(rows[0].count, 10)
   const hasMore = page * limit < total
 
   return { articles, total, hasMore }
+}
+
+// Export all the functions that might be imported elsewhere
+export async function getArticles(
+  filters: {
+    published?: boolean
+    category?: string
+    limit?: number
+    offset?: number
+    search?: string
+  } = {},
+): Promise<Article[]> {
+  return articleService.getArticles(filters)
+}
+
+export async function getArticleById(id: string): Promise<Article | null> {
+  return articleService.getArticleById(id)
+}
+
+export async function createArticle(articleData: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<Article> {
+  return articleService.createArticle(articleData)
+}
+
+export async function updateArticle(
+  id: string,
+  updates: Partial<Omit<Article, "id" | "createdAt">>,
+): Promise<Article | null> {
+  return articleService.updateArticle(id, updates)
+}
+
+export async function deleteArticle(id: string): Promise<boolean> {
+  return articleService.deleteArticle(id)
+}
+
+export async function searchArticles(searchTerm: string, published = true): Promise<Article[]> {
+  return articleService.searchArticles(searchTerm, published)
+}
+
+export async function getArticlesByCategory(category: string, published = true): Promise<Article[]> {
+  return articleService.getArticlesByCategory(category, published)
 }

@@ -1,108 +1,86 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { NewsletterService } from "@/lib/services/newsletter-service"
+import { NextResponse } from "next/server"
+import {
+  getNewsletterSubscribers,
+  addNewsletterSubscriber,
+  updateNewsletterSubscriber,
+  deleteNewsletterSubscriber,
+} from "@/lib/services/newsletter-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-const newsletterService = new NewsletterService()
+export async function GET(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
-export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const activeOnly = searchParams.get("activeOnly") === "true"
+
   try {
-    requireAuth(request)
-
-    const { searchParams } = new URL(request.url)
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const active = searchParams.get("active")
-    const search = searchParams.get("search")
-    const source = searchParams.get("source")
-
-    // Získání všech odběratelů
-    const activeOnly = active === "true" || active === null
-    let subscribers = await newsletterService.getSubscribers(!activeOnly)
-
-    // Client-side filtrování (v budoucnu přesunout do DB)
-    if (source && source !== "all") {
-      subscribers = subscribers.filter((sub) => sub.source === source)
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase()
-      subscribers = subscribers.filter(
-        (sub) =>
-          sub.email.toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Paginace
-    const total = subscribers.length
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedSubscribers = subscribers.slice(startIndex, endIndex)
-
-    // Statistiky
-    const stats = {
-      total: subscribers.length,
-      active: subscribers.filter((s) => s.is_active).length,
-      inactive: subscribers.filter((s) => !s.is_active).length,
-      sources: subscribers.reduce(
-        (acc, sub) => {
-          acc[sub.source] = (acc[sub.source] || 0) + 1
-          return acc
-        },
-        {} as Record<string, number>,
-      ),
-    }
-
-    return NextResponse.json({
-      subscribers: paginatedSubscribers,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-      stats,
-    })
+    const subscribers = await getNewsletterSubscribers(activeOnly)
+    return NextResponse.json(subscribers)
   } catch (error) {
-    console.error("Subscribers GET error:", error)
-    return NextResponse.json({ error: "Chyba při načítání odběratelů" }, { status: 500 })
+    console.error("Error fetching newsletter subscribers:", error)
+    return NextResponse.json({ message: "Error fetching subscribers" }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    requireAuth(request)
-
-    const subscriberData = await request.json()
-
-    // Validace
-    if (!subscriberData.email) {
-      return NextResponse.json({ error: "Email je povinný" }, { status: 400 })
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(subscriberData.email)) {
-      return NextResponse.json({ error: "Neplatný formát emailu" }, { status: 400 })
-    }
-
-    try {
-      const savedSubscriber = await newsletterService.subscribeEmail(
-        subscriberData.email,
-        subscriberData.source || "admin"
-      )
-
-      return NextResponse.json({
-        success: true,
-        subscriber: savedSubscriber,
-      })
-    } catch (error: any) {
-      // Duplicitní email
-      if (error.message.includes("duplicate") || error.message.includes("unique")) {
-        return NextResponse.json({ error: "Email je již registrován" }, { status: 409 })
-      }
-      throw error
-    }
+    const body = await request.json()
+    const newSubscriber = await addNewsletterSubscriber(body.email, body.source || "manual")
+    return NextResponse.json(newSubscriber, { status: 201 })
   } catch (error) {
-    console.error("Subscribers POST error:", error)
-    return NextResponse.json({ error: "Chyba při vytváření odběratele" }, { status: 500 })
+    console.error("Error adding newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error adding subscriber" }, { status: 500 })
+  }
+}
+
+export async function PUT(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    if (!body.id) {
+      return NextResponse.json({ message: "Subscriber ID is required" }, { status: 400 })
+    }
+    const updatedSubscriber = await updateNewsletterSubscriber(body.id, body)
+    if (!updatedSubscriber) {
+      return NextResponse.json({ message: "Subscriber not found" }, { status: 404 })
+    }
+    return NextResponse.json(updatedSubscriber)
+  } catch (error) {
+    console.error("Error updating newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error updating subscriber" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    if (!body.id) {
+      return NextResponse.json({ message: "Subscriber ID is required for deletion" }, { status: 400 })
+    }
+    const success = await deleteNewsletterSubscriber(body.id)
+    if (!success) {
+      return NextResponse.json({ message: "Subscriber not found or failed to delete" }, { status: 404 })
+    }
+    return NextResponse.json({ message: "Subscriber deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error deleting subscriber" }, { status: 500 })
   }
 }

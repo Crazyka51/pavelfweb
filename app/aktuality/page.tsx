@@ -1,17 +1,24 @@
-import { Metadata } from 'next'
-import NewsPage from './NewsPage'
+import { NewsPage } from "../aktuality/NewsPage"
+import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: 'Aktuální novinky | Pavel Fišer - Praha 4',
-  description: 'Sledujte nejnovější informace a aktuality z Prahy 4. Zprávy o projektech, investicích a dění v městské části.',
-  keywords: 'Praha 4, novinky, aktuality, Pavel Fišer, radní, městská část',
+  title: "Aktuality - Pavel Fišer",
+  description: "Nejnovější zprávy a články od Pavla Fišera, zastupitele MČ Praha 4.",
   openGraph: {
-    title: 'Aktuální novinky | Pavel Fišer - Praha 4',
-    description: 'Sledujte nejnovější informace a aktuality z Prahy 4',
-    type: 'website',
-  }
+    title: "Aktuality - Pavel Fišer",
+    description: "Nejnovější zprávy a články od Pavla Fišera, zastupitele MČ Praha 4.",
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "Aktuality" }],
+    type: "website",
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}/aktuality`,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aktuality - Pavel Fišer",
+    description: "Nejnovější zprávy a články od Pavla Fišera, zastupitele MČ Praha 4.",
+    images: ["/og-image.svg"],
+  },
 }
 
-export default function Page() {
+export default function AktualityPage() {
   return <NewsPage />
 }

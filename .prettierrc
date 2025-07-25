@@ -1,9 +1,9 @@
 {
-  "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindConfig": "./tailwind.config.js",
-  "tailwindFunctions": ["clsx", "cn", "cva"],
-  "semi": true,
-  "singleQuote": false,
+  "semi": false,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5"
+  "useTabs": false
 }

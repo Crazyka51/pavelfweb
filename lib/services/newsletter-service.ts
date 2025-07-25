@@ -1,24 +1,25 @@
-import { sql, type NewsletterSubscriber, type NewsletterCampaign, type NewsletterTemplate } from "../database"
+import { sql } from "../database"
+import type { NewsletterSubscriber, NewsletterCampaign, NewsletterTemplate } from "@/lib/types"
 
 export class NewsletterService {
   // Subscriber management
   async getSubscribers(activeOnly = true): Promise<NewsletterSubscriber[]> {
     try {
       if (activeOnly) {
-        const result = await sql`
+        const result = (await sql(`
           SELECT id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
           FROM newsletter_subscribers
           WHERE is_active = true
           ORDER BY subscribed_at DESC
-        `
-        return result as NewsletterSubscriber[]
+        `)) as NewsletterSubscriber[]
+        return result
       } else {
-        const result = await sql`
+        const result = (await sql(`
           SELECT id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
           FROM newsletter_subscribers
           ORDER BY subscribed_at DESC
-        `
-        return result as NewsletterSubscriber[]
+        `)) as NewsletterSubscriber[]
+        return result
       }
     } catch (error) {
       console.error("Failed to get subscribers:", error)
@@ -31,18 +32,21 @@ export class NewsletterService {
       // Generate unsubscribe token
       const unsubscribeToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 
-      const result = await sql`
+      const result = (await sql(
+        `
         INSERT INTO newsletter_subscribers (email, source, unsubscribe_token)
-        VALUES (${email}, ${source}, ${unsubscribeToken})
+        VALUES ($1, $2, $3)
         ON CONFLICT (email) 
         DO UPDATE SET 
           is_active = true,
           subscribed_at = NOW(),
           unsubscribed_at = NULL
         RETURNING id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
-      `
+      `,
+        [email, source, unsubscribeToken],
+      )) as NewsletterSubscriber[]
 
-      return result[0] as NewsletterSubscriber
+      return result[0]
     } catch (error) {
       console.error("Failed to subscribe email:", error)
       throw error // Re-throw to be caught by API route for specific error messages
@@ -51,12 +55,15 @@ export class NewsletterService {
 
   async unsubscribeEmail(email: string): Promise<boolean> {
     try {
-      const result = await sql`
+      const result = await sql(
+        `
         UPDATE newsletter_subscribers 
         SET is_active = false, unsubscribed_at = NOW()
-        WHERE email = ${email}
+        WHERE email = $1
         RETURNING id
-      `
+      `,
+        [email],
+      )
 
       return result.length > 0
     } catch (error) {
@@ -67,7 +74,7 @@ export class NewsletterService {
 
   async deleteSubscriber(id: string): Promise<boolean> {
     try {
-      const result = await sql`DELETE FROM newsletter_subscribers WHERE id = ${id} RETURNING id`
+      const result = await sql(`DELETE FROM newsletter_subscribers WHERE id = $1 RETURNING id`, [id])
       return result.length > 0
     } catch (error) {
       console.error("Failed to delete subscriber:", error)
@@ -78,15 +85,15 @@ export class NewsletterService {
   // Campaign management
   async getCampaigns(): Promise<NewsletterCampaign[]> {
     try {
-      const result = await sql`
+      const result = (await sql(`
         SELECT id, name, subject, content, html_content, text_content, template_id,
                status, scheduled_at, sent_at, recipient_count, open_count, click_count,
                bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
         FROM newsletter_campaigns
         ORDER BY created_at DESC
-      `
+      `)) as NewsletterCampaign[]
 
-      return result as NewsletterCampaign[]
+      return result
     } catch (error) {
       console.error("Failed to get campaigns:", error)
       throw new Error("Failed to fetch campaigns")
@@ -95,15 +102,18 @@ export class NewsletterService {
 
   async getCampaignById(id: string): Promise<NewsletterCampaign | null> {
     try {
-      const result = await sql`
+      const result = (await sql(
+        `
         SELECT id, name, subject, content, html_content, text_content, template_id,
                status, scheduled_at, sent_at, recipient_count, open_count, click_count,
                bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
         FROM newsletter_campaigns
-        WHERE id = ${id}
-      `
+        WHERE id = $1
+      `,
+        [id],
+      )) as NewsletterCampaign[]
 
-      return result.length > 0 ? (result[0] as NewsletterCampaign) : null
+      return result.length > 0 ? result[0] : null
     } catch (error) {
       console.error("Failed to get campaign by ID:", error)
       return null
@@ -124,29 +134,34 @@ export class NewsletterService {
     >,
   ): Promise<NewsletterCampaign> {
     try {
-      const result = await sql`
+      const result = (await sql(
+        `
         INSERT INTO newsletter_campaigns (
           name, subject, content, html_content, text_content, template_id,
           status, scheduled_at, created_by, tags, segment_id
         ) VALUES (
-          ${campaignData.name},
-          ${campaignData.subject},
-          ${campaignData.content},
-          ${campaignData.html_content},
-          ${campaignData.text_content || null},
-          ${campaignData.template_id || null},
-          ${campaignData.status},
-          ${campaignData.scheduled_at || null},
-          ${campaignData.created_by},
-          ${JSON.stringify(campaignData.tags || [])},
-          ${campaignData.segment_id || null}
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
         )
         RETURNING id, name, subject, content, html_content, text_content, template_id,
                   status, scheduled_at, sent_at, recipient_count, open_count, click_count,
                   bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
-      `
+      `,
+        [
+          campaignData.name,
+          campaignData.subject,
+          campaignData.content,
+          campaignData.html_content,
+          campaignData.text_content || null,
+          campaignData.template_id || null,
+          campaignData.status,
+          campaignData.scheduled_at || null,
+          campaignData.created_by,
+          JSON.stringify(campaignData.tags || []),
+          campaignData.segment_id || null,
+        ],
+      )) as NewsletterCampaign[]
 
-      return result[0] as NewsletterCampaign
+      return result[0]
     } catch (error) {
       console.error("Failed to create campaign:", error)
       throw new Error("Failed to create campaign")
@@ -158,30 +173,81 @@ export class NewsletterService {
     updates: Partial<Omit<NewsletterCampaign, "id" | "created_at">>,
   ): Promise<NewsletterCampaign | null> {
     try {
-      const result = await sql`
+      const setParts: string[] = []
+      const params: any[] = []
+      let p = 1
+
+      if (updates.name !== undefined) {
+        setParts.push(`name = $${p++}`)
+        params.push(updates.name)
+      }
+      if (updates.subject !== undefined) {
+        setParts.push(`subject = $${p++}`)
+        params.push(updates.subject)
+      }
+      if (updates.content !== undefined) {
+        setParts.push(`content = $${p++}`)
+        params.push(updates.content)
+      }
+      if (updates.html_content !== undefined) {
+        setParts.push(`html_content = $${p++}`)
+        params.push(updates.html_content)
+      }
+      if (updates.text_content !== undefined) {
+        setParts.push(`text_content = $${p++}`)
+        params.push(updates.text_content)
+      }
+      if (updates.status !== undefined) {
+        setParts.push(`status = $${p++}`)
+        params.push(updates.status)
+      }
+      if (updates.scheduled_at !== undefined) {
+        setParts.push(`scheduled_at = $${p++}`)
+        params.push(updates.scheduled_at)
+      }
+      if (updates.sent_at !== undefined) {
+        setParts.push(`sent_at = $${p++}`)
+        params.push(updates.sent_at)
+      }
+      if (updates.recipient_count !== undefined) {
+        setParts.push(`recipient_count = $${p++}`)
+        params.push(updates.recipient_count)
+      }
+      if (updates.open_count !== undefined) {
+        setParts.push(`open_count = $${p++}`)
+        params.push(updates.open_count)
+      }
+      if (updates.click_count !== undefined) {
+        setParts.push(`click_count = $${p++}`)
+        params.push(updates.click_count)
+      }
+      if (updates.bounce_count !== undefined) {
+        setParts.push(`bounce_count = $${p++}`)
+        params.push(updates.bounce_count)
+      }
+      if (updates.unsubscribe_count !== undefined) {
+        setParts.push(`unsubscribe_count = $${p++}`)
+        params.push(updates.unsubscribe_count)
+      }
+      if (updates.tags !== undefined) {
+        setParts.push(`tags = $${p++}`)
+        params.push(JSON.stringify(updates.tags))
+      }
+
+      setParts.push(`updated_at = NOW()`)
+      params.push(id)
+
+      const query = `
         UPDATE newsletter_campaigns SET
-          name = COALESCE(${updates.name}, name),
-          subject = COALESCE(${updates.subject}, subject),
-          content = COALESCE(${updates.content}, content),
-          html_content = COALESCE(${updates.html_content}, html_content),
-          text_content = COALESCE(${updates.text_content}, text_content),
-          status = COALESCE(${updates.status}, status),
-          scheduled_at = COALESCE(${updates.scheduled_at}, scheduled_at),
-          sent_at = COALESCE(${updates.sent_at}, sent_at),
-          recipient_count = COALESCE(${updates.recipient_count}, recipient_count),
-          open_count = COALESCE(${updates.open_count}, open_count),
-          click_count = COALESCE(${updates.click_count}, click_count),
-          bounce_count = COALESCE(${updates.bounce_count}, bounce_count),
-          unsubscribe_count = COALESCE(${updates.unsubscribe_count}, unsubscribe_count),
-          tags = COALESCE(${updates.tags ? JSON.stringify(updates.tags) : null}, tags),
-          updated_at = NOW()
-        WHERE id = ${id}
+          ${setParts.join(", ")}
+        WHERE id = $${p}
         RETURNING id, name, subject, content, html_content, text_content, template_id,
                   status, scheduled_at, sent_at, recipient_count, open_count, click_count,
                   bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
       `
 
-      return result.length > 0 ? (result[0] as NewsletterCampaign) : null
+      const result = (await sql(query, params)) as NewsletterCampaign[]
+      return result.length > 0 ? result[0] : null
     } catch (error) {
       console.error("Failed to update campaign:", error)
       throw new Error("Failed to update campaign")
@@ -190,7 +256,7 @@ export class NewsletterService {
 
   async deleteCampaign(id: string): Promise<boolean> {
     try {
-      const result = await sql`DELETE FROM newsletter_campaigns WHERE id = ${id} RETURNING id`
+      const result = await sql(`DELETE FROM newsletter_campaigns WHERE id = $1 RETURNING id`, [id])
       return result.length > 0
     } catch (error) {
       console.error("Failed to delete campaign:", error)
@@ -201,14 +267,14 @@ export class NewsletterService {
   // Template management
   async getTemplates(): Promise<NewsletterTemplate[]> {
     try {
-      const result = await sql`
+      const result = (await sql(`
         SELECT id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
         FROM newsletter_templates
         WHERE is_active = true
         ORDER BY created_at DESC
-      `
+      `)) as NewsletterTemplate[]
 
-      return result as NewsletterTemplate[]
+      return result
     } catch (error) {
       console.error("Failed to get templates:", error)
       throw new Error("Failed to fetch templates")
@@ -219,14 +285,23 @@ export class NewsletterService {
     templateData: Omit<NewsletterTemplate, "id" | "created_at" | "updated_at">,
   ): Promise<NewsletterTemplate> {
     try {
-      const result = await sql`
+      const result = (await sql(
+        `
         INSERT INTO newsletter_templates (name, subject, content, html_content, is_active, created_by)
-        VALUES (${templateData.name}, ${templateData.subject}, ${templateData.content}, 
-                ${templateData.html_content}, ${templateData.is_active}, ${templateData.created_by})
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-      `
+      `,
+        [
+          templateData.name,
+          templateData.subject,
+          templateData.content,
+          templateData.html_content,
+          templateData.is_active,
+          templateData.created_by,
+        ],
+      )) as NewsletterTemplate[]
 
-      return result[0] as NewsletterTemplate
+      return result[0]
     } catch (error) {
       console.error("Failed to create template:", error)
       throw new Error("Failed to create template")
@@ -238,18 +313,43 @@ export class NewsletterService {
     updates: Partial<Omit<NewsletterTemplate, "id" | "created_at">>,
   ): Promise<NewsletterTemplate | null> {
     try {
-      const result = await sql`
+      const setParts: string[] = []
+      const params: any[] = []
+      let p = 1
+
+      if (updates.name !== undefined) {
+        setParts.push(`name = $${p++}`)
+        params.push(updates.name)
+      }
+      if (updates.subject !== undefined) {
+        setParts.push(`subject = $${p++}`)
+        params.push(updates.subject)
+      }
+      if (updates.content !== undefined) {
+        setParts.push(`content = $${p++}`)
+        params.push(updates.content)
+      }
+      if (updates.html_content !== undefined) {
+        setParts.push(`html_content = $${p++}`)
+        params.push(updates.html_content)
+      }
+      if (updates.is_active !== undefined) {
+        setParts.push(`is_active = $${p++}`)
+        params.push(updates.is_active)
+      }
+
+      setParts.push(`updated_at = NOW()`)
+      params.push(id)
+
+      const query = `
         UPDATE newsletter_templates SET
-          name = COALESCE(${updates.name}, name),
-          subject = COALESCE(${updates.subject}, subject),
-          content = COALESCE(${updates.content}, content),
-          html_content = COALESCE(${updates.html_content}, html_content),
-          is_active = COALESCE(${updates.is_active}, is_active),
-          updated_at = NOW()
-        WHERE id = ${id}
+          ${setParts.join(", ")}
+        WHERE id = $${p}
         RETURNING id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
       `
-      return result.length > 0 ? (result[0] as NewsletterTemplate) : null
+
+      const result = (await sql(query, params)) as NewsletterTemplate[]
+      return result.length > 0 ? result[0] : null
     } catch (error) {
       console.error("Failed to update template:", error)
       throw new Error("Failed to update template")
@@ -258,7 +358,7 @@ export class NewsletterService {
 
   async deleteTemplate(id: string): Promise<boolean> {
     try {
-      const result = await sql`DELETE FROM newsletter_templates WHERE id = ${id} RETURNING id`
+      const result = await sql(`DELETE FROM newsletter_templates WHERE id = $1 RETURNING id`, [id])
       return result.length > 0
     } catch (error) {
       console.error("Failed to delete template:", error)
@@ -274,19 +374,23 @@ export class NewsletterService {
     recent: number
   }> {
     try {
-      const totalResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers`
-      const activeResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = true`
-      const inactiveResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = false`
-      const recentResult = await sql`
+      const totalResult = (await sql(`SELECT COUNT(*) as count FROM newsletter_subscribers`)) as { count: string }[]
+      const activeResult = (await sql(
+        `SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = true`,
+      )) as { count: string }[]
+      const inactiveResult = (await sql(
+        `SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = false`,
+      )) as { count: string }[]
+      const recentResult = (await sql(`
         SELECT COUNT(*) as count FROM newsletter_subscribers 
         WHERE subscribed_at > NOW() - INTERVAL '30 days'
-      `
+      `)) as { count: string }[]
 
       return {
-        total: Number.parseInt(totalResult[0].count as string),
-        active: Number.parseInt(activeResult[0].count as string),
-        inactive: Number.parseInt(inactiveResult[0].count as string),
-        recent: Number.parseInt(recentResult[0].count as string),
+        total: Number.parseInt(totalResult[0].count),
+        active: Number.parseInt(activeResult[0].count),
+        inactive: Number.parseInt(inactiveResult[0].count),
+        recent: Number.parseInt(recentResult[0].count),
       }
     } catch (error) {
       console.error("Failed to get subscriber stats:", error)
@@ -296,3 +400,85 @@ export class NewsletterService {
 }
 
 export const newsletterService = new NewsletterService()
+
+// Export individual functions for convenience
+export async function getSubscribers(activeOnly = true): Promise<NewsletterSubscriber[]> {
+  return newsletterService.getSubscribers(activeOnly)
+}
+
+export async function subscribeEmail(email: string, source = "web"): Promise<NewsletterSubscriber> {
+  return newsletterService.subscribeEmail(email, source)
+}
+
+export async function unsubscribeEmail(email: string): Promise<boolean> {
+  return newsletterService.unsubscribeEmail(email)
+}
+
+export async function deleteSubscriber(id: string): Promise<boolean> {
+  return newsletterService.deleteSubscriber(id)
+}
+
+export async function getCampaigns(): Promise<NewsletterCampaign[]> {
+  return newsletterService.getCampaigns()
+}
+
+export async function getCampaignById(id: string): Promise<NewsletterCampaign | null> {
+  return newsletterService.getCampaignById(id)
+}
+
+export async function createCampaign(
+  campaignData: Omit<
+    NewsletterCampaign,
+    | "id"
+    | "created_at"
+    | "updated_at"
+    | "recipient_count"
+    | "open_count"
+    | "click_count"
+    | "bounce_count"
+    | "unsubscribe_count"
+  >,
+): Promise<NewsletterCampaign> {
+  return newsletterService.createCampaign(campaignData)
+}
+
+export async function updateCampaign(
+  id: string,
+  updates: Partial<Omit<NewsletterCampaign, "id" | "created_at">>,
+): Promise<NewsletterCampaign | null> {
+  return newsletterService.updateCampaign(id, updates)
+}
+
+export async function deleteCampaign(id: string): Promise<boolean> {
+  return newsletterService.deleteCampaign(id)
+}
+
+export async function getTemplates(): Promise<NewsletterTemplate[]> {
+  return newsletterService.getTemplates()
+}
+
+export async function createTemplate(
+  templateData: Omit<NewsletterTemplate, "id" | "created_at" | "updated_at">,
+): Promise<NewsletterTemplate> {
+  return newsletterService.createTemplate(templateData)
+}
+
+export async function updateTemplate(
+  id: string,
+  updates: Partial<Omit<NewsletterTemplate, "id" | "created_at">>,
+): Promise<NewsletterTemplate | null> {
+  return newsletterService.updateTemplate(id, updates)
+}
+
+export async function deleteTemplate(id: string): Promise<boolean> {
+  return newsletterService.deleteTemplate(id)
+}
+
+export async function getSubscriberStats(): Promise<{
+  total: number
+  active: number
+  inactive: number
+  recent: number
+}> {
+  return newsletterService.getSubscriberStats()
+}

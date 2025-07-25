@@ -1,134 +1,74 @@
-# Copilot Instructions for Pavel Fišer CMS
+# GitHub Copilot Instructions for Pavel Fišer Web Project
 
-## Struktura projektu (root + hlavní složky)
+This document outlines instructions for GitHub Copilot to assist in the development of the Pavel Fišer web project.
 
-```
-ROOT
-├── .env, .env.local, .env.development.local
-├── .eslintrc.json, .prettierrc, .npmrc, .gitignore
-├── package.json, pnpm-lock.yaml, tsconfig.json, tsconfig.tsbuildinfo
-├── next.config.mjs, postcss.config.js, postcss.config.mjs, tailwind.config.js
-├── vercel.json
-├── cookies.txt, components.json, test-newsletter.sh, test-unsubscribe.sh
-├── app/
-│   ├── globals.css, layout.tsx, page.tsx
-│   ├── 404/, admin/, aktuality/, api/, components/, data-deletion/, privacy-policy/, terms-of-service/
-│   └── lib/
-├── components/
-│   ├── accordion.tsx, alert-dialog.tsx, ... (UI komponenty)
-│   └── ui/
-├── data/
-│   ├── articles.json, newsletter-campaigns.json, newsletter-subscribers.json, newsletter-templates.json
-│   └── backups/
-├── database/
-│   ├── migration.sql, schema.sql
-├── dokumentace/
-│   ├── README.md, ... (dokumentace, manuály, reporty)
-├── hooks/
-│   ├── use-admin-data.ts, use-admin-filters.ts, ...
-├── lib/
-│   ├── admin-state.ts, article-service.ts, auth-utils.ts, ...
-│   ├── schema.ts, settings-service.ts, newsletter-service.ts, ...
-│   └── services/
-├── public/
-│   ├── placeholder.svg, og-image.svg, ... (veřejné assety)
-├── scripts/
-│   ├── complete-setup.mjs, setup-database.js, ...
-├── styles/
-│   └── globals.css
-└── ... (další konfigurační a systémové složky)
-```
+## General Guidelines:
 
-### Popis hlavních složek a souborů
+1.  **Context Awareness**: Always consider the existing codebase, especially the Next.js App Router structure, Drizzle ORM usage with Neon PostgreSQL, and Shadcn UI components.
+2.  **Next.js App Router First**: Default to App Router conventions (server components, route handlers, `layout.tsx`, `page.tsx`, `loading.tsx`).
+3.  **Drizzle ORM & Neon DB**: When interacting with the database, use Drizzle ORM with the `db` instance from `lib/database.ts` and `sql` from `@neondatabase/serverless`. Refer to `lib/schema.ts` for table definitions.
+4.  **Shadcn UI**: Prioritize using components from `@/components/ui` for UI elements. Do not re-implement them.
+5.  **TypeScript**: Always use TypeScript, ensuring strong typing and type safety.
+6.  **Responsiveness**: All UI components should be responsive and work well on various screen sizes.
+7.  **Accessibility**: Implement accessibility best practices (semantic HTML, ARIA attributes, alt text for images).
+8.  **Error Handling**: Implement robust error handling for API calls and data operations.
+9.  **Environment Variables**: Use environment variables for sensitive information (e.g., database URLs, API keys).
+10. **Code Style**: Adhere to existing code style and formatting.
 
-- **app/** – Hlavní aplikační složka Next.js (App Router). Obsahuje stránky, layouty, API routy (`app/api`), administrační rozhraní (`app/admin`), veřejné stránky, globální styly a sdílené knihovny.
-  - `app/api/` – Backend API endpointy (REST styl, chráněné JWT, komunikace pouze přes service vrstvu).
-  - `app/admin/` – Admin rozhraní pro správu obsahu, článků, newsletteru atd.
-  - `app/components/` – Sdílené komponenty používané v rámci app (např. layouty, modální okna).
-  - `app/lib/` – Pomocné knihovny, utilitní funkce, business logika pro app.
-  - `app/globals.css` – Globální styly pro Next.js app.
+## Specific Tasks & Areas:
 
-- **components/** – Sdílené UI komponenty (Radix UI, Tiptap, Tailwind, vlastní). Vše pro opakované použití napříč aplikací. Složka `ui/` obsahuje základní stavební bloky.
+### 1. Admin Panel (`app/admin/*`)
 
-- **data/** – JSON soubory s články, šablonami, odběrateli newsletteru, zálohy. Slouží pro mockování, testování nebo rychlý import/export dat.
+*   **Authentication**: Use `lib/auth-utils.ts` for session management and authentication checks.
+*   **Data Management**:
+    *   **Articles**: Implement CRUD operations for articles using `lib/services/article-service.ts`.
+    *   **Categories**: Implement CRUD operations for categories using `lib/services/category-service.ts`.
+    *   **Newsletter**: Manage subscribers, campaigns, and templates using `lib/services/newsletter-service.ts`.
+    *   **Settings**: Manage CMS settings using `lib/services/settings-service.ts`.
+*   **UI Components**:
+    *   `AdminLayout.tsx`: Main layout for the admin panel.
+    *   `LoginForm.tsx`: Handles admin login.
+    *   `ArticleManager.tsx`: Displays and manages a list of articles.
+    *   `ArticleEditor.tsx`: Form for creating/editing articles.
+    *   `CategoryManager.tsx`: Manages article categories.
+    *   `NewsletterManager.tsx`: Manages newsletter subscribers and campaigns.
+    *   `SettingsManager.tsx`: Manages general CMS settings.
+    *   `AnalyticsManager.tsx`: Displays website analytics (mock data for now, but prepare for real integration).
+    *   `TiptapEditor.tsx`: Rich text editor for article content.
+*   **API Routes (`app/api/admin/*`)**: Implement API endpoints for all admin panel functionalities, ensuring proper authentication and authorization.
 
-- **database/** – SQL schéma a migrace. `schema.sql` je hlavní zdroj pravdy pro strukturu DB, `migration.sql` pro změny a migrace.
+### 2. Public Website (`app/*`, excluding `app/admin`)
 
-- **dokumentace/** – Manuály, reporty, integrační návody, checklisty, popisy funkcí, změnové logy. Vše pro vývojáře i uživatele.
+*   **Content Display**: Fetch and display articles from the database.
+*   **Newsletter Signup**: Implement a form for users to subscribe to the newsletter.
+*   **Contact Form**: Implement a contact form that sends emails via Resend API.
+*   **Facebook Integration**: Display recent Facebook posts using the Facebook Graph API.
+*   **Google Consent Mode v2**: Ensure proper implementation of cookie consent and Google Analytics integration based on user consent.
+*   **SEO & Open Graph**: Generate dynamic Open Graph images and structured data for better social sharing and search engine visibility.
 
-- **hooks/** – React hooky pro správu stavů, filtrů, notifikací, mobilního zobrazení atd. Používejte pro sdílenou logiku napříč komponentami.
+### 3. Services & Utilities (`lib/*`)
 
-- **lib/** – Service vrstva a business logika. Každá entita má svůj service soubor (`article-service.ts`, `settings-service.ts`), zde je jediný povolený přístup k DB. Obsahuje také schéma (`schema.ts`), autentizaci (`auth-utils.ts`), utility a další helpery.
-  - `lib/services/` – Další rozšiřující služby a integrace.
+*   **`lib/database.ts`**: Centralized database connection and Drizzle ORM instance.
+*   **`lib/schema.ts`**: Drizzle schema definitions for all database tables.
+*   **`lib/auth-utils.ts`**: JWT-based authentication utilities for admin panel.
+*   **`lib/cookie-consent.ts`**: Functions for managing cookie consent settings.
+*   **`lib/google-analytics.ts`**: Helper for Google Analytics `gtag` commands.
+*   **`lib/services/*.ts`**: Modularized services for interacting with specific database entities (articles, categories, newsletter, settings, analytics, Facebook).
 
-- **public/** – Veřejně dostupné assety (obrázky, SVG, favicony, Open Graph obrázky, loga, placeholdery).
+### 4. Deployment & CI/CD
 
-- **scripts/** – Setup a utility skripty pro správu DB, migrace, testování, inicializaci projektu. Např. `complete-setup.mjs` vytvoří a naplní DB podle aktuálního schématu.
+*   **Vercel Deployment**: Ensure the project is ready for deployment on Vercel.
+*   **GitHub Actions**: Maintain and extend the existing GitHub Actions workflows for CI/CD (e.g., `neon_workflow.yml`).
 
-- **styles/** – Globální styly, případně další CSS soubory mimo Tailwind.
+## Example Interaction:
 
-- **root soubory** – Konfigurace, build, lint, env, lockfile, Tailwind, Next.js, Vercel, testovací skripty, ignore soubory. Vše potřebné pro běh, build a správu projektu.
+**User**: "I need to add a new field `author` to the `articles` table in the database. Update the schema, migration, and the article service to support this."
 
+**Copilot's Expected Response**:
+1.  **`lib/schema.ts`**: Suggest adding `author: text('author').notNull().default('Admin'),` to the `articles` table definition.
+2.  **`database/migration.sql`**: Provide the SQL command `ALTER TABLE articles ADD COLUMN author TEXT DEFAULT 'Admin';` (or similar, depending on the current migration strategy).
+3.  **`lib/services/article-service.ts`**: Update the `Article` interface and modify `createArticle`, `updateArticle`, and `getArticleById` to handle the new `author` field.
+4.  **`app/admin/components/ArticleEditor.tsx`**: Suggest adding an input field for the author.
+5.  **`app/api/admin/articles/route.ts`**: Update the API route to handle the new `author` field in POST/PUT requests.
 
-## Architektura a hlavní principy
-- Projekt je postaven na Next.js (TypeScript, App Router) s Drizzle ORM a Neon PostgreSQL.
-- Backend API je v `app/api`, kde každá route odpovídá jedné entitě nebo akci (REST styl, např. `/api/admin/articles`).
-- Autentizace je řešena pomocí JWT tokenů (viz `lib/auth-utils.ts`), session v cookies.
-- Databázové schéma je v `lib/schema.ts` a synchronizuje se s Neon DB pomocí setup skriptů (`scripts/complete-setup.mjs`).
-- Veškeré SQL dotazy a business logika jsou v service souborech (`lib/article-service.ts`, `lib/settings-service.ts` atd.).
-- Frontend používá komponenty z `components/` a `app/admin/components/` (Radix UI, Tiptap, Tailwind CSS).
-
-## Vývojářské workflow
-- **Instalace:** `pnpm install` nebo `npm install`
-- **Lokální spuštění:** `pnpm dev` (Next.js server na http://localhost:3000)
-- **Kompletní setup DB:** `node scripts/complete-setup.mjs` (vytvoří a naplní Neon DB podle aktuálního schématu)
-- **.env:** Všechny klíče a přístupy jsou v `.env.local` (viz příklad v `app/admin/README.md`)
-
-### Automatické spuštění setup skriptu s TypeScript importy
-
-Skript `scripts/complete-setup.mjs` importuje TypeScript soubory (`lib/schema.ts`). Pro automatické spuštění bez nutnosti ruční transpilace použijte runner `tsx`:
-
-1. **Instalace závislosti (jednorázově):**
-   ```
-   pnpm add -D tsx
-   ```
-   nebo
-   ```
-   npm install --save-dev tsx
-   ```
-
-2. **Spuštění setup skriptu:**
-   ```
-   pnpm tsx scripts/complete-setup.mjs
-   ```
-   nebo
-   ```
-   npx tsx scripts/complete-setup.mjs
-   ```
-
-Tím se automaticky načtou TypeScript importy bez nutnosti generovat `.js` soubory. Doporučeno pro všechny vývojové a integrační skripty, které importují `.ts` soubory.
-
-## Důležité konvence a vzory
-- Všechny entity mají v kódu camelCase, v DB snake_case (např. `isPublished` v kódu, `is_published` v DB).
-- Pro práci s daty používejte pouze service vrstvy (`lib/*-service.ts`), nikdy nevolat DB přímo z API nebo komponent.
-- API routes jsou chráněné pomocí `requireAuth` (viz `lib/auth-utils.ts`).
-- Pro nové tabulky vždy aktualizujte `lib/schema.ts` a setup skript.
-- Pro testování použijte mock data nebo spusťte setup skript pro čistou DB.
-
-## Externí integrace
-- Facebook API, Resend (e-mail), Google Analytics – klíče v `.env.local`.
-- Neon PostgreSQL – connection string v `.env.local` jako `DATABASE_URL`.
-
-## Příklady a vzory
-- CRUD nad články: `lib/article-service.ts`, API: `app/api/admin/articles/`
-- Autentizace: `lib/auth-utils.ts`, session v cookies
-- Editor článků: `app/admin/components/ArticleEditor.tsx` (Tiptap, vlastní helpery)
-
-## Specifika projektu
-- Všechny změny schématu DB synchronizujte přes setup skript, ne ručně v Neonu.
-- Pro nové API vždy použijte autentizaci a service vrstvu.
-- Dodržujte pojmenování sloupců podle vzoru v `lib/schema.ts`.
-
----
-
-Pokud není něco jasné nebo chybí důležitý vzor, požádejte o doplnění nebo upřesnění!
+By following these guidelines, GitHub Copilot can provide highly relevant and accurate assistance throughout the development of the Pavel Fišer web project.

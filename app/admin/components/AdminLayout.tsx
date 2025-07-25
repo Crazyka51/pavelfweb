@@ -3,170 +3,147 @@
 import type React from "react"
 
 import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  LayoutDashboard,
-  FileText,
-  PlusCircle,
-  Tag,
-  Mail,
-  BarChart3,
-  Archive,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  User,
+  HomeIcon,
+  NewspaperIcon,
+  MailIcon,
+  BarChartIcon,
+  SettingsIcon,
+  MenuIcon,
+  LayoutGridIcon,
+  LogOutIcon,
 } from "lucide-react"
+import { signOut } from "@/lib/auth-utils"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 
 interface AdminLayoutProps {
   children: React.ReactNode
-  currentSection: string
-  onSectionChange: (section: string) => void
-  onLogout: () => void
-  currentUser?: { username: string; displayName: string } | null
 }
 
-export default function AdminLayout({
-  children,
-  currentSection,
-  onSectionChange,
-  onLogout,
-  currentUser,
-}: AdminLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+export function AdminLayout({ children }: AdminLayoutProps) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const { toast } = useToast()
 
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Přehled a statistiky" },
-    { id: "articles", label: "Správa článků", icon: FileText, description: "Všechny publikované a koncepty" },
-    { id: "new-article", label: "Nový článek", icon: PlusCircle, description: "Vytvořit nový článek" },
-    { id: "categories", label: "Kategorie", icon: Tag, description: "Správa kategorií a štítků" },
-    { id: "newsletter", label: "Newsletter", icon: Mail, description: "Odběratelé a e-mailové kampaně" },
-    { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },
-    { id: "backup", label: "Zálohy", icon: Archive, description: "Export a import dat" },
-    { id: "settings", label: "Nastavení", icon: Settings, description: "Konfigurace systému" },
-  ]
-
-  const handleSectionChange = (sectionId: string) => {
-    onSectionChange(sectionId)
-    setIsSidebarOpen(false)
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push("/admin/login")
+      toast({
+        title: "Odhlášení úspěšné",
+        description: "Byli jste úspěšně odhlášeni z administrace.",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("Error signing out:", error)
+      toast({
+        title: "Chyba při odhlášení",
+        description: "Nepodařilo se odhlásit. Zkuste to prosím znovu.",
+        variant: "destructive",
+      })
+    }
   }
 
+  const navItems = [
+    { href: "/admin", icon: HomeIcon, label: "Přehled" },
+    { href: "/admin?tab=articles", icon: NewspaperIcon, label: "Články" },
+    { href: "/admin?tab=newsletter", icon: MailIcon, label: "Newsletter" },
+    { href: "/admin?tab=analytics", icon: BarChartIcon, label: "Analytika" },
+    { href: "/admin?tab=categories", icon: LayoutGridIcon, label: "Kategorie" },
+    { href: "/admin?tab=settings", icon: SettingsIcon, label: "Nastavení" },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile sidebar overlay */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-      `}
-      >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">CMS Admin</h1>
-              <p className="text-sm text-gray-600">Pavel Fišer</p>
-            </div>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="hidden border-r bg-gray-100/40 md:block dark:bg-gray-800/40">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <Link className="flex items-center gap-2 font-semibold" href="/admin">
+              <span className="text-lg">Admin Panel</span>
+            </Link>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon
-              const isActive = currentSection === item.id
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSectionChange(item.id)}
-                  className={`
-                    w-full flex items-start p-3 rounded-lg text-left transition-colors
-                    ${
-                      isActive
-                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }
-                  `}
+          <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 ${
+                    pathname === item.href.split("?")[0] &&
+                    (pathname === "/admin" || pathname.includes(item.href.split("?")[0]))
+                      ? "bg-gray-200 dark:bg-gray-700"
+                      : ""
+                  }`}
+                  href={item.href}
                 >
-                  <Icon
-                    className={`h-5 w-5 mt-0.5 mr-3 flex-shrink-0 ${isActive ? "text-blue-700" : "text-gray-400"}`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-medium ${isActive ? "text-blue-700" : "text-gray-900"}`}>
-                      {item.label}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
-                  </div>
-                </button>
-              )
-            })}
-          </nav>
-
-          {/* User info and logout */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {currentUser?.displayName || "Pavel Fišer"}
-                </p>
-                <p className="text-xs text-gray-500 truncate">{currentUser?.username || "admin"}</p>
-              </div>
-            </div>
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Odhlásit se
-            </button>
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+              <Button
+                onClick={handleSignOut}
+                variant="ghost"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-900 transition-all hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 w-full justify-start mt-4"
+              >
+                <LogOutIcon className="h-4 w-4" />
+                Odhlásit se
+              </Button>
+            </nav>
           </div>
         </div>
       </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-4 lg:px-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:block">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {menuItems.find((item) => item.id === currentSection)?.label || "Dashboard"}
-                </h2>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:block text-sm text-gray-500">
-                Poslední přihlášení: {new Date().toLocaleDateString("cs-CZ")}
-              </div>
-            </div>
-          </div>
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center gap-4 border-b bg-gray-100/40 px-4 lg:h-[60px] lg:px-6 dark:bg-gray-800/40">
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button className="shrink-0 md:hidden bg-transparent" size="icon" variant="outline">
+                <MenuIcon className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+              <nav className="grid gap-2 text-lg font-medium">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-gray-900 hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 ${
+                      pathname === item.href.split("?")[0] &&
+                      (pathname === "/admin" || pathname.includes(item.href.split("?")[0]))
+                        ? "bg-gray-200 dark:bg-gray-700"
+                        : ""
+                    }`}
+                    href={item.href}
+                    onClick={() => setIsSheetOpen(false)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                ))}
+                <Button
+                  onClick={() => {
+                    handleSignOut()
+                    setIsSheetOpen(false)
+                  }}
+                  variant="ghost"
+                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-gray-900 hover:text-gray-900 dark:text-gray-50 dark:hover:text-gray-50 w-full justify-start mt-4"
+                >
+                  <LogOutIcon className="h-5 w-5" />
+                  Odhlásit se
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+          <div className="w-full flex-1">{/* Search or other header content can go here */}</div>
         </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <ScrollArea className="flex-1 overflow-auto">
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">{children}</main>
+        </ScrollArea>
       </div>
     </div>
   )

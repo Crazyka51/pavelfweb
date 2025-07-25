@@ -1,99 +1,64 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { articleService } from "@/lib/article-service"
+import { getArticleById, updateArticle, deleteArticle } from "@/lib/services/article-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-export const GET = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const article = await articleService.getArticleById(params.id)
+    const authResult = await verifyAuth(request)
+    if (authResult.status !== 200) {
+      return NextResponse.json({ message: authResult.message }, { status: authResult.status })
+    }
+
+    const { id } = params
+    const article = await getArticleById(id)
+
     if (!article) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Článek nenalezen",
-        },
-        { status: 404 },
-      )
+      return NextResponse.json({ message: "Article not found" }, { status: 404 })
     }
-    return NextResponse.json({
-      success: true,
-      data: article,
-    })
-  } catch (error) {
-    console.error("Article GET error:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Chyba při načítání článku",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
-  }
-})
 
-export const PUT = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+    return NextResponse.json(article)
+  } catch (error) {
+    console.error("Error fetching article:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const updates = await request.json()
-    const updatedArticle = await articleService.updateArticle(params.id, updates)
+    const authResult = await verifyAuth(request)
+    if (authResult.status !== 200) {
+      return NextResponse.json({ message: authResult.message }, { status: authResult.status })
+    }
+
+    const { id } = params
+    const body = await request.json()
+
+    const updatedArticle = await updateArticle(id, body)
+
     if (!updatedArticle) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Článek nenalezen",
-        },
-        { status: 404 },
-      )
+      return NextResponse.json({ message: "Article not found or update failed" }, { status: 404 })
     }
-    return NextResponse.json({
-      success: true,
-      message: "Článek byl úspěšně aktualizován",
-      data: updatedArticle,
-    })
+
+    return NextResponse.json(updatedArticle)
   } catch (error) {
-    console.error("Article PUT error:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Chyba při aktualizaci článku",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    console.error("Error updating article:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
-})
+}
 
-export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
-  console.log(`Autentizace úspěšná pro uživatele: ${authResult.username}`)
-
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    console.log(`Přijat požadavek na mazání článku s ID: ${params.id}`)
-    const deleted = await articleService.deleteArticle(params.id)
-
-    if (!deleted) {
-      console.error(`Článek s ID ${params.id} nebyl nalezen.`)
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Článek nenalezen",
-        },
-        { status: 404 },
-      )
+    const authResult = await verifyAuth(request)
+    if (authResult.status !== 200) {
+      return NextResponse.json({ message: authResult.message }, { status: authResult.status })
     }
 
-    console.log(`Článek s ID ${params.id} byl úspěšně smazán.`)
-    return NextResponse.json({
-      success: true,
-      message: "Článek byl úspěšně smazán",
-    })
+    const { id } = params
+    await deleteArticle(id)
+
+    return NextResponse.json({ message: "Article deleted successfully" }, { status: 200 })
   } catch (error) {
-    console.error("Chyba při mazání článku:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Chyba při mazání článku",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    console.error("Error deleting article:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
-})
+}

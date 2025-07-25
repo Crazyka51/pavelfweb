@@ -1,211 +1,149 @@
-'use client'
+"use client"
 
-import { Calendar, Tag, ArrowLeft, Share2, Facebook, Twitter as X } from 'lucide-react'
-import Link from 'next/link'
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-}
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { CalendarIcon, TagIcon, ArrowLeftIcon, Loader2 } from "lucide-react"
+import { getArticleById, type Article } from "@/lib/services/article-service"
+import { useToast } from "@/components/ui/use-toast"
+import DOMPurify from "dompurify"
 
 interface ArticleDetailPageProps {
-  article: Article
+  articleId: string
 }
 
-export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
+export function ArticleDetailPage({ articleId }: ArticleDetailPageProps) {
+  const [article, setArticle] = useState<Article | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const fetchedArticle = await getArticleById(articleId)
+        if (!fetchedArticle || fetchedArticle.status !== "published") {
+          throw new Error("Článek nenalezen nebo není publikován.")
+        }
+        setArticle(fetchedArticle)
+      } catch (err: any) {
+        console.error("Error fetching article:", err)
+        setError(err.message || "Nepodařilo se načíst článek.")
+        toast({
+          title: "Chyba",
+          description: err.message || "Nepodařilo se načíst článek.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchArticle()
+  }, [articleId, toast])
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('cs-CZ', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("cs-CZ", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     })
   }
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      'Aktuality': 'bg-blue-100 text-blue-800',
-      'Městská politika': 'bg-purple-100 text-purple-800',
-      'Doprava': 'bg-green-100 text-green-800',
-      'Životní prostředí': 'bg-emerald-100 text-emerald-800',
-      'Kultura': 'bg-pink-100 text-pink-800',
-      'Sport': 'bg-orange-100 text-orange-800'
-    }
-    return colors[category] || 'bg-gray-100 text-gray-800'
+  const createMarkup = (htmlString: string) => {
+    return { __html: DOMPurify.sanitize(htmlString) }
   }
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const shareText = `${article.title} - ${article.excerpt}`
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: article.excerpt,
-          url: shareUrl
-        })
-      } catch {
-        console.log('Sharing cancelled')
-      }
-    } else {
-      // Fallback - copy to clipboard
-      navigator.clipboard.writeText(shareUrl)
-      alert('Odkaz byl zkopírován do schránky')
-    }
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
+        <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
+        <p className="ml-4 text-lg font-medium text-gray-500">Načítání článku...</p>
+      </div>
+    )
   }
 
-  const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-    window.open(url, '_blank', 'width=600,height=400')
+  if (error) {
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center bg-gray-100 px-4 py-12 text-center dark:bg-gray-950">
+        <p className="text-red-500 text-lg">{error}</p>
+        <Link href="/aktuality">
+          <Button className="mt-6">Zpět na aktuality</Button>
+        </Link>
+      </div>
+    )
   }
 
-  const shareOnX = () => {
-    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
-    window.open(url, '_blank', 'width=600,height=400')
+  if (!article) {
+    return null // Should not happen if error is handled
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Link 
-              href="/aktuality"
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Zpět na novinky
-            </Link>
-          </div>
-          
-          {/* Article meta */}
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(article.category)}`}>
-              {article.category}
-            </span>
-            <div className="flex items-center text-gray-600">
-              <Calendar className="w-4 h-4 mr-2" />
-              <span>{formatDate(article.updatedAt)}</span>
-            </div>
-          </div>
-          
-          {/* Title */}
-          <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {article.title}
-          </h1>
-          
-          {/* Excerpt */}
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            {article.excerpt}
-          </p>
-          
-          {/* Share buttons */}
-          <div className="flex items-center gap-4 pb-8 border-b">
-            <span className="text-sm text-gray-600">Sdílet:</span>
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Sdílet
-            </button>
-            <button
-              onClick={shareOnFacebook}
-              className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              <Facebook className="w-4 h-4" />
-              Facebook
-            </button>
-            <button
-              onClick={shareOnX}
-              className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <X className="w-4 h-4" />
-              X
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Article content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-lg shadow-sm border p-8">
-          {/* Featured image */}
-          {article.imageUrl && (
-            <div className="mb-8">
-              <img 
-                src={article.imageUrl} 
-                alt={article.title}
-                className="w-full h-64 object-cover rounded-lg"
-              />
-            </div>
-          )}
-          
-          {/* Article content */}
-          <div 
-            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-          
-          {/* Tags */}
-          {article.tags.length > 0 && (
-            <div className="mt-12 pt-8 border-t">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Štítky</h3>
-              <div className="flex flex-wrap gap-2">
-                {article.tags.map((tag, index) => (
-                  <span 
-                    key={index}
-                    className="flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                  >
-                    <Tag className="w-3 h-3 mr-1" />
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </article>
-        
-        {/* Author info */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center gap-4">
-            <img 
-              src="/pf.png" 
-              alt="Pavel Fišer" 
-              className="w-16 h-16 rounded-full object-cover"
-            />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Pavel Fišer</h3>
-              <p className="text-gray-600">Radní pro dopravu a místní rozvoj - Praha 4</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Věnuji se zlepšování dopravní infrastruktury a rozvoji městské části Praha 4.
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Navigation */}
-        <div className="mt-8 flex justify-center">
-          <Link 
-            href="/aktuality"
-            className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Zobrazit všechny novinky
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
+      <div className="container px-4 md:px-6">
+        <div className="mx-auto max-w-3xl">
+          <Link href="/aktuality">
+            <Button variant="ghost" className="mb-8 flex items-center gap-2">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Zpět na aktuality
+            </Button>
           </Link>
+
+          <Card className="overflow-hidden">
+            {article.imageUrl && (
+              <div className="relative w-full aspect-video overflow-hidden">
+                <Image
+                  src={article.imageUrl || "/placeholder.svg"}
+                  alt={article.title}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-lg"
+                />
+              </div>
+            )}
+            <CardContent className="p-6 md:p-8 lg:p-10">
+              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <div className="flex items-center gap-1">
+                  <CalendarIcon className="h-4 w-4" />
+                  <span>{formatDate(article.publishedAt?.toISOString() || article.createdAt.toISOString())}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TagIcon className="h-4 w-4" />
+                  <span>{article.category}</span>
+                </div>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50 mb-4">
+                {article.title}
+              </h1>
+              {article.excerpt && <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">{article.excerpt}</p>}
+              <div
+                className="prose prose-lg max-w-none text-gray-800 dark:text-gray-200"
+                dangerouslySetInnerHTML={createMarkup(article.content)}
+              />
+              {article.tags && article.tags.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Štítky:</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {article.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

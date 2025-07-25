@@ -1,15 +1,12 @@
-import { Inter } from 'next/font/google'
+import type React from "react"
+import { AdminLayout } from "../admin/components/AdminLayout"
+import { Toaster } from "@/components/ui/toaster"
 
-const inter = Inter({ subsets: ['latin'] })
-
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={inter.className}>
-      {children}
-    </div>
+    <>
+      <AdminLayout>{children}</AdminLayout>
+      <Toaster />
+    </>
   )
 }

@@ -76,33 +76,24 @@
     "@types/sql.js": "latest",
     "@upstash/redis": "latest",
     "@vercel/blob": "latest",
-<<<<<<< HEAD
-    "bcryptjs": "^3.0.2",
-=======
     "@vercel/postgres": "latest",
     "@xata.io/client": "latest",
+    "bcryptjs": "latest",
     "better-sqlite3": "latest",
     "bun-types": "latest",
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
     "cookie": "latest",
-    "date-fns": "^2.30.0",
+    "date-fns": "latest",
+    "dompurify": "latest",
     "dotenv": "^17.0.1",
-<<<<<<< HEAD
-    "drizzle-orm": "^0.44.3",
-=======
     "drizzle-orm": "latest",
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
     "embla-carousel-react": "latest",
     "expo-sqlite": "latest",
     "framer-motion": "latest",
     "fs": "latest",
-<<<<<<< HEAD
-=======
     "gel": "latest",
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
     "immer": "latest",
     "input-otp": "latest",
     "jose": "latest",

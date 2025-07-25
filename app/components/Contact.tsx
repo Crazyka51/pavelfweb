@@ -1,170 +1,59 @@
-"use client"
+import { ContactForm } from "./ContactForm"
+import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon } from "lucide-react"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { toast } from "@/components/ui/use-toast"
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Jméno musí mít alespoň 2 znaky.",
-  }),
-  email: z.string().email({
-    message: "Zadejte platnou e-mailovou adresu.",
-  }),
-  subject: z.string().min(5, {
-    message: "Předmět musí mít alespoň 5 znaků.",
-  }),
-  message: z.string().min(10, {
-    message: "Zpráva musí mít alespoň 10 znaků.",
-  }),
-})
-
-export default function Contact() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setSubmitStatus('idle')
-    
-    try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      })
-      
-      if (response.ok) {
-        setSubmitStatus('success')
-        toast({
-          title: "Zpráva odeslána!",
-          description: "Děkujeme za Vaši zprávu. Ozveme se Vám co nejdříve.",
-        })
-        form.reset()
-      } else {
-        throw new Error('Failed to send email')
-      }
-    } catch (error) {
-      console.error('Error sending email:', error)
-      setSubmitStatus('error')
-      toast({
-        title: "Chyba při odesílání",
-        description: "Zprávu se nepodařilo odeslat. Zkuste to prosím znovu.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
+export function Contact() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-      <div className="container mx-auto max-w-md">
-        <motion.h2
-          className="text-4xl font-bold mb-8 text-center text-gray-900"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          Kontaktujte mě
-        </motion.h2>
-        <motion.div
-          className="bg-white p-8 rounded-2xl shadow-lg"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jméno</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jan Novák" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <Input placeholder="jan@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="subject"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Předmět</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Dotaz ohledně..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Zpráva</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Popište Váš dotaz..." className="min-h-[120px]" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Odesílání..." : "Odeslat zprávu"}
-              </Button>
-              
-              {/* Status Messages */}
-              {submitStatus === 'success' && (
-                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                  Zpráva byla úspěšně odeslána! Brzy se Vám ozveme.
-                </div>
-              )}
-              {submitStatus === 'error' && (
-                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                  Při odesílání zprávy došlo k chybě. Zkuste to prosím znovu.
-                </div>
-              )}
-            </form>
-          </Form>
-        </motion.div>
+    <section id="contact" className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-950">
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Kontaktujte nás</h2>
+            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+              Máte dotaz nebo nápad? Neváhejte nás kontaktovat. Rádi si vyslechneme Vaše podněty.
+            </p>
+          </div>
+        </div>
+        <div className="mx-auto grid max-w-5xl items-start gap-8 py-12 lg:grid-cols-2 lg:gap-12">
+          <div className="flex flex-col justify-center space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <MailIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Email</h3>
+                <p className="text-gray-500 dark:text-gray-400">info@example.com</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <PhoneIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Telefon</h3>
+                <p className="text-gray-500 dark:text-gray-400">+420 123 456 789</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <MapPinIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Adresa</h3>
+                <p className="text-gray-500 dark:text-gray-400">Příkladová ulice 123, 123 45 Praha, Česká republika</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <ClockIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Pracovní doba</h3>
+                <p className="text-gray-500 dark:text-gray-400">Po-Pá: 9:00 - 17:00</p>
+              </div>
+            </div>
+          </div>
+          <ContactForm />
+        </div>
       </div>
     </section>
   )

@@ -1,112 +1,92 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { newsletterService } from "@/lib/services/newsletter-service"
+import { NextResponse } from "next/server"
+import {
+  getNewsletterSubscribers,
+  addNewsletterSubscriber,
+  updateNewsletterSubscriber,
+  deleteNewsletterSubscriber,
+} from "@/lib/services/newsletter-service"
+import { verifyAuth } from "@/lib/auth-utils"
 
-// POST - Add new subscriber (public endpoint)
-export async function POST(request: NextRequest) {
+export async function GET(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const activeOnly = searchParams.get("activeOnly") === "true"
+
   try {
-    const { email } = await request.json()
+    const subscribers = await getNewsletterSubscribers(activeOnly)
+    const total = subscribers.length
+    const recent = subscribers.filter(
+      (s) => new Date(s.subscribed_at).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000,
+    ).length
+    const active = subscribers.filter((s) => s.is_active).length
 
-    if (!email || !email.includes("@")) {
-      return NextResponse.json({ message: "Neplatná e-mailová adresa" }, { status: 400 })
-    }
-
-    try {
-      const newSubscriber = await newsletterService.subscribeEmail(email.toLowerCase(), "web")
-      return NextResponse.json({
-        message: "Děkujeme za přihlášení k odběru novinek!",
-        subscriber: newSubscriber,
-      })
-    } catch (error: any) {
-      if (error.message.includes("existuje")) {
-        // Check for specific error message from service
-        return NextResponse.json({ message: "Tato e-mailová adresa je již přihlášena k odběru" }, { status: 400 })
-      }
-      console.error("Error adding subscriber:", error)
-      return NextResponse.json({ message: "Chyba při přihlašování k odběru" }, { status: 500 })
-    }
+    return NextResponse.json({ subscribers, stats: { total, recent, active } })
   } catch (error) {
-    console.error("Error adding subscriber:", error)
-    return NextResponse.json({ message: "Chyba při přihlašování k odběru" }, { status: 500 })
+    console.error("Error fetching newsletter subscribers:", error)
+    return NextResponse.json({ message: "Error fetching subscribers" }, { status: 500 })
   }
 }
 
-// GET - Get all subscribers (admin only)
-export async function GET(request: NextRequest) {
-  const authResponse = requireAuth(request)
-  if (authResponse) {
-    return authResponse
+export async function POST(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const activeOnly = searchParams.get("activeOnly") === "true"
-
-    const subscribers = await newsletterService.getSubscribers(activeOnly)
-    const stats = await newsletterService.getSubscriberStats()
-
-    return NextResponse.json({
-      subscribers: subscribers,
-      stats: stats,
-    })
+    const body = await request.json()
+    const newSubscriber = await addNewsletterSubscriber(body.email, body.source || "manual")
+    return NextResponse.json(newSubscriber, { status: 201 })
   } catch (error) {
-    console.error("Error fetching subscribers:", error)
-    return NextResponse.json({ message: "Chyba při načítání odběratelů" }, { status: 500 })
+    console.error("Error adding newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error adding subscriber" }, { status: 500 })
   }
 }
 
-// DELETE - Unsubscribe (public endpoint with token OR admin endpoint)
-export async function DELETE(request: NextRequest) {
+export async function PUT(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const tokenParam = searchParams.get("token")
-
-    // Check if this is admin request (from body)
-    const isAdminRequest = await requireAuth(request, false) // Don't return 401 immediately
-
-    let targetEmail: string | null = null
-
-    if (isAdminRequest) {
-      // Admin request - get email from body
-      try {
-        const body = await request.json()
-        targetEmail = body.email
-      } catch (error) {
-        return NextResponse.json({ message: "Chybí email v požadavku pro odhlášení administrátorem" }, { status: 400 })
-      }
-    } else {
-      // Public unsubscribe request - use URL parameters
-      if (!tokenParam) {
-        return NextResponse.json({ message: "Chybí token pro odhlášení" }, { status: 400 })
-      }
-
-      try {
-        // In a real app, you'd verify the token to get the email
-        // For now, we'll assume the token directly contains the email or is a simple ID
-        // For this example, let's assume the token is the email for simplicity,
-        // but in production, it should be a signed JWT or a lookup ID.
-        targetEmail = tokenParam // This is a simplification!
-        // If using JWT: const decoded = jwt.verify(tokenParam, JWT_SECRET) as { email: string }; targetEmail = decoded.email;
-      } catch (error) {
-        return NextResponse.json({ message: "Neplatný token pro odhlášení" }, { status: 400 })
-      }
+    const body = await request.json()
+    if (!body.id) {
+      return NextResponse.json({ message: "Subscriber ID is required" }, { status: 400 })
     }
-
-    if (!targetEmail) {
-      return NextResponse.json({ message: "Chybí email pro odhlášení" }, { status: 400 })
+    const updatedSubscriber = await updateNewsletterSubscriber(body.id, body)
+    if (!updatedSubscriber) {
+      return NextResponse.json({ message: "Subscriber not found" }, { status: 404 })
     }
-
-    const unsubscribed = await newsletterService.unsubscribeEmail(targetEmail)
-
-    if (!unsubscribed) {
-      return NextResponse.json({ message: "E-mailová adresa nebyla nalezena nebo již byla odhlášena" }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      message: "Odběr novinek byl úspěšně zrušen",
-    })
+    return NextResponse.json(updatedSubscriber)
   } catch (error) {
-    console.error("Error unsubscribing:", error)
-    return NextResponse.json({ message: "Chyba při rušení odběru" }, { status: 500 })
+    console.error("Error updating newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error updating subscriber" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  const authResult = await verifyAuth(request)
+  if (!authResult.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const body = await request.json()
+    if (!body.email) {
+      return NextResponse.json({ message: "Email is required for deletion" }, { status: 400 })
+    }
+    const success = await deleteNewsletterSubscriber(body.email)
+    if (!success) {
+      return NextResponse.json({ message: "Subscriber not found or failed to delete" }, { status: 404 })
+    }
+    return NextResponse.json({ message: "Subscriber deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting newsletter subscriber:", error)
+    return NextResponse.json({ message: "Error deleting subscriber" }, { status: 500 })
   }
 }

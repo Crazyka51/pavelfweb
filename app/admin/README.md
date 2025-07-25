@@ -1,257 +1,164 @@
-# Pavel Fišer CMS - Test Version
+# Admin Panel Documentation
 
-Jednoduché a bezpečné Content Management System pro správu novinek a článků Pavla Fišera.
+This document provides an overview and usage instructions for the administration panel of the Pavel Fišer website.
 
-## Funkce
+## Table of Contents
 
-✅ **Autentizace a bezpečnost**
-- Přihlášení pomocí uživatelského jména a hesla
-- JWT tokeny pro zabezpečené relace
-- Automatické odhlášení po vypršení tokenu
+1.  [Overview](#1-overview)
+2.  [Accessing the Admin Panel](#2-accessing-the-admin-panel)
+3.  [Dashboard](#3-dashboard)
+4.  [Article Management](#4-article-management)
+    *   [Viewing Articles](#41-viewing-articles)
+    *   [Creating New Articles](#42-creating-new-articles)
+    *   [Editing Articles](#43-editing-articles)
+    *   [Deleting Articles](#44-deleting-articles)
+    *   [Publishing and Drafts](#45-publishing-and-drafts)
+5.  [Category Management](#5-category-management)
+    *   [Viewing Categories](#51-viewing-categories)
+    *   [Creating/Editing Categories](#52-creatingediting-categories)
+    *   [Deleting Categories](#53-deleting-categories)
+6.  [Newsletter Management](#6-newsletter-management)
+    *   [Subscribers](#61-subscribers)
+    *   [Campaigns](#62-campaigns)
+    *   [Templates](#63-templates)
+7.  [Analytics](#7-analytics)
+8.  [Settings](#8-settings)
+9.  [Troubleshooting](#9-troubleshooting)
 
-✅ **Správa článků**
-- Vytváření, úprava a mazání článků
-- Rich text editor s formátováním
-- Náhled článků před publikací
-- Kategorizace a štítkování
-- Publikování/koncepty
+---
 
-✅ **Uživatelské rozhraní**
-- Responzivní design pro všechna zařízení
-- Intuitivní ovládání
-- Vyhledávání a filtrování článků
-- Reálný náhled článků
+## 1. Overview
 
-✅ **API pro web**
-- Veřejné API pro načítání publikovaných článků
-- Podpora pro filtrování podle kategorií
-- Pagination pro lepší výkon
+The admin panel is a centralized content management system (CMS) designed to allow Pavel Fišer and authorized users to manage the website's content, including articles, categories, newsletter subscribers, and general site settings. It provides a user-friendly interface for common administrative tasks.
 
-## Instalace a spuštění
+## 2. Accessing the Admin Panel
 
-### 1. Nainstalujte závislosti
-\`\`\`bash
-npm install
-# nebo
-pnpm install
-\`\`\`
+The admin panel is accessible via the `/admin` route of the website.
+You will be prompted to log in with your credentials.
 
-### 2. Nastavte environment variables
-Zkopírujte `.env.example` do `.env.local` a upravte hodnoty:
+**Login Credentials:**
+*   **Username**: `admin` (or as configured in environment variables)
+*   **Password**: Set via `ADMIN_PAVEL_PASSWORD` environment variable.
 
-\`\`\`bash
-cp .env.example .env.local
-\`\`\`
+**Important**: Keep your login credentials secure. Do not share them publicly.
 
-Upravte `.env.local`:
-\`\`\`
-ADMIN_USERNAME=pavel
-ADMIN_PASSWORD=your_secure_password_here
-JWT_SECRET=your_super_secret_jwt_key_here
-NEXT_PUBLIC_APP_URL=http://localhost:3001
-\`\`\`
+## 3. Dashboard
 
-⚠️ **DŮLEŽITÉ**: V produkci změňte výchozí heslo a JWT secret!
+Upon successful login, you will be redirected to the Dashboard. This section provides a quick overview of key metrics and recent activities, such as:
+*   Total number of articles
+*   Number of published articles
+*   Recent comments (if implemented)
+*   Newsletter subscriber count
+*   Quick links to common tasks (e.g., "New Article", "View Analytics").
 
-### 3. Spusťte development server
-\`\`\`bash
-npm run dev
-# nebo
-pnpm dev
-\`\`\`
+## 4. Article Management
 
-Aplikace bude dostupná na: http://localhost:3001
+This section allows you to create, edit, publish, and manage all articles on the website.
 
-## Přihlašovací údaje (test)
+### 4.1. Viewing Articles
 
-- **Uživatelské jméno**: pavel
-- **Heslo**: test123
+Navigate to the "Články" (Articles) tab. Here you will see a table listing all articles.
+*   **Search**: Use the search bar to find articles by title, content, or tags.
+*   **Filter by Category**: Filter articles by their assigned category.
+*   **Filter by Status**: Filter by "Publikováno" (Published), "Koncept" (Draft), or "Archivováno" (Archived).
+*   **Pagination**: Use the "Předchozí" and "Další" buttons to navigate through pages of articles.
 
-## Struktura projektu
+### 4.2. Creating New Articles
 
-\`\`\`
-cms-test/
-├── app/                      # Next.js app directory
-│   ├── components/           # React komponenty
-│   │   ├── Dashboard.tsx     # Hlavní dashboard
-│   │   ├── LoginForm.tsx     # Přihlašovací formulář
-│   │   ├── ArticleEditor.tsx # Editor článků
-│   │   └── ArticlePreview.tsx # Náhled článků
-│   ├── api/                  # API routes
-│   │   ├── auth/             # Autentizace
-│   │   ├── articles/         # Správa článků (admin)
-│   │   └── public/           # Veřejné API
-│   ├── globals.css           # Globální styly
-│   ├── layout.tsx            # Root layout
-│   └── page.tsx              # Hlavní stránka
-├── data/                     # JSON databáze (auto-vytvoří se)
-│   └── articles.json         # Články
-├── public/                   # Statické soubory
-├── .env.example              # Příklad environment variables
-└── README.md                 # Tato dokumentace
-\`\`\`
+Click the "Nový článek" (New Article) button. You will be taken to the Article Editor.
+Fill in the following fields:
+*   **Název článku (Article Title)**: The main title of your article.
+*   **URL Slug**: Automatically generated from the title, but can be edited for SEO-friendly URLs.
+*   **Úryvek (Excerpt)**: A short summary of the article, used for previews.
+*   **Obsah článku (Article Content)**: The main body of the article. Use the Tiptap editor for rich text formatting.
+*   **Kategorie (Category)**: Select an existing category for the article.
+*   **URL obrázku (Image URL)**: Link to a featured image for the article.
+*   **Stav (Status)**: Set to "Koncept" (Draft), "Publikováno" (Published), or "Archivováno" (Archived).
+*   **Datum publikace (Publication Date)**: Optionally schedule a future publication date.
+*   **Doporučený článek (Featured Article)**: Mark as featured to highlight it on the homepage or other prominent sections.
+*   **Meta Titulek (Meta Title)**: For SEO, the title that appears in search engine results.
+*   **Meta Popis (Meta Description)**: For SEO, the description that appears in search engine results.
 
-## API Endpoints
+Click "Vytvořit koncept" to save as a draft, or "Publikovat" to immediately publish the article.
 
-### Admin API (vyžaduje autentizace)
+### 4.3. Editing Articles
 
-#### Autentizace
-- `POST /api/auth/login` - Přihlášení
-- `GET /api/auth/verify` - Ověření tokenu
+From the article list, click the "Upravit" (Edit) button next to the article you wish to modify. The Article Editor will load with the existing content. Make your changes and click "Uložit změny".
 
-#### Správa článků
-- `GET /api/articles` - Seznam všech článků
-- `POST /api/articles` - Vytvoření článku
-- `GET /api/articles/[id]` - Detail článku
-- `PUT /api/articles/[id]` - Aktualizace článku
-- `DELETE /api/articles/[id]` - Smazání článku
+### 4.4. Deleting Articles
 
-### Veřejné API (bez autentizace)
+From the article list, click the "Smazat" (Delete) button next to the article. A confirmation dialog will appear. Confirm to permanently delete the article. This action is irreversible.
 
-#### Články pro web
-- `GET /api/public/articles` - Seznam publikovaných článků
-  - Query parametry: `category`, `limit`, `offset`
-- `GET /api/public/articles/[id]` - Detail publikovaného článku
+### 4.5. Publishing and Drafts
 
-## Použití na hlavním webu
+*   **Drafts**: Articles saved with "Koncept" status are not visible to the public.
+*   **Published**: Articles with "Publikováno" status are live on the website.
+*   **Scheduled**: Articles with a future "Datum publikace" will automatically become "Publikováno" at the specified time.
 
-### Načítání článků do Next.js komponenty
+## 5. Category Management
 
-\`\`\`javascript
-// components/News.tsx
-import { useState, useEffect } from 'react'
+This section allows you to organize your articles into categories.
 
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-}
+### 5.1. Viewing Categories
 
-export default function News() {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
+Navigate to the "Kategorie" (Categories) tab. You will see a list of all defined categories along with the number of articles in each.
 
-  useEffect(() => {
-    async function loadArticles() {
-      try {
-        const response = await fetch('http://localhost:3001/api/public/articles?limit=5')
-        const data = await response.json()
-        setArticles(data.articles)
-      } catch (error) {
-        console.error('Error loading articles:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+### 5.2. Creating/Editing Categories
 
-    loadArticles()
-  }, [])
+Click "Nová kategorie" to create a new one, or "Upravit" next to an existing category.
+*   **Název (Name)**: The name of the category (e.g., "Aktuality", "Doprava").
+*   **Popis (Description)**: An optional description for the category.
 
-  if (loading) return <div>Načítání novinek...</div>
+Click "Vytvořit" or "Uložit změny" to save.
 
-  return (
-    <div className="news-section">
-      <h2>Nejnovější články</h2>
-      {articles.map(article => (
-        <article key={article.id} className="news-item">
-          <h3>{article.title}</h3>
-          <p>{article.excerpt}</p>
-          <span className="category">{article.category}</span>
-          <time>{new Date(article.updatedAt).toLocaleDateString('cs-CZ')}</time>
-        </article>
-      ))}
-    </div>
-  )
-}
-\`\`\`
+### 5.3. Deleting Categories
 
-### Server-side rendering (SSG/SSR)
+Click "Smazat" next to a category. Confirm to delete. Articles previously assigned to this category will have their category set to `NULL`.
 
-\`\`\`javascript
-// pages/news/index.tsx nebo app/news/page.tsx
-export async function getStaticProps() {
-  try {
-    const response = await fetch('http://localhost:3001/api/public/articles')
-    const data = await response.json()
-    
-    return {
-      props: {
-        articles: data.articles
-      },
-      revalidate: 300 // Obnovit každých 5 minut
-    }
-  } catch (error) {
-    return {
-      props: {
-        articles: []
-      }
-    }
-  }
-}
-\`\`\`
+## 6. Newsletter Management
 
-## Kategorie článků
+Manage your newsletter subscribers, create and send campaigns, and manage email templates.
 
-Výchozí kategorie:
-- Aktuality
-- Městská politika
-- Doprava
-- Životní prostředí
-- Kultura
-- Sport
+### 6.1. Subscribers
 
-Kategorie lze upravit v souboru `app/components/Dashboard.tsx`.
+Navigate to the "Odběratelé" (Subscribers) tab.
+*   View a list of all subscribers, their subscription date, source, and status (active/unsubscribed).
+*   You can manually unsubscribe users.
+*   **Export CSV**: Download a CSV file of all subscribers.
 
-## Bezpečnost
+### 6.2. Campaigns
 
-- JWT tokeny s vypršením (24 hodin)
-- Autentizace všech admin endpoints
-- Validace vstupních dat
-- Oddělené veřejné a admin API
-- CORS nastavení
+Navigate to the "Kampaně" (Campaigns) tab.
+*   **Nová kampaň (New Campaign)**: Create a new email campaign.
+    *   **Předmět e-mailu (Email Subject)**: The subject line of your newsletter.
+    *   **Obsah e-mailu (Email Content)**: The body of your newsletter. HTML content is supported.
+    *   You can choose to send to selected active subscribers or all active subscribers.
+    *   Click "Odeslat kampaň" to send.
+*   **Historie kampaní (Campaign History)**: View a list of all previously sent campaigns, including subject, send date, and basic statistics (recipients, opens, clicks).
 
-## Databáze
+### 6.3. Templates
 
-Aplikace používá JSON soubory pro jednoduchost:
-- `data/articles.json` - články
-- Automatické zálohování při každé změně
-- Snadno migrovatelné do databáze
+Navigate to the "Šablony" (Templates) tab.
+*   Create and manage reusable email templates for your campaigns.
 
-## Produkční nasazení
+## 7. Analytics
 
-### 1. Environment variables
-\`\`\`
-ADMIN_USERNAME=pavel
-ADMIN_PASSWORD=very_secure_password_here
-JWT_SECRET=super_secret_random_string_at_least_32_chars
-NEXT_PUBLIC_APP_URL=https://your-cms-domain.com
-\`\`\`
+Navigate to the "Analytika" (Analytics) tab.
+*   View basic website traffic statistics, such as page views and visitors.
+*   (Note: Advanced metrics and daily trends may require further integration.)
 
-### 2. Doporučení
-- Nastavte silné heslo
-- Použijte HTTPS
-- Pravidelně zálohujte data
-- Monitorujte přístup
+## 8. Settings
 
-### 3. Možná rozšíření
-- Migrace na databázi (PostgreSQL, MongoDB)
-- Upload obrázků
-- Více uživatelů
-- Email notifikace
-- Pokročilé SEO
-- Výkonové optimalizace
+Navigate to the "Nastavení" (Settings) tab.
+*   **Obecná nastavení (General Settings)**: Configure site title, description, contact email, and integration IDs (Google Analytics, Facebook Page ID).
+*   **Nastavení administrátora (Admin Settings)**: View the admin username. You can change the admin password here (leave blank to keep current).
+*   **Povolit newsletter (Enable Newsletter)**: Toggle the newsletter functionality on/off for the public website.
 
-## Podpora
+Remember to click "Uložit nastavení" after making any changes.
 
-Toto je test verze CMS systému vytvořená pro Pavla Fišera. 
-Pro podporu nebo přizpůsobení kontaktujte vývojáře.
+## 9. Troubleshooting
 
-## Licence
-
-Soukromé použití - Pavel Fišer
+*   **Login Issues**: Double-check your username and password. Ensure the `ADMIN_PAVEL_PASSWORD` environment variable is correctly set on your deployment platform (Vercel).
+*   **Data Not Loading**: Check your browser's developer console for network errors. Ensure your Neon PostgreSQL database is running and accessible, and `DATABASE_URL` is correctly configured.
+*   **API Errors**: If you encounter errors when saving or fetching data, check the server logs on Vercel for more detailed error messages.
+*   **UI Glitches**: Try clearing your browser cache or performing a hard refresh.
