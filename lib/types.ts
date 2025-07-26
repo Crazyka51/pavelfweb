@@ -3,18 +3,16 @@
 export interface Article {
   id: string
   title: string
-  slug: string
   content: string
-  category_id: string
-  published_at: Date | null
-  created_at: Date
-  updated_at: Date
-  author_id: string
-  status: "draft" | "published" | "archived"
-  seo_title?: string
-  seo_description?: string
-  featured_image_url?: string
-  tags?: string[]
+  excerpt?: string | null
+  category: string
+  tags: string[] | null
+  isPublished: boolean
+  imageUrl?: string | null
+  publishedAt?: Date | null
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
 }
 
 export interface Category {

@@ -1,5 +1,5 @@
 import "./globals.css"
-import { Inter } from "next/font/google"
+// import { Inter } from "next/font/google"
 import Header from "./components/Header"
 import { Footer } from "./components/Footer"
 import { CookieBanner } from "./components/CookieBanner"
@@ -9,7 +9,9 @@ import StructuredData from "./components/StructuredData"
 import type React from "react"
 import { Suspense } from "react"
 
-const inter = Inter({ subsets: ["latin"] })
+// const inter = Inter({ subsets: ["latin"] })
+// Use system font stack as fallback when Google Fonts is not accessible
+const systemFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
 
 export const metadata = {
   title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
@@ -53,7 +55,7 @@ export default function RootLayout({
       <head>
         <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-slate-900 text-gray-100 dark`}>
+      <body className="min-h-screen bg-slate-900 text-gray-100 dark" style={{ fontFamily: systemFont }}>
         <Suspense fallback={null}>
           <GoogleAnalytics />
           <StructuredData

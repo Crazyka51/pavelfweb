@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
-import { signIn } from "@/lib/auth-utils"
+import { signIn } from "@/lib/auth-client"
 
 export function LoginForm() {
   const [username, setUsername] = useState("")
