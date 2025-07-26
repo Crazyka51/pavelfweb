@@ -207,7 +207,7 @@ importers:
         specifier: latest
         version: 0.30.1(typescript@5.8.3)
       bcryptjs:
-        specifier: latest
+        specifier: ^3.0.2
         version: 3.0.2
       better-sqlite3:
         specifier: latest

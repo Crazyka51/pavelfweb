@@ -78,7 +78,7 @@
     "@vercel/blob": "latest",
     "@vercel/postgres": "latest",
     "@xata.io/client": "latest",
-    "bcryptjs": "latest",
+    "bcryptjs": "^3.0.2",
     "better-sqlite3": "latest",
     "bun-types": "latest",
     "class-variance-authority": "^0.7.1",
