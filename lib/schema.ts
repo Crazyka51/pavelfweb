@@ -116,14 +116,3 @@ export const analyticsEvents = pgTable("analytics_events", {
   sessionId: varchar("session_id", { length: 255 }),
 })
 
-// Export all tables for use in other modules
-export {
-  articles,
-  categories,
-  newsletterSubscribers,
-  newsletterCampaigns,
-  newsletterTemplates,
-  adminUsers,
-  cmsSettings,
-  analyticsEvents,
-}
