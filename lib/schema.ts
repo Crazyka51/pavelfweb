@@ -6,7 +6,7 @@ import { pgTable, uuid, varchar, text, boolean, timestamp } from "drizzle-orm/pg
  * Extend it at any time – every field you add will automatically
  * be available through the generated types.
  */
-export const articles = pgTable("articles", {
+const articles = pgTable("articles", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: varchar("title", { length: 512 }).notNull(),
   content: text("content").notNull(),
@@ -24,7 +24,7 @@ export const articles = pgTable("articles", {
 /**
  * Postgres table definition for "categories".
  */
-export const categories = pgTable("categories", {
+const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull().unique(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
@@ -41,7 +41,7 @@ export const categories = pgTable("categories", {
 /**
  * Postgres table definition for "newsletter_subscribers".
  */
-export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+const newsletterSubscribers = pgTable("newsletter_subscribers", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   isActive: boolean("is_active").notNull().default(true),
@@ -53,7 +53,7 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 /**
  * Postgres table definition for "newsletter_campaigns".
  */
-export const newsletterCampaigns = pgTable("newsletter_campaigns", {
+const newsletterCampaigns = pgTable("newsletter_campaigns", {
   id: uuid("id").primaryKey().defaultRandom(),
   subject: varchar("subject", { length: 255 }).notNull(),
   content: text("content").notNull(),
@@ -66,7 +66,7 @@ export const newsletterCampaigns = pgTable("newsletter_campaigns", {
 /**
  * Postgres table definition for "newsletter_templates".
  */
-export const newsletterTemplates = pgTable("newsletter_templates", {
+const newsletterTemplates = pgTable("newsletter_templates", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
   subject: varchar("subject", { length: 255 }).notNull(),
@@ -78,7 +78,7 @@ export const newsletterTemplates = pgTable("newsletter_templates", {
 /**
  * Postgres table definition for "admin_users".
  */
-export const adminUsers = pgTable("admin_users", {
+const adminUsers = pgTable("admin_users", {
   id: uuid("id").primaryKey().defaultRandom(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
@@ -94,7 +94,7 @@ export const adminUsers = pgTable("admin_users", {
 /**
  * Postgres table definition for "cms_settings".
  */
-export const cmsSettings = pgTable("cms_settings", {
+const cmsSettings = pgTable("cms_settings", {
   id: uuid("id").primaryKey().defaultRandom(),
   key: varchar("key", { length: 255 }).notNull().unique(),
   value: text("value"),
@@ -106,7 +106,7 @@ export const cmsSettings = pgTable("cms_settings", {
 /**
  * Postgres table definition for "analytics_events".
  */
-export const analyticsEvents = pgTable("analytics_events", {
+const analyticsEvents = pgTable("analytics_events", {
   id: uuid("id").primaryKey().defaultRandom(),
   eventType: varchar("event_type", { length: 255 }).notNull(),
   page: varchar("page", { length: 2048 }),

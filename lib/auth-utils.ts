@@ -38,6 +38,9 @@ import type { User, Session } from "lucia" // Assuming Lucia types
 
 // Mock Lucia for demonstration if not fully set up
 const lucia = {
+  sessionCookie: {
+    name: "session",
+  },
   validateSession: async (
     sessionId: string | null,
   ): Promise<{ user: User; session: Session } | { user: null; session: null }> => {
@@ -52,6 +55,8 @@ const lucia = {
           sessionId: "valid_session_id",
           userId: "user123",
           expiresAt: new Date(Date.now() + 3600000),
+          id: "valid_session_id",
+          fresh: false,
         } as Session,
       }
     }
@@ -59,11 +64,23 @@ const lucia = {
   },
   createSession: async (userId: string) => {
     // Simulate session creation
-    return { sessionId: "valid_session_id", userId, expiresAt: new Date(Date.now() + 3600000) } as Session
+    return { sessionId: "valid_session_id", userId, expiresAt: new Date(Date.now() + 3600000), id: "valid_session_id" } as Session
   },
   invalidateSession: async (sessionId: string) => {
     // Simulate session invalidation
     console.log(`Session ${sessionId} invalidated.`)
+  },
+  createSessionCookie: (sessionId: string) => {
+    return {
+      name: "session",
+      value: sessionId,
+      attributes: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 3600,
+      },
+    }
   },
 }
 
@@ -87,6 +104,27 @@ export async function validateRequest(): Promise<{ user: User; session: Session 
     // next.js throws error when attempting to set cookie when rendering page
   }
   return { user, session }
+}
+
+export async function signIn(username: string, password: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    // Mock authentication logic - replace with actual authentication
+    if (username === "admin" && password === "admin") {
+      const session = await lucia.createSession("user123")
+      const sessionCookie = lucia.createSessionCookie(session.sessionId)
+      cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+      return { success: true }
+    } else {
+      return { success: false, message: "Neplatné přihlašovací údaje" }
+    }
+  } catch (error) {
+    console.error("Sign in error:", error)
+    return { success: false, message: "Chyba při přihlášení" }
+  }
+}
+
+export async function verifyAuth(): Promise<{ user: User; session: Session } | { user: null; session: null }> {
+  return await validateRequest()
 }
 
 export async function signOut(): Promise<void> {
