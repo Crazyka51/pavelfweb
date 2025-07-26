@@ -18,19 +18,7 @@ import {
   BarChartIcon,
   SettingsIcon,
 } from "lucide-react"
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  status: "draft" | "published" | "archived"
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-}
+import type { Article } from "@/lib/types"
 
 interface QuickActionsProps {
   article: Article

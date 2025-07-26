@@ -1,23 +1,11 @@
 import { db } from "@/lib/database" // Import the Drizzle instance
 import { articles } from "@/lib/schema" // Import the articles table schema
 import { eq, and, or, ilike, desc, count, sql } from "drizzle-orm" // Import Drizzle helpers
+import type { Article } from "@/lib/types"
 
 /* -------------------------------------------------------------------------- */
 /*                            Interface a typy                                */
 /* -------------------------------------------------------------------------- */
-
-export interface Article {
-  id: string;
-  title: string;
-  content: string;
-  excerpt?: string | null;
-  category: string;
-  tags: string[];
-  isPublished: boolean;
-  imageUrl?: string | null;
-  publishedAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
   createdBy: string;
 }
 

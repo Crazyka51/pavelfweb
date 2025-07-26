@@ -1,19 +1,7 @@
 import { put, list, del } from '@vercel/blob'
+import type { Article } from "@/lib/types"
 
 // Interface pro články
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
 
 // Interface pro newsletter subscribers
 interface NewsletterSubscriber {
