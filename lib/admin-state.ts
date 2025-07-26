@@ -2,21 +2,9 @@
 
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
+import type { Article } from "@/lib/types"
 
 // Types pro state
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
 
 interface Subscriber {
   id: string

@@ -3,20 +3,7 @@
 import { useAdminStore } from "@/lib/admin-state"
 import { useDataCache } from "@/lib/admin-state"
 import { useCallback } from "react"
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
+import type { Article } from "@/lib/types"
 
 interface Subscriber {
   id: string
