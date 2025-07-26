@@ -1,215 +1,153 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-<<<<<<< HEAD
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import type { Article } from "@/lib/article-service" // Import Article type from service
+import { Calendar, ArrowRight, Eye, Clock } from "lucide-react"
 
-interface ArticlesResponse {
-  articles: Article[]
-  total: number
-  hasMore: boolean
+interface Article {
+  id: number
+  title: string
+  excerpt: string
+  content: string
+  category: string
+  published_at: string
+  image_url?: string
+  slug: string
+  views?: number
 }
-=======
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import type { Article } from "@/lib/database" // Import Article type
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
 
 export default function RecentNews() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
 
-  const loadRecentArticles = async (pageNumber: number) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await fetch(`/api/admin/public/articles?page=${pageNumber}&limit=6`)
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Chyba při načítání článků: ${response.status} - ${errorText}`)
-      }
-      const data: ArticlesResponse = await response.json()
-
-      // The Article type from lib/services/article-service.ts already handles mapping
-      // from DB snake_case to camelCase, so we can use it directly.
-      setArticles((prevArticles) => (pageNumber === 1 ? data.articles : [...prevArticles, ...data.articles]))
-      setHasMore(data.hasMore)
-    } catch (err: any) {
-      console.error("Error loading articles:", err)
-      setError(err.message || "Nepodařilo se načíst nejnovější články.")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Mock data pro případ, že API nefunguje
+  const mockArticles: Article[] = [
+    {
+      id: 1,
+      title: "Nové dětské hřiště na Pankráci je hotové",
+      excerpt:
+        "Po měsících příprav a stavebních prací je konečně dokončena rekonstrukce dětského hřiště na Pankráci. Investice ve výši 2,5 milionu korun přinesla moderní herní prvky a bezpečný prostor pro děti.",
+      content: "",
+      category: "Investice",
+      published_at: "2024-01-15T10:00:00Z",
+      image_url: "/placeholder.svg",
+      slug: "nove-detske-hriste-pankrac",
+      views: 245,
+    },
+    {
+      id: 2,
+      title: "Rozšíření cyklostezek mezi Pankrácí a Michle",
+      excerpt:
+        "Představujeme plány na propojení stávajících cyklostezek, které zlepší bezpečnost a pohodlí cyklistů. Projekt za 4,2 milionu korun začne v listopadu.",
+      content: "",
+      category: "Doprava",
+      published_at: "2024-01-12T14:30:00Z",
+      image_url: "/placeholder.svg",
+      slug: "rozsireni-cyklostezek",
+      views: 189,
+    },
+    {
+      id: 3,
+      title: "Konzultační hodiny v lednu",
+      excerpt:
+        "Zvu vás na pravidelné konzultační hodiny, které se konají každý první čtvrtek v měsíci. Přijďte s vašimi podněty a nápady pro zlepšení naší městské části.",
+      content: "",
+      category: "Oznámení",
+      published_at: "2024-01-08T09:00:00Z",
+      image_url: "/placeholder.svg",
+      slug: "konzultacni-hodiny-leden",
+      views: 156,
+    },
+    {
+      id: 4,
+      title: "Úspěšné spuštění projektu třídění odpadu",
+      excerpt:
+        "Pilotní projekt chytrého třídění odpadu překonal všechna očekávání. Občané třídí o 40% více odpadu než před spuštěním projektu.",
+      content: "",
+      category: "Životní prostředí",
+      published_at: "2024-01-05T16:15:00Z",
+      image_url: "/placeholder.svg",
+      slug: "projekt-trideni-odpadu",
+      views: 203,
+    },
+  ]
 
   useEffect(() => {
-<<<<<<< HEAD
-    loadRecentArticles(1)
-  }, [])
-
-  const handleLoadMore = () => {
-    setPage((prevPage) => prevPage + 1)
-    loadRecentArticles(page + 1)
-  }
-
-  return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Nejnovější zprávy a články</h2>
-            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-              Zůstaňte informováni o nejnovějších událostech a poznatcích.
-            </p>
-          </div>
-        </div>
-        {loading && articles.length === 0 ? (
-          <div className="grid gap-6 py-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardContent className="flex flex-col gap-4 p-4">
-                  <Skeleton className="h-[200px] w-full rounded-md" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="py-12 text-center text-red-500">
-            <p>{error}</p>
-            <Button onClick={() => loadRecentArticles(1)} className="mt-4">
-              Zkusit znovu
-            </Button>
-          </div>
-        ) : articles.length === 0 ? (
-          <div className="py-12 text-center text-gray-500">
-            <p>Žádné články k zobrazení.</p>
-          </div>
-        ) : (
-          <div className="grid gap-6 py-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-            {articles.map((article) => (
-              <Card key={article.id}>
-                <CardContent className="flex flex-col gap-4 p-4">
-                  <Link className="block" href={`/aktuality/${article.id}`}>
-                    <Image
-                      alt={article.title}
-                      className="aspect-video overflow-hidden rounded-md object-cover"
-                      height={200}
-                      src={article.imageUrl || "/placeholder.svg"}
-                      width={350}
-                    />
-                  </Link>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <Badge variant="secondary">{article.category}</Badge>
-                    <span>
-                      {article.publishedAt
-                        ? new Date(article.publishedAt).toLocaleDateString("cs-CZ", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : new Date(article.createdAt).toLocaleDateString("cs-CZ", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                    </span>
-                  </div>
-                  <Link className="block" href={`/aktuality/${article.id}`}>
-                    <h3 className="text-xl font-bold tracking-tight">{article.title}</h3>
-                  </Link>
-                  <p className="text-gray-500 dark:text-gray-400">{article.excerpt}</p>
-                  <Link className="block" href={`/aktuality/${article.id}`}>
-                    <Button variant="outline">Číst více</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-        {hasMore && !loading && articles.length > 0 && (
-          <div className="flex justify-center py-4">
-            <Button onClick={handleLoadMore} disabled={loading}>
-              {loading ? "Načítám..." : "Načíst další"}
-            </Button>
-          </div>
-        )}
-=======
-    async function loadRecentArticles() {
+    const fetchArticles = async () => {
       try {
-        setLoading(true)
-        const response = await fetch("/api/admin/public/articles?limit=3") // Fetch only published articles
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`Chyba při načítání článků: ${response.status} ${errorText}`)
+        const response = await fetch("/api/admin/public/articles?limit=4")
+        if (response.ok) {
+          const data = await response.json()
+          setArticles(data.articles || mockArticles)
+        } else {
+          setArticles(mockArticles)
         }
-        const data = await response.json()
-        setArticles(data.articles)
-      } catch (err: any) {
-        console.error("Error loading articles:", err)
-        setError(err.message || "Nepodařilo se načíst nejnovější články.")
+      } catch (error) {
+        console.error("Error fetching articles:", error)
+        setArticles(mockArticles)
       } finally {
         setLoading(false)
       }
     }
-    loadRecentArticles()
+
+    fetchArticles()
   }, [])
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      Investice: "bg-blue-100 text-blue-800",
+      Doprava: "bg-green-100 text-green-800",
+      Oznámení: "bg-purple-100 text-purple-800",
+      "Životní prostředí": "bg-emerald-100 text-emerald-800",
+      Kultura: "bg-pink-100 text-pink-800",
+      Bezpečnost: "bg-red-100 text-red-800",
+    }
+    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 1) return "Včera"
+    if (diffDays < 7) return `Před ${diffDays} dny`
+
+    return date.toLocaleDateString("cs-CZ", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  }
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + "..."
+  }
 
   if (loading) {
     return (
-      <section id="recent-news" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Nejnovější aktuality</h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Načítání nejnovějších zpráv a událostí...
-              </p>
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Načítání aktualit...</h2>
             </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="flex flex-col">
-                <CardHeader>
-                  <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse mt-2"></div>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
-                </CardContent>
-                <div className="p-6 pt-0">
-                  <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  if (error) {
-    return (
-      <section id="recent-news" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Chyba při načítání aktualit</h2>
-              <p className="max-w-[900px] text-red-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-red-400">
-                {error}
-              </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
+                    <div className="h-8 bg-gray-200 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
@@ -218,63 +156,85 @@ export default function RecentNews() {
   }
 
   return (
-    <section id="recent-news" className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Nejnovější aktuality</h2>
-            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-              Zde najdete nejnovější zprávy, události a oznámení.
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6">
+              <Clock className="w-4 h-4 mr-2" />
+              Nejnovější aktuality
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Co se <span className="text-blue-600">děje nového</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Sledujte nejnovější informace o mé práci, dokončených projektech a plánovaných aktivitách
             </p>
           </div>
-        </div>
-        <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-          {articles.length > 0 ? (
-            articles.map((article) => (
-              <Card key={article.id} className="flex flex-col">
-                {article.image_url && (
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {articles.slice(0, 4).map((article, index) => (
+              <Card key={article.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                <div className="relative">
                   <img
                     src={article.image_url || "/placeholder.svg"}
                     alt={article.title}
-                    width={400}
-                    height={225}
-                    className="aspect-video object-cover rounded-t-lg"
+                    className="w-full h-48 object-cover"
                   />
-                )}
-                <CardHeader>
-                  <CardTitle>{article.title}</CardTitle>
-                  <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(article.published_at || article.created_at).toLocaleDateString("cs-CZ", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-gray-700 dark:text-gray-300 line-clamp-3">{article.excerpt || article.content}</p>
-                </CardContent>
-                <div className="p-6 pt-0">
-                  <Link href={`/aktuality/${article.id}`} passHref>
-                    <Button variant="outline" className="w-full bg-transparent">
-                      Číst více
-                    </Button>
-                  </Link>
+                  <div className="absolute top-4 left-4 flex space-x-2">
+                    <Badge className={getCategoryColor(article.category)}>{article.category}</Badge>
+                  </div>
+                  {article.views && (
+                    <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
+                      <Eye className="w-3 h-3 mr-1" />
+                      {article.views}
+                    </div>
+                  )}
                 </div>
+
+                <CardHeader className="pb-3">
+                  <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {formatDate(article.published_at)}
+                  </div>
+                  <CardTitle className="text-xl font-bold text-gray-900 leading-tight hover:text-blue-600 transition-colors">
+                    {article.title}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <p className="text-gray-600 leading-relaxed mb-4">{truncateText(article.excerpt, 150)}</p>
+
+                  <Button variant="outline" className="w-full group bg-transparent">
+                    Číst celý článek
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
               </Card>
-            ))
-          ) : (
-            <p className="col-span-full text-center text-gray-500 dark:text-gray-400">Žádné články k zobrazení.</p>
-          )}
-        </div>
-        {articles.length > 0 && (
-          <div className="flex justify-center mt-8">
-            <Link href="/aktuality" passHref>
-              <Button>Zobrazit všechny aktuality</Button>
-            </Link>
+            ))}
           </div>
-        )}
->>>>>>> e2ce699b71320c848c521e54fad10a96370f4230
+
+          <div className="text-center">
+            <Card className="bg-blue-50 border-blue-200 max-w-2xl mx-auto">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Chcete být v obraze?</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Přihlaste se k odběru novinek a buďte první, kdo se dozví o nových projektech, dokončených investicích
+                  a důležitých událostech v naší městské části.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                    Všechny aktuality
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button size="lg" variant="outline">
+                    Odběr novinek
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </section>
   )

@@ -1,176 +1,266 @@
 "use client"
+
 import { motion } from "framer-motion"
-import { Tab } from "@headlessui/react"
-import { CheckCircle, Calendar, Users, Building } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Calendar, MapPin, Users, CheckCircle, Clock, ArrowRight, Euro, Wrench } from "lucide-react"
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ")
-}
-
-const projects = {
-  "Rodiny a děti": [
+export default function Projects() {
+  const projects = [
     {
       id: 1,
-      title: "Renovace dětských hřišť",
-      description: "Iniciativa pro modernizaci a zvýšení bezpečnosti dětských hřišť v Praze 4.",
-      status: "Probíhá",
-      icon: <Users className="h-6 w-6" />,
-      details:
-        "Projekt zahrnuje kompletní renovaci 5 dětských hřišť, instalaci nových bezpečných herních prvků a vytvoření odpočinkových zón pro rodiče. První dvě hřiště již byla dokončena a otevřena veřejnosti.",
+      title: "Rekonstrukce dětského hřiště na Pankráci",
+      description: "Kompletní obnova dětského hřiště s moderními herními prvky, bezpečným povrchem a novým mobiliářem.",
+      location: "Pankrác, Praha 4",
+      budget: "2,5 mil. Kč",
+      startDate: "2024-03-01",
+      endDate: "2024-10-15",
+      status: "completed",
+      category: "Infrastruktura",
+      impact: "Více než 200 rodin s dětmi",
+      images: ["/placeholder.svg"],
+      highlights: [
+        "Nové bezpečné herní prvky",
+        "Bezbariérový přístup",
+        "Odpočinková zóna pro rodiče",
+        "Nové osvětlení",
+      ],
     },
     {
       id: 2,
-      title: "Rozšíření kapacity MŠ",
-      description: "Projekt zaměřený na zvýšení dostupnosti předškolního vzdělávání.",
-      status: "Dokončeno",
-      icon: <Building className="h-6 w-6" />,
-      details:
-        "Díky tomuto projektu se podařilo navýšit kapacitu mateřských škol v Praze 4 o 120 míst. Součástí projektu byla také modernizace vybavení a zlepšení venkovních prostor pro děti.",
+      title: "Rozšíření cyklostezek Pankrác - Michle",
+      description: "Propojení stávajících cyklostezek pro bezpečnější a pohodlnější cyklistickou dopravu.",
+      location: "Pankrác - Michle",
+      budget: "4,2 mil. Kč",
+      startDate: "2024-11-01",
+      endDate: "2025-06-30",
+      status: "in-progress",
+      category: "Doprava",
+      impact: "Tisíce cyklistů denně",
+      images: ["/placeholder.svg"],
+      highlights: ["3,2 km nových cyklostezek", "Bezpečné křižovatky", "Odpočívadla a stojany", "Propojení s MHD"],
     },
     {
       id: 3,
-      title: "Bezpečná cesta do školy",
-      description: "Program pro zvýšení bezpečnosti dětí na cestě do školy.",
-      status: "Probíhá",
-      icon: <CheckCircle className="h-6 w-6" />,
-      details:
-        "Program zahrnuje instalaci bezpečnostních prvků na přechodech pro chodce, vzdělávací akce pro děti o bezpečnosti v dopravě a spolupráci s městskou policií na zajištění dohledu v ranních hodinách.",
+      title: "Modernizace veřejného osvětlení",
+      description: "Výměna starého osvětlení za úsporné LED technologie s chytrým řízením.",
+      location: "Celá Praha 4",
+      budget: "8,5 mil. Kč",
+      startDate: "2024-12-01",
+      endDate: "2025-12-31",
+      status: "planned",
+      category: "Životní prostředí",
+      impact: "Všichni obyvatelé Prahy 4",
+      images: ["/placeholder.svg"],
+      highlights: ["60% úspora energie", "Lepší kvalita osvětlení", "Chytré řízení", "Snížení světelného smogu"],
     },
-  ],
-  Senioři: [
     {
       id: 4,
-      title: "Aktivní stárnutí",
-      description: "Série programů pro aktivní zapojení seniorů do komunitního života.",
-      status: "Probíhá",
-      icon: <Users className="h-6 w-6" />,
-      details:
-        "Program nabízí širokou škálu aktivit pro seniory, včetně vzdělávacích kurzů, sportovních aktivit a kulturních akcí. Cílem je podpořit aktivní životní styl a sociální zapojení seniorů.",
+      title: "Komunitní centrum pro seniory",
+      description: "Nové centrum s programy pro aktivní stárnutí, zdravotní péči a společenské aktivity.",
+      location: "Budějovická, Praha 4",
+      budget: "12 mil. Kč",
+      startDate: "2024-08-01",
+      endDate: "2024-12-20",
+      status: "in-progress",
+      category: "Sociální služby",
+      impact: "Více než 500 seniorů",
+      images: ["/placeholder.svg"],
+      highlights: ["Bezbariérové prostory", "Zdravotní poradna", "Společenské aktivity", "Vzdělávací programy"],
     },
-    {
-      id: 5,
-      title: "Seniorské centrum",
-      description: "Vytvoření komunitního centra pro seniory s nabídkou služeb a aktivit.",
-      status: "Plánováno",
-      icon: <Building className="h-6 w-6" />,
-      details:
-        "Projekt počítá s vybudováním moderního komunitního centra, které bude nabízet širokou škálu služeb a aktivit pro seniory, včetně poradenství, zdravotních služeb a volnočasových aktivit.",
-    },
-    {
-      id: 6,
-      title: "Počítačové kurzy pro seniory",
-      description: "Vzdělávací program zaměřený na digitální gramotnost seniorů.",
-      status: "Dokončeno",
-      icon: <Calendar className="h-6 w-6" />,
-      details:
-        "Kurzy pomohly více než 200 seniorům zlepšit jejich digitální dovednosti, naučit se používat internet, komunikovat s rodinou online a využívat digitální služby.",
-    },
-  ],
-  Infrastruktura: [
-    {
-      id: 10,
-      title: "Revitalizace parků",
-      description: "Obnova a modernizace zelených ploch a parků v Praze 4.",
-      status: "Probíhá",
-      icon: <Building className="h-6 w-6" />,
-      details:
-        "Projekt zahrnuje obnovu zeleně, instalaci nového mobiliáře, vytvoření odpočinkových zón a dětských koutků. Cílem je vytvořit příjemné prostředí pro relaxaci a trávení volného času.",
-    },
-    {
-      id: 11,
-      title: "Oprava chodníků a komunikací",
-      description: "Systematická oprava poškozených chodníků a komunikací.",
-      status: "Probíhá",
-      icon: <Calendar className="h-6 w-6" />,
-      details:
-        "Program je zaměřen na identifikaci a opravu poškozených chodníků a komunikací, s důrazem na bezbariérovost a bezpečnost chodců. Každý rok je opraveno přibližně 5 km chodníků.",
-    },
-    {
-      id: 12,
-      title: "Modernizace veřejných prostranství",
-      description: "Komplexní přístup k obnově a modernizaci veřejných prostranství.",
-      status: "Plánováno",
-      icon: <CheckCircle className="h-6 w-6" />,
-      details:
-        "Projekt počítá s revitalizací náměstí, vytvoření nových odpočinkových zón a zlepšení celkového vzhledu veřejných prostranství v Praze 4. Součástí je i zapojení obyvatel do plánování těchto změn.",
-    },
-  ],
-}
+  ]
 
-export default function Projects() {
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case "completed":
+        return {
+          label: "Dokončeno",
+          color: "bg-green-100 text-green-800 border-green-200",
+          icon: <CheckCircle className="w-4 h-4" />,
+        }
+      case "in-progress":
+        return {
+          label: "Probíhá",
+          color: "bg-blue-100 text-blue-800 border-blue-200",
+          icon: <Wrench className="w-4 h-4" />,
+        }
+      case "planned":
+        return {
+          label: "Plánováno",
+          color: "bg-orange-100 text-orange-800 border-orange-200",
+          icon: <Clock className="w-4 h-4" />,
+        }
+      default:
+        return {
+          label: "Neznámý",
+          color: "bg-gray-100 text-gray-800 border-gray-200",
+          icon: <Clock className="w-4 h-4" />,
+        }
+    }
+  }
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      Infrastruktura: "bg-blue-500",
+      Doprava: "bg-green-500",
+      "Životní prostředí": "bg-emerald-500",
+      "Sociální služby": "bg-purple-500",
+    }
+    return colors[category as keyof typeof colors] || "bg-gray-500"
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("cs-CZ", {
+      year: "numeric",
+      month: "long",
+    })
+  }
+
   return (
-    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="text-4xl font-bold text-blue-700 mb-4">Projekty a iniciativy</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Jako zastupitel MČ Praha 4 se aktivně podílím na řadě projektů a iniciativ, které mají za cíl zlepšit
-            kvalitu života v naší městské části. Zde jsou některé z nich.
-          </p>
-        </motion.div>
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6">
+              <Wrench className="w-4 h-4 mr-2" />
+              Konkrétní projekty
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Projekty, které <span className="text-blue-600">měním realitu</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Zde jsou konkrétní projekty, které jsem inicioval nebo na kterých aktivně pracuji. Každý projekt má jasný
+              cíl, rozpočet a termín dokončení.
+            </p>
+          </motion.div>
 
-        <Tab.Group>
-          <Tab.List className="flex space-x-1 rounded-xl bg-blue-100 p-1 mb-8">
-            {Object.keys(projects).map((category) => (
-              <Tab
-                key={category}
-                className={({ selected }) =>
-                  classNames(
-                    "w-full rounded-lg py-3 text-sm font-medium leading-5",
-                    "focus:outline-none focus:ring-2 ring-offset-2 ring-offset-blue-400 ring-white ring-opacity-60",
-                    selected ? "bg-blue-700 text-white shadow" : "text-blue-700 hover:bg-blue-200 hover:text-blue-800",
-                  )
-                }
-              >
-                {category}
-              </Tab>
-            ))}
-          </Tab.List>
-          <Tab.Panels className="mt-2">
-            {Object.values(projects).map((projectsInCategory, idx) => (
-              <Tab.Panel key={idx} className="rounded-xl bg-white p-3">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {projectsInCategory.map((project) => (
-                    <motion.div
-                      key={project.id}
-                      className="bg-blue-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: (project.id * 0.1) % 0.5 }}
-                    >
-                      <div className="p-5">
-                        <div className="flex items-center mb-4">
-                          <div className="bg-blue-100 p-2 rounded-full mr-3 text-blue-700">{project.icon}</div>
-                          <div>
-                            <h3 className="text-lg font-bold text-blue-700">{project.title}</h3>
-                            <span
-                              className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                                project.status === "Dokončeno"
-                                  ? "bg-green-100 text-green-800"
-                                  : project.status === "Probíhá"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {project.status}
-                            </span>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {projects.map((project, index) => {
+              const statusInfo = getStatusInfo(project.status)
+
+              return (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                >
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500">
+                    <div className="relative">
+                      <img
+                        src={project.images[0] || "/placeholder.svg"}
+                        alt={project.title}
+                        className="w-full h-48 object-cover rounded-t-lg"
+                      />
+                      <div className="absolute top-4 left-4 flex space-x-2">
+                        <Badge className={statusInfo.color}>
+                          {statusInfo.icon}
+                          <span className="ml-1">{statusInfo.label}</span>
+                        </Badge>
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-3 h-3 rounded-full ${getCategoryColor(project.category)}`}></div>
+                          <Badge variant="outline" className="bg-white/90">
+                            {project.category}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-xl font-bold text-gray-900 mb-2">{project.title}</CardTitle>
+                      <p className="text-gray-600 leading-relaxed">{project.description}</p>
+                    </CardHeader>
+
+                    <CardContent className="space-y-6">
+                      {/* Základní informace */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2 text-blue-500" />
+                          <span>{project.location}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <Euro className="w-4 h-4 mr-2 text-green-500" />
+                          <span>{project.budget}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+                          <span>{formatDate(project.startDate)}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <Users className="w-4 h-4 mr-2 text-orange-500" />
+                          <span>{project.impact}</span>
+                        </div>
+                      </div>
+
+                      {/* Klíčové body */}
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-3 text-sm">Klíčové výhody:</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          {project.highlights.map((highlight, highlightIndex) => (
+                            <div key={highlightIndex} className="flex items-start space-x-2">
+                              <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{highlight}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Progress bar pro probíhající projekty */}
+                      {project.status === "in-progress" && (
+                        <div>
+                          <div className="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Průběh projektu</span>
+                            <span>65%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: "65%" }}></div>
                           </div>
                         </div>
-                        <p className="text-gray-600 mb-4">{project.description}</p>
-                        <div className="bg-white p-3 rounded-md text-sm text-gray-700">{project.details}</div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      )}
+
+                      <Button variant="outline" className="w-full group bg-transparent">
+                        Více informací
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-16 text-center"
+          >
+            <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+              <CardContent className="p-8 md:p-12">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Máte nápad na nový projekt?</h3>
+                <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+                  Pokud máte návrh na projekt, který by zlepšil život v naší městské části, rád si s vámi o něm
+                  promluvím. Společně můžeme najít způsob, jak ho realizovat.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                    Napište mi nápad
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button size="lg" variant="outline">
+                    Konzultační hodiny
+                  </Button>
                 </div>
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     </section>
   )
