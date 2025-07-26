@@ -16,20 +16,34 @@ const fs = require("fs")
 require("dotenv").config({ path: ".env.local" })
 
 async function runSetup() {
-  if (!process.env.DATABASE_URL) {
+  // Kontrola DATABASE_URL - použijeme buď env variable nebo přímo Neon URL
+  const databaseUrl =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    "postgres://neondb_owner:npg_gJ0BcDdb1sYN@ep-gentle-haze-a29ewvo3-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+
+  if (!databaseUrl) {
     console.error("❌ DATABASE_URL environment variable is not set.")
+    console.error(
+      "Available env vars:",
+      Object.keys(process.env).filter((key) => key.includes("DATABASE") || key.includes("POSTGRES")),
+    )
     process.exit(1)
   }
 
-  const sql = neon(process.env.DATABASE_URL)
+  console.log("🔗 Using database URL:", databaseUrl.replace(/:[^:@]*@/, ":****@"))
+
+  const sql = neon(databaseUrl)
 
   console.log("🚀 Starting complete database setup...")
 
   try {
     // 1. Test připojení k databázi
     console.log("🔗 Testing database connection...")
-    await sql`SELECT 1 as health_check`
+    const healthCheck = await sql`SELECT 1 as health_check, current_database() as db_name, current_user as user_name`
     console.log("✅ Database connection successful")
+    console.log(`   Database: ${healthCheck[0].db_name}`)
+    console.log(`   User: ${healthCheck[0].user_name}`)
 
     // 2. Vytvoření tabulek pomocí raw SQL
     console.log("📝 Creating database tables...")
@@ -227,29 +241,60 @@ async function runSetup() {
       {
         title: "Vítejte na webu Pavla Fišera",
         content:
-          "<p>Vítejte na oficiálním webu zastupitele MČ Praha 4 Pavla Fišera. Zde najdete aktuální informace o dění v naší městské části.</p>",
-        excerpt: "Úvodní příspěvek na webu zastupitele Pavla Fišera.",
+          "<p>Vítejte na oficiálním webu zastupitele MČ Praha 4 Pavla Fišera. Zde najdete aktuální informace o dění v naší městské části, moje postoje k důležitým tématům a způsoby, jak se můžete zapojit do komunitního života.</p><p>Jako váš zastupitel se snažím být transparentní a dostupný. Neváhejte mě kontaktovat s vašimi podněty a připomínkami.</p>",
+        excerpt: "Úvodní příspěvek na webu zastupitele Pavla Fišera s informacemi o jeho činnosti.",
         category: "Aktuality",
-        tags: ["úvod", "praha4", "zastupitel"],
+        tags: ["úvod", "praha4", "zastupitel", "komunita"],
         is_published: true,
         created_by: "Pavel Fišer",
       },
       {
-        title: "Změny v MHD od září",
+        title: "Změny v MHD od září 2024",
         content:
-          "<p>Od 1. září platí nové jízdní řády městské hromadné dopravy. Přinášíme vám přehled nejdůležitějších změn.</p>",
-        excerpt: "Důležité informace pro cestující MHD.",
+          "<p>Od 1. září 2024 platí nové jízdní řády městské hromadné dopravy v Praze 4. Přinášíme vám přehled nejdůležitějších změn, které ovlivní vaše každodenní cestování.</p><p><strong>Hlavní změny:</strong></p><ul><li>Posílení spojů v ranních hodinách</li><li>Nové zastávky na trase 142</li><li>Změna trasy autobusu 213</li></ul><p>Detailní informace najdete na webu DPP nebo se můžete obrátit přímo na mě.</p>",
+        excerpt: "Důležité informace pro cestující MHD o změnách platných od září 2024.",
         category: "Doprava",
-        tags: ["mhd", "jízdní řády", "doprava"],
+        tags: ["mhd", "jízdní řády", "doprava", "praha4"],
         is_published: true,
         created_by: "Pavel Fišer",
       },
       {
-        title: "Nový projekt třídění odpadu",
-        content: "<p>Město spouští inovativní projekt pro efektivnější třídění odpadu v naší městské části.</p>",
-        excerpt: "Krok k zelenějšímu městu.",
+        title: "Nový projekt třídění odpadu v Praze 4",
+        content:
+          "<p>Město Praha 4 spouští inovativní projekt pro efektivnější třídění odpadu v naší městské části. Cílem je zvýšit míru recyklace a snížit množství odpadu končícího na skládkách.</p><p><strong>Co projekt přináší:</strong></p><ul><li>Nové kontejnery s čipovým systémem</li><li>Mobilní aplikace pro sledování třídění</li><li>Odměny za správné třídění</li><li>Vzdělávací programy pro školy</li></ul><p>Projekt startuje v pilotní fázi v několika lokalitách a postupně se rozšíří po celé Praze 4.</p>",
+        excerpt: "Krok k zelenějšímu městu - nový systém třídění odpadu s moderními technologiemi.",
         category: "Životní prostředí",
-        tags: ["odpad", "třídění", "ekologie"],
+        tags: ["odpad", "třídění", "ekologie", "inovace", "praha4"],
+        is_published: true,
+        created_by: "Pavel Fišer",
+      },
+      {
+        title: "Výsledky zasedání zastupitelstva - říjen 2024",
+        content:
+          "<p>Na posledním zasedání zastupitelstva MČ Praha 4 jsme projednali několik důležitých bodů, které přímo ovlivní život našich občanů.</p><p><strong>Schválené body:</strong></p><ul><li>Rozpočet na rekonstrukci dětského hřiště na Pankráci</li><li>Nová pravidla pro parkování rezidentů</li><li>Podpora místních kulturních akcí</li></ul><p><strong>Moje stanoviska:</strong></p><p>Hlasoval jsem pro všechny navržené body, protože věřím, že přinesou pozitivní změny pro naše občany. Zejména rekonstrukce dětského hřiště byla dlouho očekávaná.</p>",
+        excerpt: "Přehled důležitých rozhodnutí z posledního zasedání zastupitelstva MČ Praha 4.",
+        category: "Městská politika",
+        tags: ["zastupitelstvo", "praha4", "rozpočet", "parkování"],
+        is_published: true,
+        created_by: "Pavel Fišer",
+      },
+      {
+        title: "Festival místních kapel 2024",
+        content:
+          "<p>Tento víkend se koná již tradiční festival místních hudebních kapel v parku na Pankráci. Akce je zdarma a určena pro celou rodinu.</p><p><strong>Program:</strong></p><ul><li>14:00 - Dětský program s klauny</li><li>16:00 - Místní folkové kapely</li><li>18:00 - Rockové vystoupení</li><li>20:00 - Taneční hudba</li></ul><p>Bude zajištěno občerstvení a aktivity pro děti. Těším se na setkání s vámi!</p>",
+        excerpt: "Nenechte si ujít hudební zážitek - festival místních kapel v parku na Pankráci.",
+        category: "Kultura",
+        tags: ["festival", "hudba", "pankrác", "kultura", "zdarma"],
+        is_published: true,
+        created_by: "Pavel Fišer",
+      },
+      {
+        title: "Místní fotbalový tým FC Praha 4 postoupil!",
+        content:
+          "<p>Gratulujeme našemu fotbalovému týmu FC Praha 4 k historickému postupu do krajského přeboru! Po vynikající sezóně si tým zaslouží naši podporu.</p><p><strong>Statistiky sezóny:</strong></p><ul><li>18 vítězství z 22 zápasů</li><li>Nejlepší útok v soutěži</li><li>Pouze 3 prohry</li></ul><p>Jako zastupitel budu podporovat rozvoj sportu v naší městské části a pomohu týmu s hledáním sponzorů pro novou sezónu.</p>",
+        excerpt: "Velký úspěch pro místní sport - FC Praha 4 postupuje do vyšší soutěže.",
+        category: "Sport",
+        tags: ["fotbal", "postup", "praha4", "sport", "úspěch"],
         is_published: true,
         created_by: "Pavel Fišer",
       },
@@ -282,9 +327,9 @@ async function runSetup() {
         INSERT INTO newsletter_templates (name, subject, content, html_content, created_by)
         VALUES (
           'Základní šablona',
-          'Newsletter z Prahy 4',
-          'Obsah newsletteru...',
-          '<html><body><h1>Newsletter</h1><p>Obsah newsletteru...</p></body></html>',
+          'Newsletter z Prahy 4 - {subject}',
+          'Vážení občané Prahy 4,\n\n{content}\n\nS pozdravem,\nPavel Fišer\nZastupitel MČ Praha 4',
+          '<!DOCTYPE html><html><head><meta charset="utf-8"><title>{subject}</title></head><body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"><header style="background: #3b82f6; color: white; padding: 20px; text-align: center;"><h1>Newsletter z Prahy 4</h1></header><main style="padding: 20px;"><h2>{subject}</h2><div>{content}</div></main><footer style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 14px;"><p>S pozdravem,<br><strong>Pavel Fišer</strong><br>Zastupitel MČ Praha 4</p><p><a href="{unsubscribe_url}">Odhlásit odběr</a></p></footer></body></html>',
           'Pavel Fišer'
         )
         ON CONFLICT (name) DO NOTHING
@@ -297,12 +342,18 @@ async function runSetup() {
     // Vložení základních nastavení
     const settings = [
       { key: "site_name", value: "Pavel Fišer - Zastupitel Praha 4" },
-      { key: "site_description", value: "Oficiální web zastupitele MČ Praha 4" },
+      { key: "site_description", value: "Oficiální web zastupitele MČ Praha 4 Pavla Fišera" },
       { key: "admin_email", value: "pavel.fiser@praha4.cz" },
       { key: "language", value: "cs" },
       { key: "timezone", value: "Europe/Prague" },
       { key: "primary_color", value: "#3b82f6" },
       { key: "dark_mode", value: "false" },
+      { key: "auto_save_interval", value: "30000" },
+      { key: "max_file_size", value: "5242880" },
+      { key: "enable_scheduling", value: "true" },
+      { key: "email_notifications", value: "true" },
+      { key: "session_timeout", value: "3600000" },
+      { key: "max_login_attempts", value: "5" },
     ]
 
     for (const setting of settings) {
@@ -347,9 +398,20 @@ async function runSetup() {
 
     console.log("🎉 Complete database setup finished successfully!")
     console.log("💡 You can now run your application with: npm run dev")
+    console.log("🔗 Admin panel will be available at: http://localhost:3000/admin")
   } catch (error) {
     console.error("❌ Database setup failed:", error)
     console.error("Stack trace:", error.stack)
+
+    // Detailnější error reporting
+    if (error.message.includes("connect")) {
+      console.error("🔍 Connection issue - check your DATABASE_URL")
+    } else if (error.message.includes("permission")) {
+      console.error("🔍 Permission issue - check database user permissions")
+    } else if (error.message.includes("syntax")) {
+      console.error("🔍 SQL syntax issue - check the SQL queries")
+    }
+
     process.exit(1)
   }
 }
