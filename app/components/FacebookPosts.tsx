@@ -1,84 +1,134 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { FacebookIcon } from "lucide-react"
-import { getFacebookPosts, type FacebookPost } from "@/lib/services/facebook-service"
+import { Badge } from "@/components/ui/badge"
+import { Facebook, ExternalLink, Heart, MessageCircle, Calendar } from "lucide-react"
 
-export function FacebookPosts() {
+interface FacebookPost {
+  id: string
+  message: string
+  created_time: string
+  permalink_url?: string
+  attachments?: {
+    data: Array<{
+      media?: {
+        image?: {
+          src: string
+        }
+      }
+      title?: string
+      description?: string
+    }>
+  }
+  reactions?: {
+    summary: {
+      total_count: number
+    }
+  }
+  comments?: {
+    summary: {
+      total_count: number
+    }
+  }
+}
+
+export default function FacebookPosts() {
   const [posts, setPosts] = useState<FacebookPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Fallback mock data pro případ, že API nefunguje
+  const mockPosts: FacebookPost[] = [
+    {
+      id: "1",
+      message:
+        "Dnes jsem se zúčastnil zasedání dopravní komise, kde jsme projednávali nové cyklostezky v Praze 4. Těším se, že brzy budeme moci představit konkrétní plány! 🚴‍♂️ #Praha4 #Cyklostezky #Doprava",
+      created_time: "2024-01-15T10:30:00Z",
+      permalink_url: "https://facebook.com/example",
+      reactions: { summary: { total_count: 24 } },
+      comments: { summary: { total_count: 8 } },
+    },
+    {
+      id: "2",
+      message:
+        "Skvělá návštěva nového komunitního centra na Pankráci! Děkuji všem dobrovolníkům za jejich úžasnou práci. Místa jako toto dělají z naší čtvrti skutečnou komunitu. ❤️ #KomunitníCentrum #Pankrác #Dobrovolníci",
+      created_time: "2024-01-12T14:15:00Z",
+      permalink_url: "https://facebook.com/example",
+      reactions: { summary: { total_count: 42 } },
+      comments: { summary: { total_count: 15 } },
+    },
+    {
+      id: "3",
+      message:
+        "Konzultační hodiny tento čtvrtek 17-19h v komunitním centru. Přijďte s vašimi podněty a nápady! Společně můžeme udělat Prahu 4 ještě lepším místem pro život. 🏛️ #KonzultačníHodiny #Praha4 #Zastupitel",
+      created_time: "2024-01-10T09:00:00Z",
+      permalink_url: "https://facebook.com/example",
+      reactions: { summary: { total_count: 18 } },
+      comments: { summary: { total_count: 5 } },
+    },
+  ]
+
   useEffect(() => {
     const fetchPosts = async () => {
-      setLoading(true)
-      setError(null)
       try {
-        const { posts: fetchedPosts, isMockData, message } = await getFacebookPosts(3)
-        setPosts(fetchedPosts)
-        if (isMockData) {
-          console.warn("Using mock Facebook data:", message)
+        const response = await fetch("/api/facebook-posts")
+        if (response.ok) {
+          const data = await response.json()
+          setPosts(data.posts || mockPosts)
+        } else {
+          // Použijeme mock data pokud API nefunguje
+          setPosts(mockPosts)
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching Facebook posts:", err)
-        setError(err.message || "Nepodařilo se načíst Facebook příspěvky.")
+        // Použijeme mock data při chybě
+        setPosts(mockPosts)
+        setError("Nepodařilo se načíst příspěvky z Facebooku")
       } finally {
         setLoading(false)
       }
     }
+
     fetchPosts()
   }, [])
 
-  if (loading) {
-    return (
-      <section id="facebook-posts" className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Naše Facebook příspěvky</h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Načítání nejnovějších příspěvků z Facebooku...
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="flex flex-col">
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <Skeleton className="h-20 w-full mb-4" />
-                  <Skeleton className="h-48 w-full rounded-md" />
-                </CardContent>
-                <div className="p-6 pt-0">
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("cs-CZ", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
   }
 
-  if (error) {
+  const truncateMessage = (message: string, maxLength = 200) => {
+    if (message.length <= maxLength) return message
+    return message.substring(0, maxLength) + "..."
+  }
+
+  if (loading) {
     return (
-      <section id="facebook-posts" className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Chyba při načítání Facebook příspěvků</h2>
-              <p className="max-w-[900px] text-red-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-red-400">
-                {error}
-              </p>
-              <Button onClick={() => window.location.reload()} className="mt-4">
-                Zkusit znovu
-              </Button>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Aktuality z Facebooku</h2>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
+                    <div className="h-8 bg-gray-200 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
@@ -87,71 +137,102 @@ export function FacebookPosts() {
   }
 
   return (
-    <section id="facebook-posts" className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Naše Facebook příspěvky</h2>
-            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-              Sledujte nás na Facebooku a buďte v obraze.
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <Facebook className="w-8 h-8 text-blue-600" />
+              <h2 className="text-3xl font-bold text-gray-900">Aktuality z Facebooku</h2>
+            </div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Sledujte moje nejnovější příspěvky a aktuality z práce zastupitele
             </p>
+            {error && (
+              <Badge variant="outline" className="mt-2 text-orange-600 border-orange-200">
+                {error}
+              </Badge>
+            )}
           </div>
-        </div>
-        <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <Card key={post.id} className="flex flex-col">
-                {post.full_picture && (
-                  <img
-                    src={post.full_picture || "/placeholder.svg"}
-                    alt="Facebook post image"
-                    width={400}
-                    height={225}
-                    className="aspect-video object-cover rounded-t-lg"
-                  />
-                )}
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold line-clamp-2">
-                    {post.message || "Příspěvek z Facebooku"}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(post.created_time).toLocaleDateString("cs-CZ", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </CardDescription>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {posts.slice(0, 6).map((post) => (
+              <Card key={post.id} className="h-full hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Facebook className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-medium text-gray-900">Pavel Fišer</span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {formatDate(post.created_time)}
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-gray-700 dark:text-gray-300 line-clamp-4">{post.message}</p>
-                </CardContent>
-                <div className="p-6 pt-0">
-                  <a href={post.permalink_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="w-full bg-transparent">
+                <CardContent className="pt-0">
+                  <p className="text-gray-700 mb-4 leading-relaxed">{truncateMessage(post.message)}</p>
+
+                  {post.attachments?.data?.[0]?.media?.image && (
+                    <div className="mb-4">
+                      <img
+                        src={post.attachments.data[0].media.image.src || "/placeholder.svg"}
+                        alt="Facebook post attachment"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <div className="flex items-center space-x-4">
+                      <span className="flex items-center">
+                        <Heart className="w-4 h-4 mr-1" />
+                        {post.reactions?.summary.total_count || 0}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        {post.comments?.summary.total_count || 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  {post.permalink_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-transparent"
+                      onClick={() => window.open(post.permalink_url, "_blank")}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
                       Zobrazit na Facebooku
-                      <FacebookIcon className="ml-2 h-4 w-4" />
                     </Button>
-                  </a>
-                </div>
+                  )}
+                </CardContent>
               </Card>
-            ))
-          ) : (
-            <p className="col-span-full text-center text-gray-500 dark:text-gray-400">Žádné příspěvky k zobrazení.</p>
-          )}
-        </div>
-        {posts.length > 0 && (
-          <div className="flex justify-center mt-8">
-            <a
-              href={`https://www.facebook.com/${process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button>Zobrazit celou stránku na Facebooku</Button>
-            </a>
+            ))}
           </div>
-        )}
+
+          <div className="text-center">
+            <Card className="bg-blue-50 border-blue-200 max-w-2xl mx-auto">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-center space-x-3 mb-3">
+                  <Facebook className="w-6 h-6 text-blue-600" />
+                  <h3 className="font-semibold text-gray-900">Sledujte mě na Facebooku</h3>
+                </div>
+                <p className="text-gray-700 mb-4">
+                  Pro nejnovější aktuality a možnost diskuze mě sledujte na mé oficiální Facebook stránce
+                </p>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => window.open("https://facebook.com/pavel.fiser.praha4", "_blank")}
+                >
+                  <Facebook className="w-4 h-4 mr-2" />
+                  Sledovat na Facebooku
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </section>
   )

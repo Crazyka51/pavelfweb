@@ -1,69 +1,114 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { Timeline } from "./Timeline"
-import { Testimonials } from "./Testimonials"
+"use client"
 
-export function AboutUs() {
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, MapPin, Users, Award } from "lucide-react"
+
+export default function AboutUs() {
+  const achievements = [
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: "Zastupitel MČ Praha 4",
+      description: "Aktivně se podílím na rozvoji naší městské části",
+      year: "2022-současnost",
+    },
+    {
+      icon: <Award className="w-6 h-6" />,
+      title: "Člen dopravní komise",
+      description: "Zaměřujem se na zlepšení dopravní situace",
+      year: "2022-současnost",
+    },
+    {
+      icon: <MapPin className="w-6 h-6" />,
+      title: "Místní aktivista",
+      description: "Dlouhodobě se věnuji komunitním projektům",
+      year: "2018-současnost",
+    },
+  ]
+
+  const priorities = [
+    "Zlepšení dopravní situace",
+    "Podpora místních podnikatelů",
+    "Rozvoj zeleně a parků",
+    "Transparentnost radnice",
+    "Kvalitní veřejné služby",
+    "Bezpečnost občanů",
+  ]
+
   return (
-    <section id="about-us" className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">O nás</h2>
-            <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-              Poznejte náš příběh, hodnoty a tým, který stojí za naším úspěchem.
+    <section className="py-16 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">O mně</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Jsem Pavel Fišer, zastupitel MČ Praha 4. Věnuji se zlepšování života v naší městské části a prosazuji
+              zájmy občanů v zastupitelstvu.
             </p>
           </div>
-        </div>
-        <div className="mx-auto grid max-w-5xl items-start gap-8 py-12 lg:grid-cols-2 lg:gap-12">
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle>Naše poslání</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-gray-700 dark:text-gray-300">
-                Naším posláním je poskytovat inovativní a kvalitní řešení, která pomáhají našim klientům dosahovat
-                jejich cílů. Věříme v transparentnost, integritu a neustálé zlepšování. Snažíme se budovat dlouhodobé
-                vztahy založené na důvěře a vzájemném respektu.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle>Náš tým</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src="/placeholder-user.jpg" alt="Pavel Fišer" />
-                  <AvatarFallback>PF</AvatarFallback>
-                </Avatar>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <div>
+              <h3 className="text-xl font-semibold mb-6">Moje činnost</h3>
+              <div className="space-y-4">
+                {achievements.map((achievement, index) => (
+                  <Card key={index} className="border-l-4 border-l-blue-500">
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="text-blue-600 mt-1">{achievement.icon}</div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
+                            <Badge variant="outline" className="text-xs">
+                              {achievement.year}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 text-sm">{achievement.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold mb-6">Moje priority</h3>
+              <div className="grid gap-3">
+                {priorities.map((priority, index) => (
+                  <div key={index} className="flex items-center space-x-3 p-3 bg-white rounded-lg border">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-gray-700">{priority}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <Calendar className="w-6 h-6 text-blue-600 mt-1" />
                 <div>
-                  <h3 className="text-lg font-semibold">Pavel Fišer</h3>
-                  <p className="text-gray-500 dark:text-gray-400">Zakladatel & CEO</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    S více než 10 lety zkušeností v oboru, Pavel vede náš tým s vizí a odhodláním.
+                  <h3 className="font-semibold text-gray-900 mb-2">Pravidelné konzultační hodiny</h3>
+                  <p className="text-gray-700 mb-3">
+                    Každý první čtvrtek v měsíci od 17:00 do 19:00 v komunitním centru na Pankráci. Můžete se na mě
+                    obrátit s jakýmkoliv podnětem nebo problémem.
                   </p>
+                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <span className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Komunitní centrum Pankrác
+                    </span>
+                    <span className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      1. čtvrtek v měsíci, 17-19h
+                    </span>
+                  </div>
                 </div>
               </div>
-              <Separator className="my-4" />
-              <p className="text-gray-700 dark:text-gray-300">
-                Náš tým se skládá z talentovaných profesionálů s vášní pro to, co dělají. Jsme hrdí na naši spolupráci a
-                schopnost dodávat výjimečné výsledky.
-              </p>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="py-12">
-          <h2 className="text-3xl font-bold tracking-tighter text-center mb-8 sm:text-4xl">Naše historie</h2>
-          <Timeline />
-        </div>
-
-        <div className="py-12">
-          <h2 className="text-3xl font-bold tracking-tighter text-center mb-8 sm:text-4xl">Co o nás říkají klienti</h2>
-          <Testimonials />
         </div>
       </div>
     </section>
