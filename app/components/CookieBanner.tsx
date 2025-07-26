@@ -10,7 +10,6 @@ export function CookieBanner() {
 
   useEffect(() => {
     const consent = getConsentSettings()
-    // If consent is not explicitly set (i.e., it's the default 'denied' for all), show the banner
     const allDenied = Object.values(consent).every((status) => status === "denied")
     if (allDenied) {
       setIsVisible(true)
@@ -42,7 +41,6 @@ export function CookieBanner() {
   }
 
   const handleManagePreferences = () => {
-    // Dispatch a custom event to open the CookieManager dialog
     window.dispatchEvent(new CustomEvent("openCookiePreferences"))
     setIsVisible(false)
   }

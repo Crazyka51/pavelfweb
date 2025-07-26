@@ -1,47 +1,35 @@
-import { sql } from "@/lib/database"
-import type { AnalyticsData } from "@/lib/types"
-
-export class AnalyticsService {
-  async getAnalyticsData(startDate: string, endDate: string): Promise<AnalyticsData[]> {
-    try {
-      // In a real application, this would integrate with Google Analytics API
-      // For now, we'll return mock data or fetch from a simple DB table if available
-      const data = await sql<AnalyticsData[]>`
-        SELECT
-          date::text,
-          page_views,
-          unique_visitors,
-          bounce_rate,
-          avg_session_duration
-        FROM analytics_data
-        WHERE date BETWEEN ${startDate} AND ${endDate}
-        ORDER BY date ASC;
-      `
-      return data
-    } catch (error) {
-      console.error("Error fetching analytics data:", error)
-      // Fallback to mock data if DB fails or table doesn't exist
-      return this.getMockAnalyticsData(startDate, endDate)
-    }
-  }
-
-  private getMockAnalyticsData(startDate: string, endDate: string): AnalyticsData[] {
-    const mockData: AnalyticsData[] = []
-    const currentDate = new Date(startDate)
-    const end = new Date(endDate)
-
-    while (currentDate <= end) {
-      mockData.push({
-        date: currentDate.toISOString().split("T")[0],
-        page_views: Math.floor(Math.random() * 1000) + 100,
-        unique_visitors: Math.floor(Math.random() * 500) + 50,
-        bounce_rate: Number.parseFloat((Math.random() * (0.8 - 0.2) + 0.2).toFixed(2)),
-        avg_session_duration: Math.floor(Math.random() * 300) + 30,
-      })
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-    return mockData
-  }
+export interface AnalyticsData {
+  date: string
+  views: number
+  visitors: number
 }
 
-export const analyticsService = new AnalyticsService()
+export async function getAnalyticsData(): Promise<AnalyticsData[]> {
+  const mockData: AnalyticsData[] = [
+    { date: "2024-07-01", views: 120, visitors: 80 },
+    { date: "2024-07-02", views: 150, visitors: 95 },
+    { date: "2024-07-03", views: 130, visitors: 85 },
+    { date: "2024-07-04", views: 180, visitors: 110 },
+    { date: "2024-07-05", views: 160, visitors: 100 },
+    { date: "2024-07-06", views: 200, visitors: 120 },
+    { date: "2024-07-07", views: 190, visitors: 115 },
+  ]
+
+  await new Promise((resolve) => setTimeout(resolve, 500))
+
+  return mockData
+}
+
+export async function getTopArticles(): Promise<{ title: string; views: number }[]> {
+  const mockTopArticles = [
+    { title: "Jak optimalizovat SEO pro malé podniky", views: 1250 },
+    { title: "Nejlepší praktiky pro e-commerce", views: 980 },
+    { title: "Moderní webový design v roce 2024", views: 750 },
+    { title: "Digitální marketing pro začátečníky", views: 620 },
+    { title: "Bezpečnost webových aplikací", views: 540 },
+  ]
+
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  return mockTopArticles
+}

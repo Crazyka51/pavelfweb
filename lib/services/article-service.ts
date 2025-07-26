@@ -1,136 +1,240 @@
 import { sql } from "@/lib/database"
 import type { Article } from "@/lib/types"
 
+type DbArticle = {
+  id: string
+  title: string
+  content: string
+  excerpt: string | null
+  category: string
+  tags: string[]
+  published: boolean
+  image_url: string | null
+  published_at: Date | null
+  created_at: Date
+  updated_at: Date
+  created_by: string
+}
+
+function mapDbToArticle(row: DbArticle): Article {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    excerpt: row.excerpt,
+    category: row.category,
+    tags: row.tags,
+    published: row.published,
+    imageUrl: row.image_url,
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    createdBy: row.created_by,
+  }
+}
+
 export class ArticleService {
-  async getAllArticles(): Promise<Article[]> {
-    try {
-      const articles = await sql<Article[]>`SELECT * FROM articles ORDER BY created_at DESC;`
-      return articles
-    } catch (error) {
-      console.error("Error fetching all articles:", error)
-      throw new Error("Failed to fetch articles.")
+  async getArticles(
+    opts: {
+      limit?: number
+      offset?: number
+      category?: string
+      published?: boolean
+      search?: string
+    } = {},
+  ): Promise<Article[]> {
+    const { limit, offset, category, published, search } = opts
+
+    const whereParts: string[] = []
+    const params: any[] = []
+    let p = 1
+
+    if (category && category !== "all") {
+      whereParts.push(`category = $${p++}`)
+      params.push(category)
     }
+    if (published !== undefined) {
+      whereParts.push(`published = $${p++}`)
+      params.push(published)
+    }
+    if (search) {
+      whereParts.push(`(title ILIKE $${p} OR content ILIKE $${p} OR tags::text ILIKE $${p})`)
+      params.push(`%${search}%`)
+      p++
+    }
+
+    let query = `SELECT * FROM articles`
+    if (whereParts.length) {
+      query += ` WHERE ${whereParts.join(" AND ")}`
+    }
+    query += ` ORDER BY created_at DESC`
+    if (limit !== undefined) {
+      query += ` LIMIT $${p++}`
+      params.push(limit)
+    }
+    if (offset !== undefined) {
+      query += ` OFFSET $${p++}`
+      params.push(offset)
+    }
+
+    const rows = (await sql(query, params)) as DbArticle[]
+    return rows.map(mapDbToArticle)
   }
 
   async getArticleById(id: string): Promise<Article | null> {
-    try {
-      const [article] = await sql<Article[]>`SELECT * FROM articles WHERE id = ${id};`
-      return article || null
-    } catch (error) {
-      console.error(`Error fetching article with ID ${id}:`, error)
-      throw new Error(`Failed to fetch article with ID ${id}.`)
-    }
+    const rows = (await sql(`SELECT * FROM articles WHERE id = $1 LIMIT 1`, [id])) as DbArticle[]
+    return rows.length ? mapDbToArticle(rows[0]) : null
   }
 
-  async getArticleBySlug(slug: string): Promise<Article | null> {
-    try {
-      const [article] = await sql<Article[]>`SELECT * FROM articles WHERE slug = ${slug};`
-      return article || null
-    } catch (error) {
-      console.error(`Error fetching article with slug ${slug}:`, error)
-      throw new Error(`Failed to fetch article with slug ${slug}.`)
-    }
-  }
-
-  async createArticle(articleData: Omit<Article, "id" | "created_at" | "updated_at">): Promise<Article> {
-    try {
-      const [newArticle] = await sql<Article[]>`
-        INSERT INTO articles (title, slug, content, category_id, published_at, author_id, status, seo_title, seo_description, featured_image_url, tags)
-        VALUES (${articleData.title}, ${articleData.slug}, ${articleData.content}, ${articleData.category_id}, ${articleData.published_at}, ${articleData.author_id}, ${articleData.status}, ${articleData.seo_title}, ${articleData.seo_description}, ${articleData.featured_image_url}, ${JSON.stringify(articleData.tags)})
-        RETURNING *;
+  async createArticle(articleData: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<Article> {
+    const rows = (await sql(
       `
-      return newArticle
-    } catch (error) {
-      console.error("Error creating article:", error)
-      throw new Error("Failed to create article.")
-    }
+      INSERT INTO articles (title, content, excerpt, category, tags, published, image_url, published_at, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `,
+      [
+        articleData.title,
+        articleData.content,
+        articleData.excerpt || null,
+        articleData.category,
+        JSON.stringify(articleData.tags),
+        articleData.published,
+        articleData.imageUrl || null,
+        articleData.publishedAt || null,
+        articleData.createdBy,
+      ],
+    )) as DbArticle[]
+
+    return mapDbToArticle(rows[0])
   }
 
-  async updateArticle(
-    id: string,
-    articleData: Partial<Omit<Article, "id" | "created_at" | "updated_at">>,
-  ): Promise<Article | null> {
-    try {
-      const [updatedArticle] = await sql<Article[]>`
-        UPDATE articles
-        SET
-          title = COALESCE(${articleData.title}, title),
-          slug = COALESCE(${articleData.slug}, slug),
-          content = COALESCE(${articleData.content}, content),
-          category_id = COALESCE(${articleData.category_id}, category_id),
-          published_at = COALESCE(${articleData.published_at}, published_at),
-          author_id = COALESCE(${articleData.author_id}, author_id),
-          status = COALESCE(${articleData.status}, status),
-          seo_title = COALESCE(${articleData.seo_title}, seo_title),
-          seo_description = COALESCE(${articleData.seo_description}, seo_description),
-          featured_image_url = COALESCE(${articleData.featured_image_url}, featured_image_url),
-          tags = COALESCE(${articleData.tags ? JSON.stringify(articleData.tags) : undefined}, tags),
-          updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *;
-      `
-      return updatedArticle || null
-    } catch (error) {
-      console.error(`Error updating article with ID ${id}:`, error)
-      throw new Error(`Failed to update article with ID ${id}.`)
+  async updateArticle(id: string, updates: Partial<Omit<Article, "id" | "createdAt">>): Promise<Article | null> {
+    const setParts: string[] = []
+    const params: any[] = []
+    let p = 1
+
+    if (updates.title !== undefined) {
+      setParts.push(`title = $${p++}`)
+      params.push(updates.title)
     }
+    if (updates.content !== undefined) {
+      setParts.push(`content = $${p++}`)
+      params.push(updates.content)
+    }
+    if (updates.excerpt !== undefined) {
+      setParts.push(`excerpt = $${p++}`)
+      params.push(updates.excerpt)
+    }
+    if (updates.category !== undefined) {
+      setParts.push(`category = $${p++}`)
+      params.push(updates.category)
+    }
+    if (updates.tags !== undefined) {
+      setParts.push(`tags = $${p++}`)
+      params.push(JSON.stringify(updates.tags))
+    }
+    if (updates.published !== undefined) {
+      setParts.push(`published = $${p++}`)
+      params.push(updates.published)
+    }
+    if (updates.imageUrl !== undefined) {
+      setParts.push(`image_url = $${p++}`)
+      params.push(updates.imageUrl)
+    }
+    if (updates.publishedAt !== undefined) {
+      setParts.push(`published_at = $${p++}`)
+      params.push(updates.publishedAt)
+    }
+
+    setParts.push(`updated_at = NOW()`)
+    params.push(id)
+
+    const query = `
+      UPDATE articles 
+      SET ${setParts.join(", ")}
+      WHERE id = $${p}
+      RETURNING *
+    `
+
+    const rows = (await sql(query, params)) as DbArticle[]
+    return rows.length ? mapDbToArticle(rows[0]) : null
   }
 
   async deleteArticle(id: string): Promise<boolean> {
-    try {
-      const result = await sql`DELETE FROM articles WHERE id = ${id};`
-      return result.count > 0
-    } catch (error) {
-      console.error(`Error deleting article with ID ${id}:`, error)
-      throw new Error(`Failed to delete article with ID ${id}.`)
-    }
+    const rows = await sql(`DELETE FROM articles WHERE id = $1 RETURNING id`, [id])
+    return rows.length > 0
   }
 
-  async getPublishedArticles(): Promise<Article[]> {
-    try {
-      const articles = await sql<
-        Article[]
-      >`SELECT * FROM articles WHERE status = 'published' ORDER BY published_at DESC;`
-      return articles
-    } catch (error) {
-      console.error("Error fetching published articles:", error)
-      throw new Error("Failed to fetch published articles.")
-    }
+  async getPublishedArticles(limit = 10): Promise<Article[]> {
+    return this.getArticles({ published: true, limit })
   }
 
-  async getDraftArticles(): Promise<Article[]> {
-    try {
-      const articles = await sql<Article[]>`SELECT * FROM articles WHERE status = 'draft' ORDER BY created_at DESC;`
-      return articles
-    } catch (error) {
-      console.error("Error fetching draft articles:", error)
-      throw new Error("Failed to fetch draft articles.")
-    }
+  async searchArticles(searchTerm: string, published = true): Promise<Article[]> {
+    return this.getArticles({ search: searchTerm, published })
   }
 
-  async bulkDeleteArticles(ids: string[]): Promise<number> {
-    try {
-      const result = await sql`DELETE FROM articles WHERE id IN (${sql.array(ids)});`
-      return result.count
-    } catch (error) {
-      console.error("Error bulk deleting articles:", error)
-      throw new Error("Failed to bulk delete articles.")
-    }
-  }
-
-  async bulkUpdateArticleStatus(ids: string[], status: "draft" | "published" | "archived"): Promise<number> {
-    try {
-      const result = await sql`
-        UPDATE articles
-        SET status = ${status}, updated_at = NOW()
-        WHERE id IN (${sql.array(ids)});
-      `
-      return result.count
-    } catch (error) {
-      console.error(`Error bulk updating article status to ${status}:`, error)
-      throw new Error(`Failed to bulk update article status to ${status}.`)
-    }
+  async getArticlesByCategory(category: string, published = true): Promise<Article[]> {
+    return this.getArticles({ category, published })
   }
 }
 
 export const articleService = new ArticleService()
+
+export async function getPublishedArticles(
+  page = 1,
+  limit = 10,
+): Promise<{ articles: Article[]; total: number; hasMore: boolean }> {
+  const offset = (page - 1) * limit
+
+  const articles = await articleService.getArticles({
+    limit,
+    offset,
+    published: true,
+  })
+
+  const rows = (await sql(`SELECT COUNT(*) FROM articles WHERE published = true`)) as { count: string }[]
+  const total = Number.parseInt(rows[0].count, 10)
+  const hasMore = page * limit < total
+
+  return { articles, total, hasMore }
+}
+
+export async function getArticles(
+  filters: {
+    published?: boolean
+    category?: string
+    limit?: number
+    offset?: number
+    search?: string
+  } = {},
+): Promise<Article[]> {
+  return articleService.getArticles(filters)
+}
+
+export async function getArticleById(id: string): Promise<Article | null> {
+  return articleService.getArticleById(id)
+}
+
+export async function createArticle(articleData: Omit<Article, "id" | "createdAt" | "updatedAt">): Promise<Article> {
+  return articleService.createArticle(articleData)
+}
+
+export async function updateArticle(
+  id: string,
+  updates: Partial<Omit<Article, "id" | "createdAt">>,
+): Promise<Article | null> {
+  return articleService.updateArticle(id, updates)
+}
+
+export async function deleteArticle(id: string): Promise<boolean> {
+  return articleService.deleteArticle(id)
+}
+
+export async function searchArticles(searchTerm: string, published = true): Promise<Article[]> {
+  return articleService.searchArticles(searchTerm, published)
+}
+
+export async function getArticlesByCategory(category: string, published = true): Promise<Article[]> {
+  return articleService.getArticlesByCategory(category, published)
+}

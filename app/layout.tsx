@@ -1,9 +1,9 @@
 import "./globals.css"
 import { Inter } from "next/font/google"
 import Header from "./components/Header"
-import { Footer } from "./components/Footer"
-import { CookieBanner } from "./components/CookieBanner"
-import { CookieManager } from "./components/CookieManager"
+import Footer from "./components/Footer"
+import CookieBanner from "./components/CookieBanner"
+import CookieManager from "./components/CookieManager"
 import { GoogleAnalytics } from "./components/GoogleAnalytics"
 import StructuredData from "./components/StructuredData"
 import type React from "react"
@@ -69,11 +69,10 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
 
-        {/* Temporarily disabled due to import issues */}
-        {/* <Suspense fallback={null}>
+        <Suspense fallback={null}>
           <CookieBanner />
           <CookieManager />
-        </Suspense> */}
+        </Suspense>
       </body>
     </html>
   )

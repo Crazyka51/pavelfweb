@@ -1,51 +1,76 @@
-import type { TimelineEvent } from "@/lib/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Image from "next/image"
+"use client"
 
-interface TimelineProps {
-  events: TimelineEvent[]
+import { motion } from "framer-motion"
+
+interface TimelineEvent {
+  year: string
+  title: string
+  description: string
 }
 
-export function Timeline({ events }: TimelineProps) {
+const timelineEvents: TimelineEvent[] = [
+  {
+    year: "2020",
+    title: "Založení společnosti",
+    description:
+      "Pavel Fišer založil společnost s vizí poskytovat kvalitní digitální řešení pro malé a střední podniky.",
+  },
+  {
+    year: "2021",
+    title: "První velký projekt",
+    description:
+      "Úspěšně jsme dokončili náš první velký e-commerce projekt, který přinesl klientovi 300% nárůst online prodejů.",
+  },
+  {
+    year: "2022",
+    title: "Rozšíření týmu",
+    description: "Rozšířili jsme náš tým o specialisty na UX/UI design a digitální marketing.",
+  },
+  {
+    year: "2023",
+    title: "Mezinárodní expanze",
+    description:
+      "Začali jsme spolupracovat s klienty ze zahraničí a rozšířili naše služby o pokročilé SEO optimalizace.",
+  },
+  {
+    year: "2024",
+    title: "Inovace a AI",
+    description: "Integrovali jsme nejnovější AI technologie do našich řešení a spustili vlastní CMS platformu.",
+  },
+]
+
+export function Timeline() {
   return (
-    <div className="relative py-8">
-      {/* Vertical line */}
-      <div className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 bg-gray-200 dark:bg-gray-700" />
+    <div className="relative">
+      <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-0.5 h-full bg-blue-200"></div>
 
-      {events.map((event, index) => (
-        <div
-          key={event.id}
-          className={`relative mb-8 flex w-full items-center ${
-            index % 2 === 0 ? "flex-row-reverse pr-8 md:pr-16" : "pl-8 md:pl-16"
-          }`}
-        >
-          {/* Dot on the line */}
-          <div className="absolute left-1/2 top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-8 ring-white dark:ring-gray-950" />
-
-          <Card
-            className={`w-full md:w-1/2 ${index % 2 === 0 ? "md:ml-auto md:text-right" : "md:mr-auto md:text-left"}`}
+      <div className="space-y-8">
+        {timelineEvents.map((event, index) => (
+          <motion.div
+            key={event.year}
+            className={`relative flex items-center ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: index * 0.1 }}
           >
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold">{event.year}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <h3 className="mb-2 text-xl font-semibold">{event.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{event.description}</p>
-              {event.image_url && (
-                <div className="mt-4">
-                  <Image
-                    src={event.image_url || "/placeholder.svg"}
-                    alt={event.title}
-                    width={400}
-                    height={250}
-                    className="h-auto w-full rounded-md object-cover"
-                  />
+            <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-lg z-10"></div>
+
+            <div className={`ml-12 md:ml-0 md:w-1/2 ${index % 2 === 0 ? "md:pr-8" : "md:pl-8"}`}>
+              <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                <div className="flex items-center mb-2">
+                  <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
+                    {event.year}
+                  </span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      ))}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{event.title}</h3>
+                <p className="text-gray-600">{event.description}</p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   )
 }
+
+export default Timeline
