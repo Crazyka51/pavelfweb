@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1751125855294bloxoc3zm",
+    "email": "test@example.com",
+    "subscribedAt": "2025-06-28T15:50:55.294Z",
+    "isActive": false,
+    "source": "web",
+    "unsubscribeToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NTExMjU4NTV9.n3bsQTIUuyT9Xphl9HXHNMz-_XH2hoytD_IViwLlZe0"
+  },
+  {
+    "id": "1751125907976vhkcxshcr",
+    "email": "pavel@example.com",
+    "subscribedAt": "2025-06-28T15:51:47.976Z",
+    "isActive": true,
+    "source": "web",
+    "unsubscribeToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBhdmVsQGV4YW1wbGUuY29tIiwiaWF0IjoxNzUxMTI1OTA3fQ.Kf3V_rK9alguSMqp-jq9-Z2ehwj7SC-jcWegyXdzqew"
+  },
+  {
+    "id": "1751128866234f7noftfxh",
+    "email": "matejhrabak@gmail.com",
+    "subscribedAt": "2025-06-28T16:41:06.234Z",
+    "isActive": true,
+    "source": "web",
+    "unsubscribeToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hdGVqaHJhYmFrQGdtYWlsLmNvbSIsImlhdCI6MTc1MTEyODg2Nn0.uG1rktB1uKMb2v3VsCuz_pmYnkhpPBkakl3g05jZisM"
+  }
+]

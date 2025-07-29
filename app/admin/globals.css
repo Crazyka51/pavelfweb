@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import React Quill styles */
+@import "react-quill/dist/quill.snow.css";
+
+body {
+  background-color: #f8fafc;
+}
+
+/* Fix for React Quill */
+.ql-toolbar {
+  border: 1px solid #d1d5db;
+  border-bottom: none;
+}
+
+.ql-container {
+  border: 1px solid #d1d5db;
+}
+
+/* Custom styles for react-quill */
+.ql-editor {
+  min-height: 400px;
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+  padding: 20px;
+}
+
+/* Zabránění drag & drop a paste obrázků do editoru */
+.ql-editor {
+  /* Zakázání drop eventů */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 8px 0;
+  /* Zabránění přetahování existujících obrázků */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Zabránění drag & drop v celém editoru */
+.ql-container {
+  position: relative;
+}
+
+.ql-editor::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Vylepšení image button v toolbaru */
+.ql-toolbar .ql-image::before {
+  content: "🖼️";
+}
+
+.ql-toolbar .ql-image {
+  font-size: 14px;
+}
+
+.ql-toolbar {
+  border-top: 1px solid #e2e8f0;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  padding: 8px;
+}
+
+.ql-container {
+  border-bottom: 1px solid #e2e8f0;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  background-color: white;
+}
+
+/* Lepší styly pro nástroje */
+.ql-toolbar .ql-picker-label {
+  color: #374151;
+}
+
+.ql-toolbar .ql-picker-options {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ql-toolbar button {
+  border-radius: 4px;
+  margin: 1px;
+}
+
+.ql-toolbar button:hover {
+  background-color: #e2e8f0;
+}
+
+.ql-toolbar button.ql-active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Styly pro různé velikosti textu */
+.ql-size-small {
+  font-size: 0.875rem;
+}
+
+.ql-size-large {
+  font-size: 1.25rem;
+}
+
+.ql-size-huge {
+  font-size: 1.5rem;
+}
+
+/* Styly pro fonty */
+.ql-font-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.ql-font-monospace {
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+}
+
+/* Styly pro zarovnání */
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-right {
+  text-align: right;
+}
+
+.ql-align-justify {
+  text-align: justify;
+}
+
+/* Lepší focus stav */
+.ql-editor:focus {
+  outline: none;
+}
+
+.ql-container.ql-snow {
+  border-radius: 0 0 6px 6px;
+}
+
+.ql-toolbar.ql-snow {
+  border-radius: 6px 6px 0 0;
+}
+
+/* Styly pro obrázky v editoru */
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+/* Responsive toolbar */
+@media (max-width: 768px) {
+  .ql-toolbar {
+    padding: 4px;
+  }
+
+  .ql-toolbar button {
+    margin: 0.5px;
+  }
+}

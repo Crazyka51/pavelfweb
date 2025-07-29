@@ -1,0 +1,34 @@
+/* Dynamické barvy pro CategoryManager */
+.color-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+}
+
+.color-button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border-width: 2px;
+}
+
+/* Třídy pro předem definované barvy */
+.color-blue { background-color: #3B82F6; }
+.color-red { background-color: #EF4444; }
+.color-green { background-color: #10B981; }
+.color-yellow { background-color: #F59E0B; }
+.color-purple { background-color: #8B5CF6; }
+.color-pink { background-color: #EC4899; }
+.color-cyan { background-color: #06B6D4; }
+.color-lime { background-color: #84CC16; }
+.color-default { background-color: #ccc; }
+
+/* Pomocné třídy pro JavaScript */
+[data-color="#3B82F6"] { background-color: #3B82F6; }
+[data-color="#EF4444"] { background-color: #EF4444; }
+[data-color="#10B981"] { background-color: #10B981; }
+[data-color="#F59E0B"] { background-color: #F59E0B; }
+[data-color="#8B5CF6"] { background-color: #8B5CF6; }
+[data-color="#EC4899"] { background-color: #EC4899; }
+[data-color="#06B6D4"] { background-color: #06B6D4; }
+[data-color="#84CC16"] { background-color: #84CC16; }

@@ -1,0 +1,54 @@
+name: Setup Neon Database
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Dotenv Action
+        uses: falti/dotenv-action@v1.1.4
+
+      - name: dotenv-linter
+        uses: wemake-services/dotenv-linter@0.5.0
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Show DATABASE_URL value
+        run: |
+          echo "Using DATABASE_URL:"
+          echo "$DATABASE_URL"
+
+      - name: Run Database Setup
+        run: node scripts/complete-setup.js
+        env:
+          DATABASE_URL: $DATABASE_URL
+
+      - name: Validate Environment Variables
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not set!"
+            exit 1
+          fi
+          echo "Environment variables validated successfully."
+
+      - name: Run Tests
+        run: pnpm test
+
+      - name: Deploy Application
+        run: |
+          echo "Starting deployment..."
+          pnpm run deploy
+          echo "Deployment completed successfully."
