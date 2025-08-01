@@ -12,7 +12,7 @@ if (!DATABASE_URL) {
 const sql = neon(DATABASE_URL);
 
 async function setupDatabase() {
-    console.log('Starting database setup...');
+  console.log('Starting database setup...');
 
   try {
     // Path to the schema.sql file
