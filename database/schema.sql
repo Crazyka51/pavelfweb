@@ -1,6 +1,3 @@
--- Neon PostgreSQL Database Schema for Pavel Fišer Web
--- Created: 3. července 2025
-
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -68,7 +65,7 @@ CREATE TABLE IF NOT EXISTS newsletter_templates (
     created_by VARCHAR(100) DEFAULT 'admin'
 );
 
--- Admin users table (for authentication)
+-- Admin users table
 CREATE TABLE IF NOT EXISTS admin_users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -81,7 +78,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Activity log table (for audit trail)
+-- Activity log table
 CREATE TABLE IF NOT EXISTS activity_log (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES admin_users(id),
@@ -94,7 +91,7 @@ CREATE TABLE IF NOT EXISTS activity_log (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
 CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles(created_at DESC);
@@ -115,7 +112,7 @@ VALUES
     ('Crazyk', '$2b$10$yourhashedpasswordhere', 'admin@example.com', 'admin')
 ON CONFLICT (username) DO NOTHING;
 
--- Insert sample categories data
+-- Insert sample articles data (conflict on title)
 INSERT INTO articles (title, content, excerpt, category, tags, published, created_at, updated_at)
 VALUES 
     ('Vítejte na webu Pavla Fišera', 
@@ -126,13 +123,13 @@ VALUES
      true,
      NOW(),
      NOW())
-ON CONFLICT DO NOTHING;
+ON CONFLICT (title) DO NOTHING;
 
--- Sample newsletter template
+-- Sample newsletter template (conflict on name)
 INSERT INTO newsletter_templates (name, subject, content, html_content)
 VALUES 
     ('Základní šablona',
      'Newsletter z Prahy 4',
      'Obsah newsletteru...',
      '<html><body><h1>Newsletter</h1><p>Obsah newsletteru...</p></body></html>')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (name) DO NOTHING;

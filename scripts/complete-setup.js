@@ -11,17 +11,24 @@ if (!DATABASE_URL) {
 
 const sql = neon(DATABASE_URL);
 
-async function setupDatabase() {y
+async function setupDatabase() {
   console.log('Starting database setup...');
 
   try {
     // Path to the schema.sql file
     const schemaPath = path.join(process.cwd(), 'database', 'schema.sql');
-    
+
+    // Check if schema.sql exists
+    try {
+      await fs.access(schemaPath);
+    } catch (err) {
+      throw new Error(`Cannot find schema.sql at path: ${schemaPath}`);
+    }
+
     // Read the SQL schema file
     console.log(`Reading schema from: ${schemaPath}`);
     const schemaSql = await fs.readFile(schemaPath, 'utf-8');
-    
+
     // Split the schema into individual statements and execute them
     const statements = schemaSql.split(';').filter(s => s.trim().length > 0);
 
@@ -33,9 +40,7 @@ async function setupDatabase() {y
       await sql(trimmedStatement);
     }
 
-    
     console.log('Database setup complete. All tables created successfully.');
-
   } catch (error) {
     console.error('An error occurred during database setup:', error);
     process.exit(1);
@@ -43,6 +48,6 @@ async function setupDatabase() {y
 }
 
 // Run the setup function if the script is executed directly
-if (new URL(import.meta.url).pathname === process.argv[1]) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   setupDatabase();
 }
