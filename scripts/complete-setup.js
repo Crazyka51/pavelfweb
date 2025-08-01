@@ -11,7 +11,7 @@ if (!DATABASE_URL) {
 
 const sql = neon(DATABASE_URL);
 
-async function setupDatabase() {
+async function setupDatabase() {y
   console.log('Starting database setup...');
 
   try {
@@ -30,7 +30,7 @@ async function setupDatabase() {
     for (const statement of statements) {
       const trimmedStatement = statement.trim();
       console.log(`Executing: ${trimmedStatement.substring(0, 70).replace(/\s+/g, ' ')}...`);
-      await sql.raw(trimmedStatement);
+      await sql(trimmedStatement);
     }
 
     
