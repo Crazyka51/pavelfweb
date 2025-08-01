@@ -14,10 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create .env file from secrets
-        run: |
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
-
       - name: Install pnpm
         run: npm install -g pnpm
 
@@ -27,28 +23,28 @@ jobs:
       - name: Generate Prisma Client
         run: pnpx prisma generate
 
+      - name: Validate Environment Variables
+        run: |
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "❌ DATABASE_URL is not set!"
+            exit 1
+          fi
+          echo "✅ DATABASE_URL is set correctly."
+
       - name: Show DATABASE_URL value
         run: |
           echo "Using DATABASE_URL:"
-          echo "$DATABASE_URL"
+          echo "${{ secrets.DATABASE_URL }}"
+
 
       - name: Run Database Setup
         run: node scripts/complete-setup.js
         env:
-          DATABASE_URL: $DATABASE_URL
-
-      - name: Validate Environment Variables
-        run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL is not set!"
-            exit 1
-          fi
-          echo "Environment variables validated successfully."
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy Application
         run: |
-          echo "Starting deployment..."
+          echo "🚀 Starting deployment..."
           pnpm run build
-          echo "Application built successfully."
-          echo "To start the application, run 'pnpm start'"
-          echo "Deployment completed successfully."
+          echo "✅ Application built successfully."
+          echo "ℹ️ To start the application, run 'pnpm start'"
