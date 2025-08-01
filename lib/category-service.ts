@@ -1,76 +1,147 @@
-import { db } from "@/lib/database"
-import { categories } from "@/lib/schema"
-import { eq, desc } from "drizzle-orm"
+import { PrismaClient } from '@prisma/client'
 
-export type Category = {
-  id: string
-  name: string
-  slug: string
-  description?: string | null
-  color?: string | null
-  icon?: string | null
-  parent_id?: string | null
-  display_order: string
-  is_active: boolean
-  created_at: Date
-  updated_at: Date
+const prisma = new PrismaClient()
+
+export interface CategoryListOptions {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  includeArticleCount?: boolean;
 }
 
 export class CategoryService {
-  async getCategories(): Promise<Category[]> {
-    const result = await db.select().from(categories).orderBy(desc(categories.created_at))
-    return result as Category[]
-  }
-
-  async getCategoryById(id: string): Promise<Category | null> {
-    const result = await db.select().from(categories).where(eq(categories.id, id)).limit(1)
-    return (result[0] as Category) ?? null
-  }
-
-  async createCategory(data: Omit<Category, "id" | "created_at" | "updated_at">): Promise<Category | null> {
+  /**
+   * Získá seznam kategorií s možností filtrování a stránkování.
+   */
+  async getCategories(options: CategoryListOptions = {}) {
     try {
-      const [newCategory] = await db
-        .insert(categories)
-        .values({
-          id: crypto.randomUUID(),
-          created_at: new Date(),
-          updated_at: new Date(),
-          ...data,
-        })
-        .returning()
-      return newCategory as Category
+      const { limit, offset, search } = options;
+      
+      const whereClause: any = {};
+      
+      if (search) {
+        whereClause.name = {
+          contains: search,
+          mode: 'insensitive'
+        };
+      }
+      
+      const queryOptions: any = {
+        where: whereClause,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      };
+      
+      if (limit) {
+        queryOptions.take = limit;
+      }
+      
+      if (offset) {
+        queryOptions.skip = offset;
+      }
+      
+      return await prisma.category.findMany(queryOptions);
+      
     } catch (error) {
-      console.error("Error creating category:", error)
-      return null
+      console.error("Error getting categories:", error);
+      throw new Error("Failed to fetch categories");
     }
   }
 
-  async updateCategory(id: string, data: Partial<Omit<Category, "id" | "created_at">>): Promise<Category | null> {
+  /**
+   * Získá kategorii podle ID.
+   */
+  async getCategoryById(id: string) {
     try {
-      const [updatedCategory] = await db
-        .update(categories)
-        .set({
-          updated_at: new Date(),
-          ...data,
-        })
-        .where(eq(categories.id, id))
-        .returning()
-      return updatedCategory as Category
+      return await prisma.category.findUnique({
+        where: { id },
+        include: {
+          articles: true,
+        },
+      });
+      
     } catch (error) {
-      console.error(`Error updating category with ID ${id}:`, error)
-      return null
+      console.error(`Error getting category with ID ${id}:`, error);
+      return null;
     }
   }
 
+  /**
+   * Vytvoří novou kategorii.
+   */
+  async createCategory(data: { name: string }) {
+    try {
+      return await prisma.category.create({
+        data: {
+          name: data.name,
+        },
+      });
+      
+    } catch (error) {
+      console.error("Error creating category:", error);
+      throw new Error("Failed to create category");
+    }
+  }
+
+  /**
+   * Aktualizuje existující kategorii.
+   */
+  async updateCategory(id: string, data: { name?: string }) {
+    try {
+      return await prisma.category.update({
+        where: { id },
+        data,
+      });
+      
+    } catch (error) {
+      console.error(`Error updating category with ID ${id}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Smaže kategorii podle ID.
+   */
   async deleteCategory(id: string): Promise<boolean> {
     try {
-      const result = await db.delete(categories).where(eq(categories.id, id)).returning({ id: categories.id })
-      return result.length > 0
+      await prisma.category.delete({
+        where: { id },
+      });
+      
+      return true;
+      
     } catch (error) {
-      console.error(`Error deleting category with ID ${id}:`, error)
-      return false
+      console.error(`Error deleting category with ID ${id}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Získá celkový počet kategorií.
+   */
+  async getTotalCategoryCount(options: { search?: string } = {}): Promise<number> {
+    try {
+      const { search } = options;
+      
+      const whereClause: any = {};
+      
+      if (search) {
+        whereClause.name = {
+          contains: search,
+          mode: 'insensitive'
+        };
+      }
+      
+      return await prisma.category.count({
+        where: whereClause,
+      });
+      
+    } catch (error) {
+      console.error("Error getting total category count:", error);
+      return 0;
     }
   }
 }
 
-export const categoryService = new CategoryService()
+export const categoryService = new CategoryService();

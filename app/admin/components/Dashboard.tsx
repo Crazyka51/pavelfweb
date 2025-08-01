@@ -70,8 +70,8 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
       })
 
       if (articlesResponse.ok) {
-        const data = await articlesResponse.json()
-        const articles: Article[] = data.articles
+        const result = await articlesResponse.json()
+        const articles: Article[] = result.data.articles
 
         // Calculate statistics
         const published = articles.filter((a) => a.published && !a.publishedAt)

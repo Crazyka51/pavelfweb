@@ -46,7 +46,8 @@ export const PUT = requireAuth(
         delete updateData.isActive
       }
 
-      const updatedCategory = await categoryService.updateCategory(params.id, updateData)
+      const { id } = params
+      const updatedCategory = await categoryService.updateCategory(id, updateData)
 
       if (!updatedCategory) {
         return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
@@ -74,7 +75,8 @@ export const PUT = requireAuth(
 export const DELETE = requireAuth(
   async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
     try {
-      const deleted = await categoryService.deleteCategory(params.id)
+      const { id } = params
+      const deleted = await categoryService.deleteCategory(id)
 
       if (!deleted) {
         return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })

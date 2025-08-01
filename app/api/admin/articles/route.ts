@@ -22,7 +22,7 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
     }
 
     if (published !== null && published !== undefined) {
-      filters.isPublished = published === "true"
+      filters.status = published === "true" ? "PUBLISHED" : "DRAFT"
     }
 
     if (search) {
@@ -86,15 +86,20 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
     // Příprava dat pro vytvoření článku
     const newArticleData = {
       title: articleData.title,
+      slug: articleData.slug || articleData.title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]+/g, '') + '-' + Date.now().toString().slice(-4),
       content: articleData.content,
       excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
-      category: articleData.category || "Aktuality",
+      categoryId: articleData.categoryId,
       tags: articleData.tags || [],
-      published: articleData.published || false, // Změněno z isPublished na published
-      image_url: articleData.imageUrl, // Změněno z imageUrl na image_url
-      published_at: articleData.publishedAt ? new Date(articleData.publishedAt) : null, // Změněno z publishedAt na published_at
-      created_by: authResult.username // Změněno z createdBy na created_by
+      status: (articleData.status || (articleData.published ? "PUBLISHED" : "DRAFT")) as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+      imageUrl: articleData.imageUrl,
+      publishedAt: articleData.status === "PUBLISHED" || articleData.published ? new Date() : null,
+      isFeatured: articleData.isFeatured || false,
+      authorId: authResult.userId,
+      metaTitle: articleData.metaTitle,
+      metaDescription: articleData.metaDescription,
     }
+
 
     const savedArticle = await articleService.createArticle(newArticleData)
 

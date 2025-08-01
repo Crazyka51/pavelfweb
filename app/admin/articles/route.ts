@@ -1,23 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { PrismaClient } from '@prisma/client'
 
-// Types
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: string
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-}
+const prisma = new PrismaClient()
 
-// Helper functions
+// Helper function to verify authentication
 function verifyAuth(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   
@@ -33,95 +20,80 @@ function verifyAuth(request: NextRequest) {
   }
 
   try {
+    // We expect the JWT payload to contain the user's ID
     return jwt.verify(token, jwtSecret)
   } catch (error) {
     throw new Error('Neplatný token')
   }
 }
 
-async function getDataPath() {
-  const dataDir = path.join(process.cwd(), 'data')
-  
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-  
-  return path.join(dataDir, 'articles.json')
-}
-
-async function loadArticles(): Promise<Article[]> {
-  try {
-    const dataPath = await getDataPath()
-    const data = await fs.readFile(dataPath, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    // If file doesn't exist, return empty array
-    return []
-  }
-}
-
-async function saveArticles(articles: Article[]): Promise<void> {
-  const dataPath = await getDataPath()
-  await fs.writeFile(dataPath, JSON.stringify(articles, null, 2))
-}
-
-// GET /api/articles - Get all articles
+// GET /api/admin/articles - Get all articles
 export async function GET(request: NextRequest) {
   try {
     verifyAuth(request)
-    const articles = await loadArticles()
-    
-    // Sort by updated date (newest first)
-    articles.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    
+    const articles = await prisma.article.findMany({
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      include: {
+        author: true,
+        category: true,
+      },
+    })
     return NextResponse.json(articles)
   } catch (error) {
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Chyba při načítání článků' },
-      { status: 401 }
-    )
+    const errorMessage = error instanceof Error ? error.message : 'Chyba při načítání článků'
+    const status = errorMessage === 'Neplatný token' ? 401 : 500
+    return NextResponse.json({ message: errorMessage }, { status })
   }
 }
 
-// POST /api/articles - Create new article
+// POST /api/admin/articles - Create a new article
 export async function POST(request: NextRequest) {
   try {
-    verifyAuth(request)
-    const articles = await loadArticles()
+    const userData = verifyAuth(request) as { id: string }
     const articleData = await request.json()
-    
+
     // Validate required fields
-    if (!articleData.title || !articleData.content) {
+    if (!articleData.title || !articleData.content || !articleData.categoryId) {
       return NextResponse.json(
-        { message: 'Název a obsah jsou povinné' },
+        { message: 'Název, obsah a ID kategorie jsou povinné' },
         { status: 400 }
       )
     }
 
-    // Create new article
-    const newArticle: Article = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      title: articleData.title,
-      content: articleData.content,
-      excerpt: articleData.excerpt || '',
-      category: articleData.category || 'Aktuality',
-      tags: articleData.tags || [],
-      published: articleData.published || false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      imageUrl: articleData.imageUrl
-    }
+    // Create a unique slug from the title
+    const slug =
+      (articleData.slug ||
+      articleData.title
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')) +
+      '-' +
+      Date.now().toString().slice(-6)
 
-    articles.push(newArticle)
-    await saveArticles(articles)
-    
+    const newArticle = await prisma.article.create({
+      data: {
+        title: articleData.title,
+        slug: slug,
+        content: articleData.content,
+        excerpt: articleData.excerpt,
+        imageUrl: articleData.imageUrl,
+        status: articleData.status || 'DRAFT',
+        isFeatured: articleData.isFeatured || false,
+        authorId: userData.id,
+        categoryId: articleData.categoryId,
+        tags: articleData.tags || [],
+        metaTitle: articleData.metaTitle,
+        metaDescription: articleData.metaDescription,
+        publishedAt: articleData.status === 'PUBLISHED' ? new Date() : null,
+      },
+    })
+
     return NextResponse.json(newArticle, { status: 201 })
   } catch (error) {
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Chyba při vytváření článku' },
-      { status: error instanceof Error && error.message === 'Neplatný token' ? 401 : 500 }
-    )
+    const errorMessage = error instanceof Error ? error.message : 'Chyba při vytváření článku'
+    const status = errorMessage === 'Neplatný token' ? 401 : 500
+    return NextResponse.json({ message: errorMessage }, { status })
   }
 }

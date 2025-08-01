@@ -17,6 +17,8 @@ model User {
   password  String
   name      String?
   articles  Article[]
+  createdCampaigns NewsletterCampaign[] @relation("CreatedCampaigns")
+  createdTemplates NewsletterTemplate[] @relation("CreatedTemplates")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -59,4 +61,69 @@ model Article {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+model NewsletterSubscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  isActive         Boolean   @default(true)
+  source           String?
+  unsubscribeToken String?   @unique
+  subscribedAt     DateTime  @default(now())
+  unsubscribedAt   DateTime?
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+model NewsletterCampaign {
+  id               String         @id @default(cuid())
+  name             String
+  subject          String
+  content          String?        @db.Text
+  htmlContent      String         @db.Text
+  textContent      String?        @db.Text
+  status           CampaignStatus @default(DRAFT)
+  scheduledAt      DateTime?
+  sentAt           DateTime?
+  recipientCount   Int            @default(0)
+  openCount        Int            @default(0)
+  clickCount       Int            @default(0)
+  bounceCount      Int            @default(0)
+  unsubscribeCount Int            @default(0)
+  createdById      String?
+  templateId       String?
+  tags             String[]
+  segmentId        String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  createdBy User?                @relation("CreatedCampaigns", fields: [createdById], references: [id])
+  template  NewsletterTemplate?  @relation(fields: [templateId], references: [id])
+
+  @@index([createdById])
+  @@index([templateId])
+}
+
+model NewsletterTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String   @db.Text
+  htmlContent String   @db.Text
+  isActive    Boolean  @default(true)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User? @relation("CreatedTemplates", fields: [createdById], references: [id])
+
+  campaigns NewsletterCampaign[]
+
+  @@index([createdById])
 }

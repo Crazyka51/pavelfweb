@@ -1,4 +1,4 @@
-import "./globals.css"
+import "../styles/globals.css"
 import { Inter } from "next/font/google"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -53,7 +53,7 @@ export default function RootLayout({
       <head>
         <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-slate-900 text-gray-100 dark`}>
+      <body className={`${inter.className} min-h-screen`}>
         <Suspense fallback={null}>
           <GoogleAnalytics />
           <StructuredData

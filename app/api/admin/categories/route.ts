@@ -1,35 +1,79 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { categoryService } from "@/lib/category-service"
 import { requireAuth } from "@/lib/auth-utils"
+import { categoryService } from "@/lib/category-service"
 
-// GET /api/admin/categories
-export const GET = requireAuth(
-  async (request: NextRequest, authResult: any) => {
-    try {
-      const categories = await categoryService.getCategories()
-      return NextResponse.json(categories)
-    } catch (error) {
-      console.error("Error fetching categories:", error)
-      return NextResponse.json({ message: "Failed to fetch categories" }, { status: 500 })
-    }
-  },
-  ["admin", "editor"],
-)
+export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
+  try {
+    const { searchParams } = new URL(request.url)
+    const includeArticleCount = searchParams.get("includeArticleCount") === "true"
+    const categories = await categoryService.getCategories({ includeArticleCount })
+    const total = await categoryService.getTotalCategoryCount({})
 
-// POST /api/admin/categories
-export const POST = requireAuth(
-  async (request: NextRequest, authResult: any) => {
-    try {
-      const data = await request.json()
-      const newCategory = await categoryService.createCategory(data)
-      if (!newCategory) {
-        return NextResponse.json({ message: "Failed to create category" }, { status: 500 })
-      }
-      return NextResponse.json(newCategory, { status: 201 })
-    } catch (error) {
-      console.error("Error creating category:", error)
-      return NextResponse.json({ message: "Failed to create category" }, { status: 500 })
+    return NextResponse.json({
+      success: true,
+      data: {
+        categories,
+        pagination: {
+          total,
+        },
+      },
+    })
+  } catch (error) {
+    console.error("Categories GET error:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Chyba při načítání kategorií",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
+  }
+})
+
+export const POST = requireAuth(async (request: NextRequest, authResult: any) => {
+  try {
+    if (authResult.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Nedostatečná oprávnění",
+        },
+        { status: 403 },
+      )
     }
-  },
-  ["admin"],
-)
+
+    const categoryData = await request.json()
+
+    if (!categoryData.name) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Název je povinný",
+        },
+        { status: 400 },
+      )
+    }
+
+    const newCategory = await categoryService.createCategory(categoryData)
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Kategorie byla úspěšně vytvořena",
+        data: newCategory,
+      },
+      { status: 201 },
+    )
+  } catch (error) {
+    console.error("Categories POST error:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Chyba při vytváření kategorie",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
+  }
+})

@@ -9,8 +9,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
-import { getArticleById, createArticle, updateArticle } from "@/lib/services/article-service"
-import { getCategories } from "@/lib/services/category-service"
 
 // Local type definitions to avoid issues with Prisma client type generation
 enum ArticleStatus {
@@ -90,8 +88,18 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const result = await getCategories({})
-        setCategories(result.categories)
+        const token = localStorage.getItem("adminToken")
+        const response = await fetch("/api/admin/categories", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.ok) {
+          const result = await response.json()
+          setCategories(result.data.categories)
+        } else {
+          toast({ title: "Chyba při načítání kategorií", variant: "destructive" })
+        }
       } catch (error) {
         toast({ title: "Chyba při načítání kategorií", variant: "destructive" })
       }
@@ -103,11 +111,16 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     // Fetch article data if editing
     if (articleId) {
       setIsLoading(true)
-      getArticleById(articleId)
-        .then((article) => {
-          if (article) {
-            // Cast the fetched article to our local type to ensure type safety
-            const data = article as unknown as ArticleForEditor
+      const token = localStorage.getItem("adminToken")
+      fetch(`/api/admin/articles/${articleId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            const data = result.data as ArticleForEditor
             setTitle(data.title)
             setSlug(data.slug)
             setContent(data.content)
@@ -118,6 +131,8 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
             setIsFeatured(data.isFeatured)
             setMetaTitle(data.metaTitle || "")
             setMetaDescription(data.metaDescription || "")
+          } else {
+            toast({ title: "Chyba při načítání článku", variant: "destructive" })
           }
         })
         .catch(() => toast({ title: "Chyba při načítání článku", variant: "destructive" }))
@@ -152,17 +167,32 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     }
 
     try {
-      if (articleId) {
-        await updateArticle(articleId, articleData)
-        toast({ title: "Článek úspěšně aktualizován" })
+      const token = localStorage.getItem("adminToken")
+      const url = articleId ? `/api/admin/articles/${articleId}` : "/api/admin/articles"
+      const method = articleId ? "PUT" : "POST"
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(articleData),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast({ title: articleId ? "Článek úspěšně aktualizován" : "Článek úspěšně vytvořen" })
+        if (onSave) onSave()
+        router.refresh()
       } else {
-        // Hardcoded authorId from seed script
-        const authorId = "cmdoymk9i0000xuss9ydk9h5j"
-        await createArticle({ ...articleData, authorId })
-        toast({ title: "Článek úspěšně vytvořen" })
+        toast({
+          title: "Došlo k chybě",
+          description: result.error || "Nepodařilo se uložit článek.",
+          variant: "destructive",
+        })
       }
-      if (onSave) onSave()
-      router.refresh() // Refresh the page to show changes
     } catch (error: any) {
       toast({
         title: "Došlo k chybě",

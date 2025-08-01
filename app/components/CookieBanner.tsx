@@ -24,8 +24,9 @@ export default function CookieBanner() {
   useEffect(() => {
     // Check if consent banner should be displayed
     if (shouldShowConsentBanner()) {
-      setIsVisible(true)
+      // setIsVisible(true)
     }
+
     
     // Load existing preferences if available
     const currentPreferences = getCurrentConsentPreferences()

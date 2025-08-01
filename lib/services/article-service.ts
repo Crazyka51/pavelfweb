@@ -1,4 +1,4 @@
-import { PrismaClient, Article } from '@prisma/client';
+import { PrismaClient, Article, ArticleStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -67,4 +67,34 @@ export async function getArticles(options: { page?: number, limit?: number, filt
     });
     const total = await prisma.article.count();
     return { articles, total };
+}
+
+export async function getPublishedArticles(page: number = 1, limit: number = 10) {
+  const skip = (page - 1) * limit;
+
+  const [articles, total] = await prisma.$transaction([
+    prisma.article.findMany({
+      where: {
+        status: 'PUBLISHED',
+      },
+      include: {
+        category: true,
+        author: true,
+      },
+      orderBy: {
+        publishedAt: 'desc',
+      },
+      skip: skip,
+      take: limit,
+    }),
+    prisma.article.count({
+      where: {
+        status: 'PUBLISHED',
+      },
+    }),
+  ]);
+
+  const hasMore = skip + articles.length < total;
+
+  return { articles, total, hasMore };
 }

@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 async function main() {
   console.log(`Start seeding ...`)
 
-  // Create a default user
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash('password123', salt);
+  // Vytvoř uživatele
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash('password123', salt)
 
   const user = await prisma.user.upsert({
     where: { email: 'pavel.fiser@example.com' },
@@ -19,25 +19,50 @@ async function main() {
       password: hashedPassword,
     },
   })
-  console.log(`Created user 'Pavel Fišer' with id: ${user.id}`)
+  console.log(`Created user '${user.name}' with id: ${user.id}`)
 
-  // Create default categories
-  const categories = [
-    { name: 'Aktuality' },
-    { name: 'Městská politika' },
-    { name: 'Doprava' },
-    { name: 'Životní prostředí' },
-    { name: 'Kultura' },
-    { name: 'Sport' },
-  ];
+  // Vytvoř kategorie
+  const aktuality = await prisma.category.upsert({
+    where: { name: 'Aktuality' },
+    update: {},
+    create: { name: 'Aktuality' },
+  })
 
-  for (const category of categories) {
-    const newCategory = await prisma.category.upsert({
-        where: { name: category.name },
-        update: {},
-        create: category,
-    });
-    console.log(`Created category '${newCategory.name}' with id: ${newCategory.id}`)
+  // Vytvoř články
+  const articles = [
+    {
+      title: 'Rekonstrukce hřiště v Nuslích dokončena',
+      slug: 'rekonstrukce-hriste-nusle',
+      content: 'Oblíbené dětské hřiště v Nuslích prošlo rozsáhlou rekonstrukcí...',
+      excerpt: 'Hřiště je opět bezpečné a moderní.',
+    },
+    {
+      title: 'Nové kapacity v mateřských školách',
+      slug: 'nova-kapacita-ms',
+      content: 'Praha 4 otevřela novou třídu pro předškolní děti...',
+      excerpt: 'Přibylo 30 nových míst pro děti.',
+    },
+    {
+      title: 'Bezpečnostní prvky v okolí škol',
+      slug: 'bezpecnost-skoly',
+      content: 'Ve spolupráci s policií byly zavedeny nové bezpečnostní prvky...',
+      excerpt: 'Větší bezpečí pro naše děti.',
+    },
+  ]
+
+  for (const article of articles) {
+    const newArticle = await prisma.article.create({
+      data: {
+        ...article,
+        authorId: user.id,
+        categoryId: aktuality.id,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        tags: ['praha4', 'komunální-politika'],
+        isFeatured: false,
+      },
+    })
+    console.log(`Created article '${newArticle.title}'`)
   }
 
   console.log(`Seeding finished.`)

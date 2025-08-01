@@ -105,7 +105,7 @@ export default function AdminPage() {
   const renderContent = () => {
     switch (currentSection) {
       case "dashboard":
-        return <Dashboard />
+        return <Dashboard onCreateNew={handleCreateNew} />
       case "articles":
         return <ArticleManager onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} />
       case "new-article":

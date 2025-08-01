@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { useToast } from "@/components/ui/use-toast"
 import "../styles/dynamic-colors.css"
 import { Plus, Edit, Trash2, Tag } from "lucide-react"
 
@@ -34,6 +35,8 @@ export default function CategoryManager() {
     isActive: true,
   })
 
+  const { toast } = useToast()
+
   const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"]
 
   useEffect(() => {
@@ -45,11 +48,11 @@ export default function CategoryManager() {
       const response = await fetch("/api/admin/categories?includeArticleCount=true")
 
       if (response.ok) {
-        const data = await response.json()
-        if (data.categories) {
-          setCategories(data.categories)
+        const result = await response.json()
+        if (result.success) {
+          setCategories(result.data.categories)
         } else {
-          console.error("Error loading categories: Invalid data format", data)
+          console.error("Error loading categories: Invalid data format", result)
         }
       } else {
         console.error("Failed to load categories", response.status, await response.text())
@@ -107,11 +110,16 @@ export default function CategoryManager() {
         })
 
         if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně vytvořena")
+          const newCategory = await response.json();
+          setCategories([...categories, newCategory.data]);
+          toast({ title: "Kategorie byla úspěšně vytvořena" })
         } else {
           const errorData = await response.json()
-          alert(`Chyba při vytváření kategorie: ${errorData.message || response.statusText}`)
+          toast({
+            title: "Chyba při vytváření kategorie",
+            description: errorData.message || response.statusText,
+            variant: "destructive",
+          })
         }
       }
 

@@ -1,137 +1,89 @@
-import { sql } from "../database"
-import { type NewsletterSubscriber, type NewsletterCampaign, type NewsletterTemplate } from "../newsletter-schema"
+import { PrismaClient } from '@prisma/client'
+import { randomBytes } from 'crypto'
 
-/**
- * Pomocná funkce pro převod výsledků SQL dotazu na pole objektů
- */
-function sqlToArray<T>(result: unknown): T[] {
-  return result as T[]
-}
+const prisma = new PrismaClient()
+
+// Re-export types from Prisma for external use if needed
+export type { NewsletterSubscriber, NewsletterCampaign, NewsletterTemplate } from '@prisma/client'
 
 export class NewsletterService {
   // Subscriber management
-  async getSubscribers(activeOnly = true): Promise<NewsletterSubscriber[]> {
+  async getSubscribers(activeOnly = true) {
     try {
-      if (activeOnly) {
-        const queryResult = await sql`
-          SELECT id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
-          FROM newsletter_subscribers
-          WHERE is_active = true
-          ORDER BY subscribed_at DESC
-        `
-        // Převod na pole a typování výsledků
-        const result = sqlToArray<any>(queryResult)
-        return result.map(row => ({
-          id: row.id,
-          email: row.email,
-          is_active: row.is_active,
-          source: row.source || 'web',
-          unsubscribe_token: row.unsubscribe_token,
-          subscribed_at: row.subscribed_at,
-          unsubscribed_at: row.unsubscribed_at
-        })) as NewsletterSubscriber[]
-      } else {
-        const queryResult = await sql`
-          SELECT id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
-          FROM newsletter_subscribers
-          ORDER BY subscribed_at DESC
-        `
-        // Převod na pole a typování výsledků
-        const result = sqlToArray<any>(queryResult)
-        return result.map(row => ({
-          id: row.id,
-          email: row.email,
-          is_active: row.is_active,
-          source: row.source || 'web',
-          unsubscribe_token: row.unsubscribe_token,
-          subscribed_at: row.subscribed_at,
-          unsubscribed_at: row.unsubscribed_at
-        })) as NewsletterSubscriber[]
-      }
+      const whereClause = activeOnly ? { isActive: true } : {}
+      return await prisma.newsletterSubscriber.findMany({
+        where: whereClause,
+
+        orderBy: {
+          subscribedAt: 'desc',
+        },
+      })
     } catch (error) {
       console.error("Failed to get subscribers:", error)
       throw new Error("Failed to fetch subscribers")
     }
   }
 
-  async subscribeEmail(email: string, source = "web"): Promise<NewsletterSubscriber> {
+  async subscribeEmail(email: string, source = "web") {
     try {
-      // Generate unsubscribe token
-      const unsubscribeToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const unsubscribeToken = randomBytes(16).toString('hex')
+      return await prisma.newsletterSubscriber.upsert({
+        where: { email },
+        update: {
 
-      const queryResult = await sql`
-        INSERT INTO newsletter_subscribers (email, source, unsubscribe_token)
-        VALUES (${email}, ${source}, ${unsubscribeToken})
-        ON CONFLICT (email) 
-        DO UPDATE SET 
-          is_active = true,
-          subscribed_at = NOW(),
-          unsubscribed_at = NULL
-        RETURNING id, email, is_active, source, unsubscribe_token, subscribed_at, unsubscribed_at
-      `
-      // Převod na pole a typování výsledku
-      const result = sqlToArray<any>(queryResult)
-      
-      // Kontrola výsledku
-      if (result.length === 0) {
-        throw new Error("Failed to subscribe email")
-      }
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        email: row.email,
-        is_active: row.is_active,
-        source: row.source || 'web',
-        unsubscribe_token: row.unsubscribe_token,
-        subscribed_at: row.subscribed_at,
-        unsubscribed_at: row.unsubscribed_at
-      } as NewsletterSubscriber
+          isActive: true,
+          subscribedAt: new Date(),
+          unsubscribedAt: null,
+        },
+        create: {
+          email,
+          source,
+          unsubscribeToken,
+        },
+      })
     } catch (error) {
       console.error("Failed to subscribe email:", error)
-      throw error // Re-throw to be caught by API route for specific error messages
+      throw new Error("Failed to subscribe email")
     }
   }
 
-  async unsubscribeEmail(email: string): Promise<boolean> {
+  async unsubscribeEmail(email: string) {
     try {
-      const queryResult = await sql`
-        UPDATE newsletter_subscribers 
-        SET is_active = false, unsubscribed_at = NOW()
-        WHERE email = ${email}
-        RETURNING id
-      `
-      
-      const result = sqlToArray<any>(queryResult)
-      return result.length > 0
+      const updated = await prisma.newsletterSubscriber.update({
+        where: { email },
+        data: {
+          isActive: false,
+          unsubscribedAt: new Date(),
+        },
+      })
+      return !!updated
     } catch (error) {
       console.error("Failed to unsubscribe email:", error)
       return false
     }
   }
 
-  async unsubscribeByToken(token: string): Promise<boolean> {
+  async unsubscribeByToken(token: string) {
     try {
-      const queryResult = await sql`
-        UPDATE newsletter_subscribers 
-        SET is_active = false, unsubscribed_at = NOW()
-        WHERE unsubscribe_token = ${token}
-        RETURNING id
-      `
-      
-      const result = sqlToArray<any>(queryResult)
-      return result.length > 0
+      const updated = await prisma.newsletterSubscriber.update({
+        where: { unsubscribeToken: token },
+        data: {
+
+          isActive: false,
+          unsubscribedAt: new Date(),
+        },
+      })
+      return !!updated
     } catch (error) {
       console.error("Failed to unsubscribe by token:", error)
       return false
     }
   }
 
-  async deleteSubscriber(id: string): Promise<boolean> {
+  async deleteSubscriber(id: string) {
     try {
-      const queryResult = await sql`DELETE FROM newsletter_subscribers WHERE id = ${id} RETURNING id`
-      const result = sqlToArray<any>(queryResult)
-      return result.length > 0
+      await prisma.newsletterSubscriber.delete({ where: { id } })
+      return true
     } catch (error) {
       console.error("Failed to delete subscriber:", error)
       return false
@@ -139,32 +91,19 @@ export class NewsletterService {
   }
 
   // Statistics
-  async getSubscriberStats(): Promise<{
-    total: number
-    active: number
-    inactive: number
-    recent: number
-  }> {
+  async getSubscriberStats() {
     try {
-      const totalQueryResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers`
-      const activeQueryResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = true`
-      const inactiveQueryResult = await sql`SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = false`
-      const recentQueryResult = await sql`
-        SELECT COUNT(*) as count FROM newsletter_subscribers 
-        WHERE subscribed_at > NOW() - INTERVAL '30 days'
-      `
-      
-      const totalResult = sqlToArray<any>(totalQueryResult)
-      const activeResult = sqlToArray<any>(activeQueryResult)
-      const inactiveResult = sqlToArray<any>(inactiveQueryResult)
-      const recentResult = sqlToArray<any>(recentQueryResult)
-
-      return {
-        total: parseInt(totalResult[0]?.count?.toString() || '0'),
-        active: parseInt(activeResult[0]?.count?.toString() || '0'),
-        inactive: parseInt(inactiveResult[0]?.count?.toString() || '0'),
-        recent: parseInt(recentResult[0]?.count?.toString() || '0'),
-      }
+      const total = await prisma.newsletterSubscriber.count()
+      const active = await prisma.newsletterSubscriber.count({ where: { isActive: true } })
+      const inactive = total - active
+      const recent = await prisma.newsletterSubscriber.count({
+        where: {
+          subscribedAt: {
+            gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+          },
+        },
+      })
+      return { total, active, inactive, recent }
     } catch (error) {
       console.error("Failed to get subscriber stats:", error)
       return { total: 0, active: 0, inactive: 0, recent: 0 }
@@ -172,379 +111,142 @@ export class NewsletterService {
   }
 
   // Campaign management
-  async getCampaigns(): Promise<NewsletterCampaign[]> {
+  async getCampaigns() {
     try {
-      const queryResult = await sql`
-        SELECT id, name, subject, content, html_content, text_content, template_id,
-               status, scheduled_at, sent_at, recipient_count, open_count, click_count,
-               bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
-        FROM newsletter_campaigns
-        ORDER BY created_at DESC
-      `
+      return await prisma.newsletterCampaign.findMany({
+        orderBy: {
+          createdAt: 'desc',
 
-      const result = sqlToArray<any>(queryResult)
-      return result.map(row => ({
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        text_content: row.text_content,
-        template_id: row.template_id,
-        status: row.status,
-        scheduled_at: row.scheduled_at,
-        sent_at: row.sent_at,
-        recipient_count: parseInt(row.recipient_count || '0'),
-        open_count: parseInt(row.open_count || '0'),
-        click_count: parseInt(row.click_count || '0'),
-        bounce_count: parseInt(row.bounce_count || '0'),
-        unsubscribe_count: parseInt(row.unsubscribe_count || '0'),
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by,
-        tags: row.tags,
-        segment_id: row.segment_id
-      })) as NewsletterCampaign[]
+        },
+      })
     } catch (error) {
       console.error("Failed to get campaigns:", error)
       throw new Error("Failed to fetch campaigns")
     }
   }
   
-  async getCampaign(id: string): Promise<NewsletterCampaign | null> {
+  async getCampaign(id: string) {
     try {
-      const queryResult = await sql`
-        SELECT id, name, subject, content, html_content, text_content, template_id,
-               status, scheduled_at, sent_at, recipient_count, open_count, click_count,
-               bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
-        FROM newsletter_campaigns
-        WHERE id = ${id}
-      `
-      const result = sqlToArray<any>(queryResult)
-      
-      if (result.length === 0) {
-        return null
-      }
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        text_content: row.text_content,
-        template_id: row.template_id,
-        status: row.status,
-        scheduled_at: row.scheduled_at,
-        sent_at: row.sent_at,
-        recipient_count: parseInt(row.recipient_count || '0'),
-        open_count: parseInt(row.open_count || '0'),
-        click_count: parseInt(row.click_count || '0'),
-        bounce_count: parseInt(row.bounce_count || '0'),
-        unsubscribe_count: parseInt(row.unsubscribe_count || '0'),
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by,
-        tags: row.tags,
-        segment_id: row.segment_id
-      } as NewsletterCampaign
+      return await prisma.newsletterCampaign.findUnique({ where: { id } })
     } catch (error) {
+
       console.error("Failed to get campaign:", error)
       return null
     }
   }
   
-  async createCampaign(campaignData: Partial<NewsletterCampaign>): Promise<NewsletterCampaign> {
+  async createCampaign(campaignData: any) {
     try {
-      const queryResult = await sql`
-        INSERT INTO newsletter_campaigns (name, subject, content, html_content, text_content, template_id, status, created_by)
-        VALUES (
-          ${campaignData.name || 'Untitled Campaign'}, 
-          ${campaignData.subject || ''}, 
-          ${campaignData.content || ''}, 
-          ${campaignData.html_content || ''}, 
-          ${campaignData.text_content || null}, 
-          ${campaignData.template_id || null},
-          ${campaignData.status || 'draft'},
-          ${campaignData.created_by || 'system'}
-        )
-        RETURNING id, name, subject, content, html_content, text_content, template_id,
-                 status, scheduled_at, sent_at, recipient_count, open_count, click_count,
-                 bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
-      `
-      const result = sqlToArray<any>(queryResult)
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        text_content: row.text_content,
-        template_id: row.template_id,
-        status: row.status,
-        scheduled_at: row.scheduled_at,
-        sent_at: row.sent_at,
-        recipient_count: parseInt(row.recipient_count || '0'),
-        open_count: parseInt(row.open_count || '0'),
-        click_count: parseInt(row.click_count || '0'),
-        bounce_count: parseInt(row.bounce_count || '0'),
-        unsubscribe_count: parseInt(row.unsubscribe_count || '0'),
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by,
-        tags: row.tags,
-        segment_id: row.segment_id
-      } as NewsletterCampaign
+      return await prisma.newsletterCampaign.create({
+        data: {
+            name: campaignData.name || 'Untitled Campaign',
+
+            subject: campaignData.subject || '',
+            content: campaignData.content || '',
+            htmlContent: campaignData.htmlContent || '',
+            textContent: campaignData.textContent,
+            templateId: campaignData.templateId,
+            status: campaignData.status || 'DRAFT',
+            createdById: campaignData.createdById,
+            tags: campaignData.tags || [],
+            segmentId: campaignData.segmentId,
+        }
+      })
     } catch (error) {
       console.error("Failed to create campaign:", error)
       throw new Error("Failed to create campaign")
     }
   }
   
-  async updateCampaign(id: string, campaignData: Partial<NewsletterCampaign>): Promise<NewsletterCampaign | null> {
+  async updateCampaign(id: string, campaignData: any) {
     try {
-      // Vytvoříme části SQL dotazu jen pro pole, která jsou poskytnuta
-      let updateFields = []
-      
-      if (campaignData.name !== undefined) updateFields.push(`name = ${campaignData.name}`)
-      if (campaignData.subject !== undefined) updateFields.push(`subject = ${campaignData.subject}`)
-      if (campaignData.content !== undefined) updateFields.push(`content = ${campaignData.content}`)
-      if (campaignData.html_content !== undefined) updateFields.push(`html_content = ${campaignData.html_content}`)
-      if (campaignData.text_content !== undefined) updateFields.push(`text_content = ${campaignData.text_content}`)
-      if (campaignData.template_id !== undefined) updateFields.push(`template_id = ${campaignData.template_id}`)
-      if (campaignData.status !== undefined) updateFields.push(`status = ${campaignData.status}`)
-      if (campaignData.scheduled_at !== undefined) updateFields.push(`scheduled_at = ${campaignData.scheduled_at}`)
-      if (campaignData.sent_at !== undefined) updateFields.push(`sent_at = ${campaignData.sent_at}`)
-      
-      // Pokud nejsou žádná pole k aktualizaci, vrátíme původní kampaň
-      if (updateFields.length === 0) {
-        return this.getCampaign(id)
-      }
-      
-      // Přidáme updated_at
-      updateFields.push(`updated_at = NOW()`)
-      
-      // Sestavíme a spustíme dotaz
-      const updateQuery = `
-        UPDATE newsletter_campaigns 
-        SET ${updateFields.join(', ')}
-        WHERE id = '${id}'
-        RETURNING id, name, subject, content, html_content, text_content, template_id,
-                 status, scheduled_at, sent_at, recipient_count, open_count, click_count,
-                 bounce_count, unsubscribe_count, created_at, updated_at, created_by, tags, segment_id
-      `
-      
-      const queryResult = await sql.raw(updateQuery)
-      const result = sqlToArray<any>(queryResult)
-      
-      if (result.length === 0) {
-        return null
-      }
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        text_content: row.text_content,
-        template_id: row.template_id,
-        status: row.status,
-        scheduled_at: row.scheduled_at,
-        sent_at: row.sent_at,
-        recipient_count: parseInt(row.recipient_count || '0'),
-        open_count: parseInt(row.open_count || '0'),
-        click_count: parseInt(row.click_count || '0'),
-        bounce_count: parseInt(row.bounce_count || '0'),
-        unsubscribe_count: parseInt(row.unsubscribe_count || '0'),
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by,
-        tags: row.tags,
-        segment_id: row.segment_id
-      } as NewsletterCampaign
+      return await prisma.newsletterCampaign.update({
+        where: { id },
+        data: campaignData,
+
+      })
     } catch (error) {
       console.error("Failed to update campaign:", error)
       return null
     }
   }
   
-  async deleteCampaign(id: string): Promise<boolean> {
+  async deleteCampaign(id: string) {
     try {
-      const queryResult = await sql`DELETE FROM newsletter_campaigns WHERE id = ${id} RETURNING id`
-      const result = sqlToArray<any>(queryResult)
-      return result.length > 0
+      await prisma.newsletterCampaign.delete({ where: { id } })
+      return true
     } catch (error) {
+
       console.error("Failed to delete campaign:", error)
       return false
     }
   }
   
   // Template management
-  async getTemplates(activeOnly = true): Promise<NewsletterTemplate[]> {
+  async getTemplates(activeOnly = true) {
     try {
-      let queryResult
-      
-      if (activeOnly) {
-        queryResult = await sql`
-          SELECT id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-          FROM newsletter_templates
-          WHERE is_active = true
-          ORDER BY name ASC
-        `
-      } else {
-        queryResult = await sql`
-          SELECT id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-          FROM newsletter_templates
-          ORDER BY name ASC
-        `
-      }
-      
-      const result = sqlToArray<any>(queryResult)
-      return result.map(row => ({
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        is_active: row.is_active,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by
-      })) as NewsletterTemplate[]
+      const whereClause = activeOnly ? { isActive: true } : {}
+      return await prisma.newsletterTemplate.findMany({
+        where: whereClause,
+        orderBy: {
+
+          name: 'asc',
+        },
+      })
     } catch (error) {
       console.error("Failed to get templates:", error)
       throw new Error("Failed to fetch templates")
     }
   }
   
-  async getTemplate(id: string): Promise<NewsletterTemplate | null> {
+  async getTemplate(id: string) {
     try {
-      const queryResult = await sql`
-        SELECT id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-        FROM newsletter_templates
-        WHERE id = ${id}
-      `
-      const result = sqlToArray<any>(queryResult)
-      
-      if (result.length === 0) {
-        return null
-      }
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        is_active: row.is_active,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by
-      } as NewsletterTemplate
+      return await prisma.newsletterTemplate.findUnique({ where: { id } })
     } catch (error) {
+
       console.error("Failed to get template:", error)
       return null
     }
   }
 
-  async createTemplate(templateData: Partial<NewsletterTemplate>): Promise<NewsletterTemplate> {
+  async createTemplate(templateData: any) {
     try {
-      const queryResult = await sql`
-        INSERT INTO newsletter_templates (name, subject, content, html_content, is_active, created_by)
-        VALUES (
-          ${templateData.name || 'Untitled Template'}, 
-          ${templateData.subject || ''}, 
-          ${templateData.content || ''}, 
-          ${templateData.html_content || ''}, 
-          ${templateData.is_active ?? true},
-          ${templateData.created_by || 'system'}
-        )
-        RETURNING id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-      `
-      const result = sqlToArray<any>(queryResult)
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        is_active: row.is_active,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by
-      } as NewsletterTemplate
+      return await prisma.newsletterTemplate.create({
+        data: {
+          name: templateData.name || 'Untitled Template',
+
+          subject: templateData.subject || '',
+          content: templateData.content || '',
+          htmlContent: templateData.htmlContent || '',
+          isActive: templateData.isActive ?? true,
+          createdById: templateData.createdById,
+        },
+      })
     } catch (error) {
       console.error("Failed to create template:", error)
       throw new Error("Failed to create template")
     }
   }
   
-  async updateTemplate(id: string, templateData: Partial<NewsletterTemplate>): Promise<NewsletterTemplate | null> {
+  async updateTemplate(id: string, templateData: any) {
     try {
-      // Vytvoříme části SQL dotazu jen pro pole, která jsou poskytnuta
-      let updateFields = []
-      
-      if (templateData.name !== undefined) updateFields.push(`name = ${templateData.name}`)
-      if (templateData.subject !== undefined) updateFields.push(`subject = ${templateData.subject}`)
-      if (templateData.content !== undefined) updateFields.push(`content = ${templateData.content}`)
-      if (templateData.html_content !== undefined) updateFields.push(`html_content = ${templateData.html_content}`)
-      if (templateData.is_active !== undefined) updateFields.push(`is_active = ${templateData.is_active}`)
-      
-      // Pokud nejsou žádná pole k aktualizaci, vrátíme původní šablonu
-      if (updateFields.length === 0) {
-        return this.getTemplate(id)
-      }
-      
-      // Přidáme updated_at
-      updateFields.push(`updated_at = NOW()`)
-      
-      // Sestavíme a spustíme dotaz
-      const updateQuery = `
-        UPDATE newsletter_templates 
-        SET ${updateFields.join(', ')}
-        WHERE id = '${id}'
-        RETURNING id, name, subject, content, html_content, is_active, created_at, updated_at, created_by
-      `
-      
-      const queryResult = await sql.raw(updateQuery)
-      const result = sqlToArray<any>(queryResult)
-      
-      if (result.length === 0) {
-        return null
-      }
-      
-      const row = result[0]
-      return {
-        id: row.id,
-        name: row.name,
-        subject: row.subject,
-        content: row.content,
-        html_content: row.html_content,
-        is_active: row.is_active,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        created_by: row.created_by
-      } as NewsletterTemplate
+      return await prisma.newsletterTemplate.update({
+        where: { id },
+        data: templateData,
+
+      })
     } catch (error) {
       console.error("Failed to update template:", error)
       return null
     }
   }
   
-  async deleteTemplate(id: string): Promise<boolean> {
+  async deleteTemplate(id: string) {
     try {
-      const queryResult = await sql`DELETE FROM newsletter_templates WHERE id = ${id} RETURNING id`
-      const result = sqlToArray<any>(queryResult)
-      return result.length > 0
+      await prisma.newsletterTemplate.delete({ where: { id } })
+      return true
     } catch (error) {
+
       console.error("Failed to delete template:", error)
       return false
     }
@@ -561,5 +263,5 @@ export class NewsletterService {
   }
 }
 
-// Export instance služby
+// Export instance of the service
 export const newsletterService = NewsletterService.getInstance()

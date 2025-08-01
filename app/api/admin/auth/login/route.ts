@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createSession } from "@/lib/auth-utils"
+import { createSession, comparePasswords } from "@/lib/auth-utils-new"
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json()
