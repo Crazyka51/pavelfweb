@@ -221,6 +221,12 @@ export async function generateStaticParams() {
 
     const articles: Article[] = await response.json()
 
+    // Ensure articles is an array before mapping
+    if (!Array.isArray(articles)) {
+      console.error("Expected articles to be an array, got:", articles);
+      return [];
+    }
+
     return articles.map((article) => ({
       id: article.id,
     }))
@@ -236,6 +242,12 @@ export async function generateStaticParams() {
       if (fs.existsSync(articlesPath)) {
         const articlesData = fs.readFileSync(articlesPath, "utf8")
         const articles: Article[] = JSON.parse(articlesData)
+
+        // Ensure articles is an array before mapping
+        if (!Array.isArray(articles)) {
+          console.error("Expected fallback articles to be an array, got:", articles);
+          return [];
+        }
 
         return articles.map((article) => ({
           id: article.id,
