@@ -37,7 +37,7 @@ async function setupDatabase() {
     for (const statement of statements) {
       const trimmedStatement = statement.trim();
       console.log(`Executing: ${trimmedStatement.substring(0, 70).replace(/\s+/g, ' ')}...`);
-      await sql(trimmedStatement);
+      await sql`${trimmedStatement}`;
     }
 
     console.log('Database setup complete. All tables created successfully.');
