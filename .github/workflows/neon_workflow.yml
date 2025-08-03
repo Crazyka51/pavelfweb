@@ -14,6 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Create .env file from secrets
+        run: |
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
+
       - name: Install pnpm
         run: npm install -g pnpm
 
@@ -29,18 +34,22 @@ jobs:
             echo "❌ DATABASE_URL is not set!"
             exit 1
           fi
-          echo "✅ DATABASE_URL is set correctly."
+          if [ -z "${{ secrets.JWT_SECRET }}" ]; then
+            echo "❌ JWT_SECRET is not set!"
+            exit 1
+          fi
+          echo "✅ DATABASE_URL and JWT_SECRET are set correctly."
 
       - name: Show DATABASE_URL value
         run: |
           echo "Using DATABASE_URL:"
           echo "${{ secrets.DATABASE_URL }}"
 
-
       - name: Run Database Setup
         run: node scripts/complete-setup.js
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Deploy Application
         run: |
