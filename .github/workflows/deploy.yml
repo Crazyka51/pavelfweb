@@ -19,6 +19,7 @@ jobs:
           echo NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} >> .env
           echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env
           echo NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL || '' }} >> .env
+          echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
