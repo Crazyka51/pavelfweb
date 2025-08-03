@@ -32,9 +32,9 @@ Tento dokument popisuje, jak je CMS propojeno s hlavní stránkou Pavel Fišer w
 ## API Endpointy
 
 ### Veřejný API pro články
-\`\`\`
+```
 GET /api/public/articles
-\`\`\`
+```
 
 **Parametry:**
 - `limit` - počet článků (výchozí: všechny)
@@ -42,7 +42,7 @@ GET /api/public/articles
 - `category` - filtr podle kategorie
 
 **Odpověď:**
-\`\`\`json
+```json
 {
   "articles": [
     {
@@ -61,7 +61,7 @@ GET /api/public/articles
   "total": number,
   "hasMore": boolean
 }
-\`\`\`
+```
 
 ## Komponenty na hlavní stránce
 
@@ -107,7 +107,7 @@ GET /api/public/articles
 ### Kroky pro produkční nasazení:
 
 1. **Databáze**:
-   \`\`\`sql
+   ```sql
    CREATE TABLE articles (
      id UUID PRIMARY KEY,
      title VARCHAR(255) NOT NULL,
@@ -120,21 +120,21 @@ GET /api/public/articles
      created_at TIMESTAMP DEFAULT NOW(),
      updated_at TIMESTAMP DEFAULT NOW()
    );
-   \`\`\`
+   ```
 
 2. **Environment Variables**:
-   \`\`\`
+   ```
    # CMS
    DATABASE_URL=postgresql://...
-   JWT_SECRET=c9f733d944090adced308bd6acbda326da8c2dcaf700988f866a096d0f3cce8d
+   JWT_SECRET=your-secret-key
    ADMIN_PASSWORD_HASH=bcrypt-hash
    
    # Hlavní web
    CMS_API_URL=https://cms.pavelfiser.cz/api
-   \`\`\`
+   ```
 
 3. **Nginx konfigurace**:
-   \`\`\`nginx
+   ```nginx
    # Hlavní web
    server {
      server_name pavelfiser.cz;
@@ -150,7 +150,7 @@ GET /api/public/articles
        proxy_pass http://localhost:3001;
      }
    }
-   \`\`\`
+   ```
 
 ## Bezpečnost
 
@@ -176,13 +176,13 @@ GET /api/public/articles
 4. Zkontrolujte zobrazení na hlavní stránce
 
 ### Automatizovaný test:
-\`\`\`bash
+```bash
 # Test API endpointu
 curl "http://localhost:3001/api/public/articles?limit=3"
 
 # Test zobrazení na hlavní stránce
 curl "http://localhost:3000/aktuality"
-\`\`\`
+```
 
 ## Řešení problémů
 

@@ -16,9 +16,9 @@ Mám skvělou zprávu - dokončil jsem všechno, co jsi chtěl! 🚀
 1. **Jdi na resend.com** - registruj se (klidně přes GitHub)
 2. **Vytvoř API klíč** - v dashboard → "API Keys" → new key
 3. **Zkopíruj klíč** a vlož do `.env.local`:
-   \`\`\`bash
+   ```bash
    RESEND_API_KEY=re_tvůj_klíč_tady
-   \`\`\`
+   ```
 4. **Spusť web** (`pnpm dev`) a **otestuj formulář**
 5. **Zkontroluj email** na pavel.fiser@praha4.cz
 

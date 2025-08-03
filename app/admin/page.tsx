@@ -34,15 +34,21 @@ export default function AdminPage() {
 
   const checkAuthentication = async () => {
     try {
-      const token = localStorage.getItem("adminToken")
-      if (!token) {
+      const response = await fetch('/api/admin/auth/verify', {
+        method: 'GET',
+        credentials: 'include', // Důležité pro cookies
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setIsAuthenticated(true)
+        setCurrentUser({ 
+          username: data.username || 'admin', 
+          displayName: data.name || data.username || 'Pavel Fišer' 
+        })
+      } else {
         setIsAuthenticated(false)
-        setIsLoading(false)
-        return
       }
-      // This is a mock verification. In a real app, you'd fetch to verify the token.
-      setIsAuthenticated(true)
-      setCurrentUser({ username: "admin", displayName: "Pavel Fišer" })
     } catch (error) {
       console.error("Auth check failed:", error)
       setIsAuthenticated(false)
@@ -51,17 +57,47 @@ export default function AdminPage() {
     }
   }
 
-  const handleLogin = (token: string) => {
-    localStorage.setItem("adminToken", token)
-    setIsAuthenticated(true)
-    setCurrentUser({ username: "admin", displayName: "Pavel Fišer" })
+  const handleLogin = async (credentials: { username: string; password: string }) => {
+    try {
+      const response = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Důležité pro cookies
+        body: JSON.stringify(credentials),
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok) {
+        setIsAuthenticated(true)
+        setCurrentUser({ 
+          username: data.username || credentials.username, 
+          displayName: data.name || data.username || 'Pavel Fišer' 
+        })
+      } else {
+        throw new Error(data.message || 'Login failed')
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
+    }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken")
-    setIsAuthenticated(false)
-    setCurrentSection("dashboard")
-    setCurrentUser(null)
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Důležité pro cookies
+      })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      setIsAuthenticated(false)
+      setCurrentSection("dashboard")
+      setCurrentUser(null)
+    }
   }
 
   const handleSectionChange = (section: string) => {

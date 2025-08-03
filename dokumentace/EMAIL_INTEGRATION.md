@@ -27,27 +27,27 @@ Tato dokumentace popisuje implementaci skutečného odesílání e-mailů z kont
 
 ### 1. Registrace a API klíč
 
-\`\`\`bash
+```bash
 # Kroky:
 # 1. Jděte na https://resend.com/
 # 2. Zaregistrujte se (můžete použít GitHub login)
 # 3. V dashboard klikněte na "API Keys"
 # 4. Vytvořte nový API klíč s názvem "Pavel Fišer Web"
 # 5. Zkopírujte API klíč
-\`\`\`
+```
 
 ### 2. Environment Variables
 
 V `.env.local` přidejte:
 
-\`\`\`bash
+```bash
 # Resend API klíč (POVINNÉ)
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # E-mailové adresy (VOLITELNÉ - mají defaultní hodnoty)
 RESEND_FROM_EMAIL=onboarding@resend.dev
 RESEND_TO_EMAIL=pavel.fiser@praha4.cz
-\`\`\`
+```
 
 ### 3. Testování
 
@@ -113,24 +113,24 @@ Po nastavení API klíče:
 Pro produkční použití s vlastní doménou:
 
 1. **Ověření domény v Resend**:
-   \`\`\`bash
+   ```bash
    # V Resend dashboard:
    # 1. Jděte na "Domains"
    # 2. Klikněte "Add Domain"
    # 3. Zadejte "pavelfiser.cz"
    # 4. Přidejte poskytnuté DNS záznamy
-   \`\`\`
+   ```
 
 2. **Aktualizace environment variables**:
-   \`\`\`bash
+   ```bash
    RESEND_FROM_EMAIL=noreply@pavelfiser.cz
-   \`\`\`
+   ```
 
 ### Rate Limiting
 
 Pro produkci zvažte přidání rate limiting:
 
-\`\`\`typescript
+```typescript
 // Možné rozšíření API route
 const rateLimiter = new Map()
 
@@ -154,7 +154,7 @@ function checkRateLimit(ip: string): boolean {
   rateLimiter.set(ip, recentRequests)
   return true
 }
-\`\`\`
+```
 
 ## 📊 Monitoring
 
@@ -188,16 +188,16 @@ function checkRateLimit(ip: string): boolean {
 ### Development vs Production
 
 **Development**:
-\`\`\`bash
+```bash
 RESEND_FROM_EMAIL=onboarding@resend.dev
 RESEND_TO_EMAIL=vas-test-email@gmail.com
-\`\`\`
+```
 
 **Production**:
-\`\`\`bash
+```bash
 RESEND_FROM_EMAIL=noreply@pavelfiser.cz
 RESEND_TO_EMAIL=pavel.fiser@praha4.cz
-\`\`\`
+```
 
 ## ✅ Checklist pro nasazení
 

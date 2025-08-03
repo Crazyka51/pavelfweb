@@ -37,7 +37,7 @@ Tento dokument popisuje, jak propojit vaše Facebook příspěvky s webovou apli
 
 Vytvořte soubor `.env.local` s následujícím obsahem:
 
-\`\`\`env
+```env
 # Facebook konfigurace
 NEXT_PUBLIC_FACEBOOK_PAGE_ID=61574874071299
 FACEBOOK_ACCESS_TOKEN=your_long_lived_page_access_token_here
@@ -47,7 +47,7 @@ NEXT_PUBLIC_USE_MOCK_DATA=false
 
 # Nastavení
 NEXT_PUBLIC_MAX_POSTS=6
-\`\`\`
+```
 
 ### 4. Testování
 
@@ -71,12 +71,12 @@ Když publikujete nový příspěvek na Facebook:
 - **Fallback:** Mock data pokud API selže
 
 ### Komponenta
-\`\`\`tsx
+```tsx
 import FacebookPosts from "./components/FacebookPosts"
 
 // Použití v aplikaci
 <FacebookPosts maxPosts={6} />
-\`\`\`
+```
 
 ## Bezpečnost
 
@@ -89,28 +89,28 @@ import FacebookPosts from "./components/FacebookPosts"
 
 ### 1. Webhook integrace
 Pro okamžité aktualizace můžete nastavit Facebook Webhook:
-\`\`\`javascript
+```javascript
 // Webhook endpoint pro okamžité aktualizace
 app.post('/api/webhook/facebook', (req, res) => {
   // Revalidate cache při novém příspěvku
 })
-\`\`\`
+```
 
 ### 2. Filtrování obsahu
-\`\`\`typescript
+```typescript
 // Přidat do API route
 const filteredPosts = posts.filter(post => 
   post.message && !post.message.includes('private')
 )
-\`\`\`
+```
 
 ### 3. Cache optimalizace
-\`\`\`typescript
+```typescript
 // Redis cache pro lepší výkon
 import { redis } from '@/lib/redis'
 
 const cachedPosts = await redis.get('facebook-posts')
-\`\`\`
+```
 
 ## Troubleshooting
 

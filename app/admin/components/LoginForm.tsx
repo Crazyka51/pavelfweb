@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { useToast } from "../../../components/ui/use-toast"
 
 interface LoginFormProps {
-  onLogin: (token: string) => void;
+  onLogin: (credentials: { username: string; password: string }) => Promise<void>;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
@@ -26,51 +26,20 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     setLoading(true)
 
     try {
-      const response = await fetch("/api/admin/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+      await onLogin({ username, password })
+      
+      toast({
+        title: "Přihlášení úspěšné",
+        description: "Vítejte v administraci!",
+        variant: "default",
       })
-
-      if (response.ok) {
-        const data = await response.json();
-        toast({
-          title: "Přihlášení úspěšné",
-          description: "Vítejte v administraci!",
-          variant: "default",
-        })
-        onLogin(data.token || "");
-        router.push("/admin") // Přesměrování na základní URL administrace
-      } else {
-        let errorData
-        try {
-          errorData = await response.json()
-        } catch (jsonError) {
-          // If response is not JSON, read as text
-          const textError = await response.text()
-          console.error("Failed to parse JSON response:", textError)
-          toast({
-            title: "Chyba přihlášení",
-            description: `Neočekávaná odpověď ze serveru: ${response.status} ${response.statusText}. Zkuste to prosím znovu.`,
-            variant: "destructive",
-          })
-          setLoading(false)
-          return
-        }
-
-        toast({
-          title: "Chyba přihlášení",
-          description: errorData.message || "Nesprávné uživatelské jméno nebo heslo.",
-          variant: "destructive",
-        })
-      }
+      
+      router.push("/admin") // Přesměrování na základní URL administrace
     } catch (error: any) {
       console.error("Login error:", error)
       toast({
-        title: "Chyba sítě",
-        description: "Nepodařilo se připojit k serveru. Zkontrolujte své připojení.",
+        title: "Chyba přihlášení",
+        description: error.message || "Nesprávné uživatelské jméno nebo heslo.",
         variant: "destructive",
       })
     } finally {

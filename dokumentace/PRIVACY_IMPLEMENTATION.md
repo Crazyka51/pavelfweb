@@ -33,7 +33,7 @@ Vytvořili jsme kompletní implementaci stránek pro ochranu osobních údajů a
 
 ## 📁 Struktura souborů
 
-\`\`\`
+```
 app/
 ├── privacy-policy/
 │   └── page.tsx              # Privacy Policy stránka
@@ -43,7 +43,7 @@ app/
 │   ├── CookieBanner.tsx      # Cookie souhlas banner
 │   └── Footer.tsx            # Aktualizovaný footer
 └── layout.tsx                # Přidán CookieBanner
-\`\`\`
+```
 
 ## 🎨 Design vlastnosti
 
@@ -72,23 +72,23 @@ app/
 - **LocalStorage** - Persistence volby cookies
 
 ### Metadata a SEO
-\`\`\`tsx
+```tsx
 export const metadata: Metadata = {
   title: 'Zásady ochrany osobních údajů | Pavel Fišer',
   description: 'GDPR compliant privacy policy...',
   robots: 'index, follow',
 }
-\`\`\`
+```
 
 ### Cookie Management
-\`\`\`tsx
+```tsx
 // Ukládání souhlasu
 localStorage.setItem('cookieConsent', 'accepted')
 localStorage.setItem('cookieConsentDate', new Date().toISOString())
 
 // Kontrola při načtení
 const cookieConsent = localStorage.getItem('cookieConsent')
-\`\`\`
+```
 
 ## 📱 Responzivní vlastnosti
 
@@ -128,14 +128,14 @@ Stránky jsou připravené pro propojení s plánovanou Facebook integrací:
 
 ## 🚀 Spuštění
 
-\`\`\`bash
+```bash
 # Development server
 npm run dev
 
 # Přístup k novým stránkám
 http://localhost:3000/privacy-policy
 http://localhost:3000/terms-of-service
-\`\`\`
+```
 
 ## 📞 Kontakt
 
