@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Articles table
 CREATE TABLE IF NOT EXISTS articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL UNIQUE, -- Added UNIQUE
     content TEXT NOT NULL,
     excerpt TEXT,
     category VARCHAR(100) NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS newsletter_campaigns (
 -- Newsletter templates table
 CREATE TABLE IF NOT EXISTS newsletter_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE, -- Added UNIQUE
     subject VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     html_content TEXT NOT NULL,
