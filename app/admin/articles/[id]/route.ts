@@ -42,15 +42,16 @@ export async function GET(
     })
     
     if (!article) {
-      return NextResponse.json({ message: 'Článek nenalezen' }, { status: 404 })
+      return NextResponse.json({ success: false, error: 'Článek nenalezen' }, { status: 404 })
     }
     
-    return NextResponse.json(article)
+    return NextResponse.json({ success: true, data: article })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Chyba při načítání článku'
     const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    return NextResponse.json({ success: false, error: errorMessage }, { status })
   }
+
 }
 
 // PUT /api/admin/articles/[id] - Update an article
@@ -84,12 +85,13 @@ export async function PUT(
       },
     })
     
-    return NextResponse.json(updatedArticle)
+    return NextResponse.json({ success: true, data: updatedArticle })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Chyba při aktualizaci článku'
     const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    return NextResponse.json({ success: false, error: errorMessage }, { status })
   }
+
 }
 
 // DELETE /api/admin/articles/[id] - Delete an article
@@ -103,10 +105,11 @@ export async function DELETE(
       where: { id: params.id },
     })
     
-    return NextResponse.json({ message: 'Článek byl smazán' })
+    return NextResponse.json({ success: true, message: 'Článek byl smazán' })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Chyba při mazání článku'
     const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    return NextResponse.json({ success: false, error: errorMessage }, { status })
   }
+
 }

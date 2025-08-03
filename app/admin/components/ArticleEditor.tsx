@@ -94,11 +94,11 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
             Authorization: `Bearer ${token}`,
           },
         })
-        if (response.ok) {
-          const result = await response.json()
-          setCategories(result.data.categories)
+        const result = await response.json()
+        if (result.success) {
+          setCategories(result.data)
         } else {
-          toast({ title: "Chyba při načítání kategorií", variant: "destructive" })
+          toast({ title: "Chyba při načítání kategorií", description: result.error, variant: "destructive" })
         }
       } catch (error) {
         toast({ title: "Chyba při načítání kategorií", variant: "destructive" })
@@ -132,7 +132,7 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
             setMetaTitle(data.metaTitle || "")
             setMetaDescription(data.metaDescription || "")
           } else {
-            toast({ title: "Chyba při načítání článku", variant: "destructive" })
+            toast({ title: "Chyba při načítání článku", description: result.error, variant: "destructive" })
           }
         })
         .catch(() => toast({ title: "Chyba při načítání článku", variant: "destructive" }))

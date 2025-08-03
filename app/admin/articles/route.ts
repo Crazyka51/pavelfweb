@@ -40,13 +40,14 @@ export async function GET(request: NextRequest) {
         category: true,
       },
     })
-    return NextResponse.json(articles)
+    return NextResponse.json({ success: true, data: articles })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Chyba při načítání článků'
     const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    return NextResponse.json({ success: false, error: errorMessage }, { status })
   }
 }
+
 
 // POST /api/admin/articles - Create a new article
 export async function POST(request: NextRequest) {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!articleData.title || !articleData.content || !articleData.categoryId) {
       return NextResponse.json(
-        { message: 'Název, obsah a ID kategorie jsou povinné' },
+        { success: false, error: 'Název, obsah a ID kategorie jsou povinné' },
         { status: 400 }
       )
     }
@@ -90,10 +91,10 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(newArticle, { status: 201 })
+    return NextResponse.json({ success: true, data: newArticle }, { status: 201 })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Chyba při vytváření článku'
     const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    return NextResponse.json({ success: false, error: errorMessage }, { status })
   }
 }

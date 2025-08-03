@@ -36,7 +36,7 @@ interface Article {
   category: Category
   categoryId: string
   tags: string[]
-  published: boolean
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
   createdAt: string
   updatedAt: string
   author: Author
@@ -48,10 +48,9 @@ interface Article {
 interface ArticleManagerProps {
   onEditArticle?: (article: Article) => void
   onCreateNew?: () => void
-  token?: string
 }
 
-export default function ArticleManager({ onEditArticle, onCreateNew, token }: ArticleManagerProps) {
+export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleManagerProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
   const [searchTerm, setSearchTerm] = useState("")
@@ -66,6 +65,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
   const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
 
   const loadArticles = useCallback(async () => {
+    const token = localStorage.getItem("adminToken")
     if (!token) {
       setIsLoading(false)
       return
@@ -77,19 +77,18 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         },
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setArticles(data)
+      const result = await response.json()
+      if (result.success) {
+        setArticles(result.data)
       } else {
-        const errorData = await response.json()
-        console.error("Error loading articles:", errorData.message)
+        console.error("Error loading articles:", result.error)
       }
     } catch (error) {
       console.error("Error loading articles:", error)
     } finally {
       setIsLoading(false)
     }
-  }, [token])
+  }, [])
 
   const filterArticles = useCallback(() => {
     let filtered = [...articles]
@@ -115,13 +114,13 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     if (selectedStatus !== "all") {
       switch (selectedStatus) {
         case "published":
-          filtered = filtered.filter((article) => article.published && !article.publishedAt)
+          filtered = filtered.filter((article) => article.status === "PUBLISHED")
           break
         case "draft":
-          filtered = filtered.filter((article) => !article.published && !article.publishedAt)
+          filtered = filtered.filter((article) => article.status === "DRAFT")
           break
         case "scheduled":
-          filtered = filtered.filter((article) => article.publishedAt)
+          filtered = filtered.filter((article) => article.publishedAt && new Date(article.publishedAt) > new Date())
           break
       }
     }
@@ -178,6 +177,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
     }
 
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
+      const token = localStorage.getItem("adminToken")
+      if (!token) return alert("Chyba autorizace")
+
       try {
         for (const articleId of selectedArticles) {
           const response = await fetch(`/api/admin/articles/${articleId}`, {
@@ -187,9 +189,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
             },
           })
 
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(`Chyba při mazání článku ${articleId}: ${errorData.message}`)
+          const result = await response.json()
+          if (!result.success) {
+            throw new Error(`Chyba při mazání článku ${articleId}: ${result.error}`)
           }
         }
         await loadArticles()
@@ -204,19 +206,22 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
 
   const handleBulkPublish = async () => {
     if (selectedArticles.length === 0) return
+    const token = localStorage.getItem("adminToken")
+    if (!token) return alert("Chyba autorizace")
 
     try {
       for (const articleId of selectedArticles) {
-        const article = articles.find((a) => a.id === articleId)
-        if (article) {
-          await fetch(`/api/admin/articles/${articleId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ ...article, published: true, publishedAt: undefined }),
-          })
+        const response = await fetch(`/api/admin/articles/${articleId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "PUBLISHED" }),
+        })
+        const result = await response.json()
+        if (!result.success) {
+          console.error(`Chyba při publikování článku ${articleId}: ${result.error}`)
         }
       }
       await loadArticles()
@@ -230,19 +235,22 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
 
   const handleBulkUnpublish = async () => {
     if (selectedArticles.length === 0) return
+    const token = localStorage.getItem("adminToken")
+    if (!token) return alert("Chyba autorizace")
 
     try {
       for (const articleId of selectedArticles) {
-        const article = articles.find((a) => a.id === articleId)
-        if (article) {
-          await fetch(`/api/admin/articles/${articleId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ ...article, published: false, publishedAt: undefined }),
-          })
+        const response = await fetch(`/api/admin/articles/${articleId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "DRAFT" }),
+        })
+        const result = await response.json()
+        if (!result.success) {
+          console.error(`Chyba při převádění na koncept ${articleId}: ${result.error}`)
         }
       }
       await loadArticles()
@@ -256,6 +264,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
 
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm("Opravdu chcete smazat tento článek?")) {
+      const token = localStorage.getItem("adminToken")
+      if (!token) return alert("Chyba autorizace")
       try {
         const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
@@ -264,12 +274,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
           },
         })
 
-        if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
           await loadArticles()
           alert("Článek byl úspěšně smazán")
         } else {
-          const data = await response.json()
-          throw new Error(data.message || "Neznámá chyba při mazání článku")
+          throw new Error(result.error || "Neznámá chyba při mazání článku")
         }
       } catch (error) {
         console.error("Error deleting article:", error)
@@ -279,6 +289,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
   }
 
   const handleDuplicateArticle = async (article: Article) => {
+    const token = localStorage.getItem("adminToken")
+    if (!token) return alert("Chyba autorizace")
     try {
       const newArticleData = {
         title: `${article.title} (Kopie)`,
@@ -287,7 +299,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         categoryId: article.categoryId,
         tags: article.tags,
         imageUrl: article.imageUrl,
-        published: false,
+        status: "DRAFT",
       }
 
       const response = await fetch("/api/admin/articles", {
@@ -299,12 +311,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
         body: JSON.stringify(newArticleData),
       })
 
-      if (response.ok) {
+      const result = await response.json()
+      if (result.success) {
         await loadArticles()
         alert("Článek byl úspěšně duplikován")
       } else {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Chyba při duplikování článku")
+        throw new Error(result.error || "Chyba při duplikování článku")
       }
     } catch (error) {
       console.error("Error duplicating article:", error)
@@ -339,14 +351,20 @@ export default function ArticleManager({ onEditArticle, onCreateNew, token }: Ar
   }
 
   const getStatusBadge = (article: Article) => {
-    if (article.publishedAt) {
+    if (article.publishedAt && new Date(article.publishedAt) > new Date()) {
       return (
         <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Naplánováno</span>
       )
-    } else if (article.published) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>
-    } else {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Koncept</span>
+    }
+    switch (article.status) {
+      case "PUBLISHED":
+        return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>
+      case "DRAFT":
+        return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Koncept</span>
+      case "ARCHIVED":
+        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Archivováno</span>
+      default:
+        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">{article.status}</span>
     }
   }
 
