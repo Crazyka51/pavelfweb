@@ -1,9 +1,9 @@
--- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable necessary extension for UUID generation (Neon supports "pgcrypto")
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Articles table
 CREATE TABLE IF NOT EXISTS articles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     excerpt TEXT,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS articles (
 
 -- Newsletter subscribers table
 CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     is_active BOOLEAN DEFAULT true,
     source VARCHAR(50) DEFAULT 'web',
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 
 -- Newsletter campaigns table  
 CREATE TABLE IF NOT EXISTS newsletter_campaigns (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     subject VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS newsletter_campaigns (
 
 -- Newsletter templates table
 CREATE TABLE IF NOT EXISTS newsletter_templates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     subject VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS newsletter_templates (
 
 -- Admin users table
 CREATE TABLE IF NOT EXISTS admin_users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
 
 -- Activity log table
 CREATE TABLE IF NOT EXISTS activity_log (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES admin_users(id),
     action VARCHAR(100) NOT NULL,
     entity_type VARCHAR(50) NOT NULL,
