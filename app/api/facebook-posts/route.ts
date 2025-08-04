@@ -96,16 +96,19 @@ export async function GET() {
     
     // Přidání appsecret_proof do URL požadavku pro větší zabezpečení
     const response = await fetch(
-      `https://graph.facebook.com/v18.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&appsecret_proof=${appSecretProof}&limit=10`,
+      `https://graph.facebook.com/v23.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&appsecret_proof=${appSecretProof}&limit=10`,
       { next: { revalidate: 300 } }, // Cache na 5 minut
     )
 
     if (!response.ok) {
-      console.log("Facebook API chyba, používám mock data")
+      const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response' } }));
+      console.error("Facebook API chyba:", JSON.stringify(errorData, null, 2));
+      console.log("Používám mock data jako fallback");
+      
       return NextResponse.json({
         data: mockFacebookPosts,
         isMockData: true,
-        message: "Zobrazují se ukázková data - problém s Facebook API",
+        message: `Zobrazují se ukázková data - problém s Facebook API: ${errorData?.error?.message || response.status}`,
       })
     }
 
