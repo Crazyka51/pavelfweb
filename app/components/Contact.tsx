@@ -9,7 +9,7 @@ import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
 import { Button } from "../../components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form"
-import { toast } from "../../components/ui/use-toast"
+import { toast } from "../../hooks/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(2, {

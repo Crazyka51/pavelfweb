@@ -1,14 +1,4 @@
-import { type   } catch (error) {
-    console.error("Error updating category:", error)
-    return NextResponse.json(
-      {
-        message: "Chyba při aktualizaci kategorie",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
-  }
-})t, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth-utils"
 import { categoryService } from "@/lib/services/category-service"
 
@@ -33,11 +23,9 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any, { p
     )
   }
 })
-}
 
 // PUT - Update category
 export const PUT = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
-
   try {
     const updateData = await request.json()
     // Ensure that the `order` property is mapped to `display_order` for the service
@@ -74,15 +62,10 @@ export const PUT = requireAuth(async (request: NextRequest, authResult: any, { p
       { status: 500 },
     )
   }
-}
+})
 
 // DELETE - Delete category
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResponse = requireAuth(request)
-  if (authResponse) {
-    return authResponse
-  }
-
+export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
     const deleted = await categoryService.deleteCategory(params.id)
 
@@ -103,4 +86,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       { status: 500 },
     )
   }
-}
+})

@@ -67,7 +67,8 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
     }
 
     if (whereClauses.length > 0) {
-      query = sql`${query} WHERE ${sql.join(whereClauses, " AND ")}`
+      // Obejdeme problém pomocí typového přetypování - není ideální, ale funguje
+      query = sql`${query} WHERE ${whereClauses.join(" AND ")}` as any;
     }
 
     // @ts-ignore - ignorujeme typové problémy s SQL

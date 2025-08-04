@@ -129,8 +129,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         if (currentParent.parentId === params.id) {
           return NextResponse.json({ message: "Nelze vytvořit cyklickou závislost kategorií" }, { status: 400 })
         }
-        currentParent = categories.find((cat) => cat.id === currentParent!.parentId)
-        if (!currentParent) break
+        const nextParent = categories.find((cat) => cat.id === currentParent!.parentId)
+        if (!nextParent) break
+        currentParent = nextParent
       }
     }
 

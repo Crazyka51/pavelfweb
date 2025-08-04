@@ -1,5 +1,6 @@
 "use client"
 
 export default function Timeline() {
-  return null
+  // Vrácení prázdného fragmentu místo null, což je validní JSX element
+  return <></>
 }

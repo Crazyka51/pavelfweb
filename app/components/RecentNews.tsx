@@ -7,7 +7,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { Badge } from "../../components/ui/badge"
 import { Button } from "../../components/ui/button"
 import { Skeleton } from "../../components/ui/skeleton"
-import type { Article } from "../../lib/article-service" // Import Article type from service
+// Definice typu Article na základě modelu Prisma
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string | null;
+  imageUrl?: string | null;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  publishedAt?: Date | string | null;
+  isFeatured: boolean;
+  authorId: string;
+  categoryId: string;
+  tags: string[];
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  category: {
+    id: string;
+    name: string;
+  };
+}
 
 interface ArticlesResponse {
   articles: Article[]
@@ -100,20 +122,20 @@ export default function RecentNews() {
                       alt={article.title}
                       className="aspect-video overflow-hidden rounded-md object-cover"
                       height={200}
-                      src={article.image_url || "/placeholder.svg"}
+                      src={article.imageUrl || "/placeholder.svg"}
                       width={350}
                     />
                   </Link>
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <Badge variant="secondary">{article.category}</Badge>
+                    <Badge variant="secondary">{article.category.name}</Badge>
                     <span>
-                      {article.published_at
-                        ? new Date(article.published_at).toLocaleDateString("cs-CZ", {
+                      {article.publishedAt
+                        ? new Date(article.publishedAt).toLocaleDateString("cs-CZ", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
                           })
-                        : new Date(article.created_at).toLocaleDateString("cs-CZ", {
+                        : new Date(article.createdAt).toLocaleDateString("cs-CZ", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",

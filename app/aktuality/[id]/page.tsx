@@ -115,6 +115,9 @@ export default async function ArticlePage({ params }: { params: { id: string } }
     notFound()
   }
 
+  // Toto zajistí, že TypeScript ví, že article není null
+  const articleData = article as Article;
+
   return (
     <div className="min-h-screen bg-slate-900 text-gray-100">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -131,11 +134,11 @@ export default async function ArticlePage({ params }: { params: { id: string } }
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="space-y-4">
             {/* Article image */}
-            {article.imageUrl && (
+            {articleData.imageUrl && (
               <div className="relative w-full h-64 md:h-96 rounded-lg overflow-hidden">
                 <Image
-                  src={article.imageUrl || "/placeholder.svg"}
-                  alt={article.title}
+                  src={articleData.imageUrl || "/placeholder.svg"}
+                  alt={articleData.title}
                   fill
                   className="object-cover"
                   priority
@@ -148,7 +151,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {new Date(article.publishedAt).toLocaleDateString("cs-CZ", {
+                  {new Date(articleData.publishedAt).toLocaleDateString("cs-CZ", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
@@ -156,20 +159,20 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  {article.author}
+                  {articleData.author}
                 </div>
-                <Badge variant="secondary">{article.category}</Badge>
+                <Badge variant="secondary">{articleData.category}</Badge>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">{article.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">{articleData.title}</h1>
 
-              {article.excerpt && <p className="text-lg text-gray-300 leading-relaxed">{article.excerpt}</p>}
+              {articleData.excerpt && <p className="text-lg text-gray-300 leading-relaxed">{articleData.excerpt}</p>}
 
               {/* Tags */}
-              {article.tags && article.tags.length > 0 && (
+              {articleData.tags && articleData.tags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
                   <Tag className="w-4 h-4 text-gray-400" />
-                  {article.tags.map((tag) => (
+                  {articleData.tags.map((tag) => (
                     <Badge key={tag} variant="outline" className="text-gray-400 border-gray-600">
                       {tag}
                     </Badge>
@@ -186,7 +189,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                 prose-headings:text-white prose-p:text-gray-300 prose-a:text-blue-400 
                 prose-strong:text-white prose-code:text-gray-300 prose-pre:bg-slate-700
                 prose-blockquote:border-l-blue-500 prose-blockquote:text-gray-300"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: articleData.content }}
             />
           </CardContent>
         </Card>

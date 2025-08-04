@@ -15,14 +15,14 @@ export async function GET(request: NextRequest) {
     if (search) {
       // Použijeme getArticles s parametrem search místo searchArticles
       articles = await articleService.getArticles({
-        isPublished: published,
+        status: published ? 'PUBLISHED' : undefined,
         search,
         limit,
         offset
       });
     } else {
       articles = await articleService.getArticles({
-        isPublished: published,
+        status: published ? 'PUBLISHED' : undefined,
         category: category || undefined,
         limit,
         offset
@@ -59,12 +59,13 @@ export async function POST(request: NextRequest) {
       title: body.title,
       content: body.content,
       excerpt: body.excerpt || '',
-      category: body.category,
+      slug: body.slug || body.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+      categoryId: body.category,
+      authorId: body.created_by || 'admin',
       tags: body.tags || [],
-      published: body.published || false, // Vráceno zpět na published
-      image_url: body.image_url || null, // Vráceno zpět na image_url
-      published_at: body.published && body.published_at ? new Date(body.published_at) : null, // Vráceno zpět na published_at
-      created_by: body.created_by || 'admin' // Vráceno zpět na created_by
+      status: body.published ? ('PUBLISHED' as const) : ('DRAFT' as const),
+      imageUrl: body.image_url || null,
+      publishedAt: body.published && body.published_at ? new Date(body.published_at) : null
     };
 
     const article = await articleService.createArticle(articleData);

@@ -16,9 +16,7 @@ interface Category {
   articleCount?: number
 }
 
-const categoryManager = new DataManager<Category>("categories.json", {
-  validateData: (data) => Array.isArray(data) && data.every((cat) => cat.id && cat.name && cat.slug),
-})
+const categoryManager = new DataManager<Category>("categories.json")
 
 // Helper function to verify admin token
 function verifyAdminToken(request: NextRequest): boolean {

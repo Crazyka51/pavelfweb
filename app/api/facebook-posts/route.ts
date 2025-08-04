@@ -1,4 +1,13 @@
 import { NextResponse } from "next/server"
+import crypto from 'crypto';
+
+// Funkce pro generování appsecret_proof pro zabezpečení FB API požadavků
+function generateAppSecretProof(accessToken: string, appSecret: string): string {
+  return crypto
+    .createHmac('sha256', appSecret)
+    .update(accessToken)
+    .digest('hex');
+}
 
 // Mock data pro Facebook příspěvky (jako fallback)
 const mockFacebookPosts = [
@@ -80,8 +89,14 @@ export async function GET() {
     }
 
     // Pokus o načtení reálných dat
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    
+    // Vytvoření appsecret_proof pro zabezpečení požadavku
+    const appSecretProof = appSecret ? generateAppSecretProof(accessToken, appSecret) : '';
+    
+    // Přidání appsecret_proof do URL požadavku pro větší zabezpečení
     const response = await fetch(
-      `https://graph.facebook.com/v18.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&limit=10`,
+      `https://graph.facebook.com/v18.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&appsecret_proof=${appSecretProof}&limit=10`,
       { next: { revalidate: 300 } }, // Cache na 5 minut
     )
 

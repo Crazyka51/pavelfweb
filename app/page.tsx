@@ -2,7 +2,7 @@ import Hero from "./components/Hero"
 import Introduction from "./components/WearYourStory"
 import Priorities from "./components/Services"
 import AboutMe from "./components/AboutUs"
-import Timeline from "./components/Timeline"
+// Timeline komponenta byla odstraněna, protože je prázdná
 import Projects from "./components/Projects"
 import Testimonials from "./components/Testimonials"
 import Marquee from "./components/Marquee"
@@ -19,7 +19,7 @@ export default function Home() {
       <Priorities />
       <AboutMe />
       <Projects />
-      <Timeline />
+      {/* Timeline komponenta byla odstraněna, protože je prázdná */}
       <Testimonials />
       <FacebookPosts />
       <Marquee />

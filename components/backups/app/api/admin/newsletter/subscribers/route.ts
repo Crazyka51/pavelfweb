@@ -39,11 +39,13 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
     // Statistiky
     const stats = {
       total: subscribers.length,
-      active: subscribers.filter((s) => s.is_active).length,
-      inactive: subscribers.filter((s) => !s.is_active).length,
+      active: subscribers.filter((s) => s.isActive).length,
+      inactive: subscribers.filter((s) => !s.isActive).length,
       sources: subscribers.reduce(
         (acc, sub) => {
-          acc[sub.source] = (acc[sub.source] || 0) + 1
+          if (sub.source) {
+            acc[sub.source] = (acc[sub.source] || 0) + 1
+          }
           return acc
         },
         {} as Record<string, number>,
@@ -64,7 +66,7 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
     console.error("Subscribers GET error:", error)
     return NextResponse.json({ error: "Chyba při načítání odběratelů" }, { status: 500 })
   }
-}
+})
 
 export const POST = requireAuth(async (request: NextRequest, authResult: any) => {
   try {

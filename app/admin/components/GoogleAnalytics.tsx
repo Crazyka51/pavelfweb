@@ -5,9 +5,10 @@ import Script from 'next/script'
 
 const GA_TRACKING_ID = 'G-Z5Y3C04P25'
 
+// Použijeme již existující definici gtag z types/gtag.d.ts
+// a pouze přidáme dataLayer
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
     dataLayer: any[]
   }
 }
