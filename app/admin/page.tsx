@@ -43,8 +43,8 @@ export default function AdminPage() {
         const data = await response.json()
         setIsAuthenticated(true)
         setCurrentUser({ 
-          username: data.username || 'admin', 
-          displayName: data.name || data.username || 'Pavel Fišer' 
+          username: data.user?.username || 'admin', 
+          displayName: data.user?.displayName || 'Pavel Fišer' 
         })
       } else {
         setIsAuthenticated(false)
@@ -73,8 +73,8 @@ export default function AdminPage() {
       if (response.ok) {
         setIsAuthenticated(true)
         setCurrentUser({ 
-          username: data.username || credentials.username, 
-          displayName: data.name || data.username || 'Pavel Fišer' 
+          username: data.user?.username || credentials.username, 
+          displayName: data.user?.displayName || 'Pavel Fišer' 
         })
       } else {
         throw new Error(data.message || 'Login failed')

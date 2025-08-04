@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  }
+}
 
 datasource db {
   provider = "postgresql"
@@ -38,7 +35,7 @@ enum ArticleStatus {
 
 model Article {
   id              String    @id @default(cuid())
-  title           String
+  title           String    @unique        // DOPLNĚNO: @unique podle SQL
   slug            String    @unique
   content         String
   excerpt         String?
@@ -111,7 +108,7 @@ model NewsletterCampaign {
 
 model NewsletterTemplate {
   id          String   @id @default(cuid())
-  name        String
+  name        String   @unique      // DOPLNĚNO: @unique podle SQL
   subject     String
   content     String   @db.Text
   htmlContent String   @db.Text
