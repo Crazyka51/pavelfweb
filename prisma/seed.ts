@@ -17,6 +17,7 @@ async function main() {
       email: 'pavel.fiser@example.com',
       name: 'Pavel Fišer',
       password: hashedPassword,
+      role: 'admin',
     },
   })
   console.log(`Created user '${user.name}' with id: ${user.id}`)
