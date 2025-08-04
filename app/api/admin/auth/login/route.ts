@@ -5,12 +5,22 @@ import { prisma } from "@/lib/prisma"
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json()
 
+  // Basic input validation
+  if (!username || !password) {
+    return NextResponse.json({ message: "Uživatelské jméno a heslo jsou povinné." }, { status: 400 })
+  }
+
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    return NextResponse.json({ message: "Neplatný formát přihlašovacích údajů." }, { status: 400 })
+  }
+
   try {
     // Najdi uživatele podle jména (username se mapuje na name field)
+    // Hledáme uživatele, jehož jméno začína zadaným username
     const user = await prisma.user.findFirst({
       where: {
         name: {
-          contains: username,
+          startsWith: username,
           mode: 'insensitive'
         }
       }

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         userId: user.userId,
         username: user.username,
         role: user.role,
-        displayName: user.username === "Pavel" ? "Pavel Fišer" : "Administrátor",
+        displayName: user.username || "Administrátor",
       },
     })
   } catch (error) {
