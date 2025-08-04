@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getAuthUser } from "@/lib/auth-utils"
+import { getAuthUser } from "@/lib/auth-utils-new"
 
 // Tato API route je vždy dynamická, protože pracuje s cookies
 export const dynamic = "force-dynamic"

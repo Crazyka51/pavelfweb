@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
-import { neon } from '@neondatabase/serverless';
+import { sql, checkDatabaseConnection } from "@/lib/database";
 
-const sql = neon(process.env.DATABASE_URL!);
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // Použijeme centrální připojení k databázi z lib/database.ts
+    const connected = await checkDatabaseConnection();
+    
+    if (!connected) {
+      throw new Error("Nepodařilo se připojit k databázi");
+    }
+    
     const rows = await sql`SELECT NOW()`;
     console.log(rows);
     return NextResponse.json({ success: true, time: rows });

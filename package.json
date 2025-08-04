@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -13,8 +13,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-build-classic": "^44.3.0",
-    "@ckeditor/ckeditor5-react": "^11.0.0",
+    
     "@google-analytics/data": "^5.2.0",
     "@headlessui/react": "latest",
     "@heroicons/react": "latest",

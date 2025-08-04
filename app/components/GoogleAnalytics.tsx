@@ -3,13 +3,6 @@
 import { useEffect } from "react"
 import Script from "next/script"
 
-declare global {
-  interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
-  }
-}
-
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH"
 
 export function GoogleAnalytics() {
