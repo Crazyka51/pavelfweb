@@ -111,6 +111,7 @@ export default function AdminPage() {
   }
 
   const handleEditArticle = (article: any) => {
+    // Předej jen ID článku místo celého objektu, který může mít cyklické reference
     setEditingArticleId(article.id)
     setCurrentSection("new-article")
   }

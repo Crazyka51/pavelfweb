@@ -79,7 +79,67 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
 
       const result = await response.json()
       if (result.success) {
-        setArticles(result.data)
+        // Přidáváme console.log pro vypsání struktury objektů článků z API
+        console.log("Loaded articles from API:", JSON.parse(JSON.stringify(result.data)));
+        
+        // Validace dat článků pro zajištění, že všechny objekty mají požadované vlastnosti
+        const validatedArticles = (Array.isArray(result.data) ? result.data : []).map((article: any) => {
+          if (!article) return null;
+          
+          // Ověříme, zda objekt má základní požadované vlastnosti a přidáme výchozí hodnoty kde je potřeba
+          return {
+            id: article.id || `article-${Math.random().toString(36).substr(2, 9)}`,
+            title: article.title || "Bez názvu",
+            content: article.content || "",
+            excerpt: article.excerpt || null,
+            category: article.category || { id: "default", name: "Nezařazeno" },
+            categoryId: article.categoryId || "default",
+            tags: Array.isArray(article.tags) ? article.tags : [],
+            status: article.status || "DRAFT",
+            createdAt: article.createdAt || new Date().toISOString(),
+            updatedAt: article.updatedAt || new Date().toISOString(),
+            author: article.author || { id: "system", name: "Systém" },
+            authorId: article.authorId || "system",
+            imageUrl: article.imageUrl || null,
+            publishedAt: article.publishedAt || null
+          };
+        }).filter(Boolean); // Odstraní null hodnoty
+        
+        console.log("Validated articles:", validatedArticles.length);
+        
+        // Kontrola cyklických referencí
+        try {
+          // Pokus o detekci cyklických referencí
+          const checkCircular = () => {
+            const seen = new WeakSet();
+            const detectCircular = (obj: any, path: string[] = []): boolean => {
+              if (obj && typeof obj === 'object') {
+                if (seen.has(obj)) {
+                  console.error(`Cyklická reference detekována v cestě: ${path.join('.')}`, obj);
+                  return true;
+                }
+                seen.add(obj);
+                
+                return Object.entries(obj).some(([key, value]) => 
+                  detectCircular(value, [...path, key])
+                );
+              }
+              return false;
+            };
+            
+            for (let i = 0; i < validatedArticles.length; i++) {
+              if (detectCircular(validatedArticles[i], [`article[${i}]`])) {
+                console.error(`Článek s indexem ${i} obsahuje cyklické reference:`, validatedArticles[i]);
+              }
+            }
+          };
+          
+          checkCircular();
+        } catch (e) {
+          console.error("Chyba při kontrole cyklických referencí:", e);
+        }
+        
+        setArticles(validatedArticles)
       } else {
         console.error("Error loading articles:", result.error)
       }
@@ -288,16 +348,19 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
     }
   }
 
-  const handleDuplicateArticle = async (article: Article) => {
+  const handleDuplicateArticle = async (article: any) => {
     const token = localStorage.getItem("adminToken")
     if (!token) return alert("Chyba autorizace")
     try {
+      // Přidáno logování pro lepší diagnostiku
+      console.log("Duplicating article:", article);
+      
       const newArticleData = {
         title: `${article.title} (Kopie)`,
         content: article.content,
         excerpt: article.excerpt,
         categoryId: article.categoryId,
-        tags: article.tags,
+        tags: article.tags || [],
         imageUrl: article.imageUrl,
         status: "DRAFT",
       }
@@ -325,7 +388,25 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
   }
 
   const exportArticles = () => {
-    const dataStr = JSON.stringify(filteredArticles, null, 2)
+    // Vytvořit nové pole objektů bez cyklických referencí
+    const exportableArticles = filteredArticles.map(article => ({
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      excerpt: article.excerpt,
+      categoryName: article.category.name,
+      categoryId: article.categoryId,
+      tags: article.tags,
+      status: article.status,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt,
+      authorName: article.author.name,
+      authorId: article.authorId,
+      imageUrl: article.imageUrl,
+      publishedAt: article.publishedAt,
+    }));
+    
+    const dataStr = JSON.stringify(exportableArticles, null, 2)
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
 
     const exportFileDefaultName = `articles_${new Date().toISOString().split("T")[0]}.json`
@@ -401,7 +482,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
             Export
           </button>
           <button
-            onClick={onCreateNew}
+            onClick={onCreateNew || (() => {})}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -518,7 +599,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
             </p>
             {!searchTerm && selectedCategory === "all" && selectedStatus === "all" && (
               <button
-                onClick={onCreateNew}
+                onClick={onCreateNew || (() => {})}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Vytvořit první článek
@@ -573,15 +654,15 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start space-x-4">
-                        {article.imageUrl && (
+                        {article.imageUrl ? (
                           <Image
-                            src={article.imageUrl || "/placeholder.svg"}
+                            src={article.imageUrl}
                             alt={article.title}
                             width={48}
                             height={48}
                             className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                           />
-                        )}
+                        ) : null}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-gray-900 truncate">{article.title}</h4>
                           <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
@@ -625,7 +706,14 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                             <div className="py-1">
                               <button
                                 onClick={() => {
-                                  onEditArticle?.(article)
+                                  // Předej jen základní informace místo celého objektu, který může mít cyklické reference
+                                  if (onEditArticle) {
+                                    onEditArticle({
+                                      id: article.id,
+                                      title: article.title,
+                                      // Zbytek potřebných vlastností bude načten při otevření editoru
+                                    } as any)
+                                  }
                                   setShowActions(null)
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -635,7 +723,20 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                               </button>
                               <button
                                 onClick={() => {
-                                  handleDuplicateArticle(article)
+                                  // Vytváříme nový objekt pouze s potřebnými vlastnostmi a zabráníme předání cyklických referencí
+                                  const articleToDuplicate = {
+                                    id: article.id,
+                                    title: article.title,
+                                    content: article.content || "",
+                                    excerpt: article.excerpt,
+                                    categoryId: article.categoryId,
+                                    // Ošetření případu, kdy tags může být undefined
+                                    tags: Array.isArray(article.tags) ? [...article.tags] : [],
+                                    imageUrl: article.imageUrl,
+                                    status: article.status,
+                                  };
+                                  console.log("Article to duplicate:", articleToDuplicate);
+                                  handleDuplicateArticle(articleToDuplicate)
                                   setShowActions(null)
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
