@@ -91,7 +91,7 @@ export class CategoryService {
     try {
       return await prisma.category.update({
         where: { id },
-        data,
+        data: { name: data.name },
       });
       
     } catch (error) {

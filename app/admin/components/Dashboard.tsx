@@ -9,7 +9,7 @@ interface Article {
   title: string
   content: string
   excerpt: string
-  category: string
+  category: { name: string }
   tags: string[]
   published: boolean
   createdAt: string
@@ -336,7 +336,7 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
                           {article.published ? "Publikováno" : "Koncept"}
                         </span>
                         <span>{formatDate(article.updatedAt)}</span>
-                        <span>{article.category}</span>
+                        <span>{article.category?.name}</span>
                       </div>
                     </div>
                   </div>

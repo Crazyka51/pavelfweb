@@ -50,7 +50,7 @@ export default function CategoryManager() {
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          setCategories(result.data.categories)
+          setCategories(result.data)
         } else {
           console.error("Error loading categories: Invalid data format", result)
         }

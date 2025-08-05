@@ -4,11 +4,14 @@ import { categoryService } from "@/lib/category-service"
 
 // GET - Získat jednu kategorii podle ID
 export const GET = requireAuth(
-  async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, authResult: any, context: any) => {
     try {
-      const category = await categoryService.getCategoryById(params.id)
+      const { id } = await context.params;
+      const category = await categoryService.getCategoryById(id);
+
 
       if (!category) {
+
         return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
       }
 
@@ -29,8 +32,9 @@ export const GET = requireAuth(
 
 // PUT - Aktualizovat kategorii
 export const PUT = requireAuth(
-  async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, authResult: any, context: any) => {
     try {
+      const { id } = await context.params;
       const updateData = await request.json()
       // Ensure that the `order` property is mapped to `display_order` for the service
       if (updateData.order !== undefined) {
@@ -46,10 +50,11 @@ export const PUT = requireAuth(
         delete updateData.isActive
       }
 
-      const { id } = params
       const updatedCategory = await categoryService.updateCategory(id, updateData)
 
+
       if (!updatedCategory) {
+
         return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
       }
 
@@ -73,12 +78,14 @@ export const PUT = requireAuth(
 
 // DELETE - Smazat kategorii
 export const DELETE = requireAuth(
-  async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, authResult: any, context: any) => {
     try {
-      const { id } = params
-      const deleted = await categoryService.deleteCategory(id)
+      const { id } = await context.params;
+      const deleted = await categoryService.deleteCategory(id);
+
 
       if (!deleted) {
+
         return NextResponse.json({ message: "Kategorie nebyla nalezena" }, { status: 404 })
       }
 

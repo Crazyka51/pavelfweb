@@ -241,7 +241,7 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
               <SelectValue placeholder="Vyberte kategorii" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
+              {Array.isArray(categories) && categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.name}
                 </SelectItem>

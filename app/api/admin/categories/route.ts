@@ -11,11 +11,9 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
 
     return NextResponse.json({
       success: true,
-      data: {
-        categories,
-        pagination: {
-          total,
-        },
+      data: categories,
+      pagination: {
+        total,
       },
     })
   } catch (error) {

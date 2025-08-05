@@ -141,21 +141,23 @@ export async function verifyAuth(request: NextRequest) {
  * @returns Funkci, která nejprve ověří autentizaci a pak volá handler
  */
 export function requireAuth(handler: Function, roles?: string[]) {
-  return async (request: NextRequest, ...args: any[]) => {
+  // The wrapper now explicitly accepts the `context` object, which contains route params.
+  return async (request: NextRequest, context: { params: any }) => {
     const authResult = await verifyAuth(request);
 
     if (authResult instanceof NextResponse) {
-      return authResult; // Unauthorized response z verifyAuth
+      return authResult; // Unauthorized response from verifyAuth
     }
 
     if (roles && !roles.includes(authResult.role as string)) {
       return NextResponse.json({ message: "Forbidden: Insufficient role" }, { status: 403 });
     }
 
-    // Předáváme informace o uživateli do handleru jako druhý parametr
-    return handler(request, authResult, ...args);
+    // Pass the request, authResult, and the context to the original handler.
+    return handler(request, authResult, context);
   };
 }
+
 
 /**
  * Pro server komponenty/akce - získání informací o uživateli
