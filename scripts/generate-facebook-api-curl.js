@@ -8,10 +8,10 @@ function generateAppSecretProof(accessToken, appSecret) {
     .digest('hex');
 }
 
-// Informace z .env.production
-const pageId = '61574874071299';
-// Zde použijeme nový token z vašeho požadavku
-const accessToken = 'EAAWPfMaYnp4BPFZAZAGQ8gsml7BZCJkh5FZCJjPknDpdHH6GllRtPyTOnA2zOZB65u2qhMzlJSABbkjF79vRDuRQlqDqxBoFSwD16qIiWrVzlUSPZCmv92g1xfSRPW96dih8k69OUDTTMSpKlsbL4YKa6hvkNa6jjE8gAfj2AaT63NRNiBYwZCviGzLXC2aAZBpFIviOooPeGobsqQDx4ZBAFNpRQ03nSlI6L5o8NWg94mQXoCKY6MAZDZD';
+// Informace z .env souboru
+const pageId = '640847772437096';
+// Použijeme token z .env souboru
+const accessToken = 'EAAWPfMaYnp4BOxPVdE2gNZAWl9GWlCBRyPDiiZBD1piwTzHjBhcZCvz6Lxrewqi8K13fPZAA3NG8UIhg5IxMCOpxXZAKN9JcWoxqZBsg6tmuFtovVf9f8S5VRoi2bqGyFY0fehb5GaeLkwk1k0t9eZCUkCCrUA99nS7kz2UY94ARPQ0esHAeKPamxZBYIyyQg4TOHP2y9FRHVJZCQpQZDZD';
 const appSecret = 'a8732acf3c1b1f3f348093b67c38086a';
 
 // Generování appsecret_proof

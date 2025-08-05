@@ -78,8 +78,9 @@ export async function GET() {
     // Zkusíme načíst reálná data z Facebook API
     const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID
     const accessToken = process.env.FACEBOOK_ACCESS_TOKEN
+    const appSecret = process.env.FACEBOOK_APP_SECRET
 
-    if (!pageId || !accessToken) {
+    if (!pageId || !accessToken || !appSecret) {
       console.log("Facebook API není nakonfigurováno, používám mock data")
       return NextResponse.json({
         data: mockFacebookPosts,
@@ -89,10 +90,8 @@ export async function GET() {
     }
 
     // Pokus o načtení reálných dat
-    const appSecret = process.env.FACEBOOK_APP_SECRET;
-    
     // Vytvoření appsecret_proof pro zabezpečení požadavku
-    const appSecretProof = appSecret ? generateAppSecretProof(accessToken, appSecret) : '';
+    const appSecretProof = generateAppSecretProof(accessToken, appSecret)
     
     // Přidání appsecret_proof do URL požadavku pro větší zabezpečení
     const response = await fetch(
