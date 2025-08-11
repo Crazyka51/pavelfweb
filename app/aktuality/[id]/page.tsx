@@ -31,19 +31,26 @@ async function getArticle(id: string): Promise<Article | null> {
     if (!baseUrl) {
       throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
     }
+    
+    // Volání API pro získání konkrétního článku podle ID
     const response = await fetch(
-      `${baseUrl}/api/admin/public/articles`,
+      `${baseUrl}/api/admin/public/articles/${id}`,
       {
         cache: "no-store",
       },
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch articles");
+    if (response.status === 404) {
+      console.warn("Článek nebyl nalezen:", id);
+      return null;
     }
 
-    const articles: Article[] = await response.json();
-    return articles.find((article) => article.id === id || article.slug === id) || null;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch article: ${response.status}`);
+    }
+
+    const article: Article = await response.json();
+    return article;
   } catch (error) {
     console.error("Error fetching article:", error);
 
@@ -224,7 +231,10 @@ export async function generateStaticParams() {
       throw new Error("Failed to fetch articles");
     }
 
-    const articles: Article[] = await response.json();
+    const data = await response.json();
+    
+    // Zjistit, jestli je odpověď pole nebo objekt s polem articles
+    const articles = Array.isArray(data) ? data : data.articles;
 
     // Ensure articles is an array before mapping
     if (!Array.isArray(articles)) {
