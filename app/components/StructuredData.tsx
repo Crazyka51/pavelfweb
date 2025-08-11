@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 interface StructuredDataProps {
   type?: 'person' | 'article' | 'website'
@@ -28,7 +28,7 @@ export default function StructuredData({
       "description": description || "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
       "url": url || "https://fiserpavel.cz",
       "image": image || "https://fiserpavel.cz/og-image.svg"
-    }
+    };
 
     if (type === 'person') {
       return {
@@ -47,7 +47,7 @@ export default function StructuredData({
         "sameAs": [
           "https://www.facebook.com/pavel.fiser.official"
         ]
-      }
+      };
     }
 
     if (type === 'article') {
@@ -69,7 +69,7 @@ export default function StructuredData({
         },
         "datePublished": datePublished || new Date().toISOString(),
         "dateModified": dateModified || new Date().toISOString()
-      }
+      };
     }
 
     return {
@@ -86,8 +86,8 @@ export default function StructuredData({
         },
         "query-input": "required name=search_term_string"
       }
-    }
-  }
+    };
+  };
 
   return (
     <script
@@ -96,5 +96,5 @@ export default function StructuredData({
         __html: JSON.stringify(getStructuredData()),
       }}
     />
-  )
+  );
 }

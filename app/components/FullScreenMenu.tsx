@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 interface FullScreenMenuProps {
   isOpen: boolean
@@ -9,7 +9,7 @@ interface FullScreenMenuProps {
 }
 
 export default function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps) {
-  const menuItems = ["Work", "About", "Services", "Contact"]
+  const menuItems = ["Work", "About", "Services", "Contact"];
 
   return (
     <AnimatePresence>
@@ -52,5 +52,5 @@ export default function FullScreenMenu({ isOpen, onClose }: FullScreenMenuProps)
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

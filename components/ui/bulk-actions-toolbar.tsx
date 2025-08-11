@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ChevronDown, Trash2, Eye, EyeOff, Tag, FolderOpen, Copy, Download, X } from "lucide-react"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ChevronDown, Trash2, Eye, EyeOff, Tag, FolderOpen, Copy, Download, X } from "lucide-react";
 
 interface BulkAction {
   id: string
@@ -46,36 +46,36 @@ export function BulkActionsToolbar({
   actions,
   isLoading = false,
 }: BulkActionsToolbarProps) {
-  const [showDialog, setShowDialog] = useState(false)
-  const [currentAction, setCurrentAction] = useState<BulkAction | null>(null)
-  const [inputValue, setInputValue] = useState("")
+  const [showDialog, setShowDialog] = useState(false);
+  const [currentAction, setCurrentAction] = useState<BulkAction | null>(null);
+  const [inputValue, setInputValue] = useState("");
 
   const handleActionClick = (action: BulkAction) => {
     if (action.requiresInput) {
-      setCurrentAction(action)
-      setShowDialog(true)
-      setInputValue("")
+      setCurrentAction(action);
+      setShowDialog(true);
+      setInputValue("");
     } else if (action.destructive) {
-      const confirmed = window.confirm(`Opravdu chcete provést akci "${action.label}" na ${selectedCount} položkách?`)
+      const confirmed = window.confirm(`Opravdu chcete provést akci "${action.label}" na ${selectedCount} položkách?`);
       if (confirmed) {
-        onBulkAction(action.id)
+        onBulkAction(action.id);
       }
     } else {
-      onBulkAction(action.id)
+      onBulkAction(action.id);
     }
-  }
+  };
 
   const handleDialogConfirm = () => {
     if (currentAction) {
-      onBulkAction(currentAction.id, { value: inputValue })
-      setShowDialog(false)
-      setCurrentAction(null)
-      setInputValue("")
+      onBulkAction(currentAction.id, { value: inputValue });
+      setShowDialog(false);
+      setCurrentAction(null);
+      setInputValue("");
     }
-  }
+  };
 
   if (selectedCount === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -156,7 +156,7 @@ export function BulkActionsToolbar({
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
 
 // Předpřipravené akce pro články
@@ -199,7 +199,7 @@ export const articleBulkActions: BulkAction[] = [
     icon: <Trash2 className="w-4 h-4" />,
     destructive: true,
   },
-]
+];
 
 // Předpřipravené akce pro newsletter
 export const newsletterBulkActions: BulkAction[] = [
@@ -230,4 +230,4 @@ export const newsletterBulkActions: BulkAction[] = [
     icon: <Trash2 className="w-4 h-4" />,
     destructive: true,
   },
-]
+];

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Calendar, Clock, Save } from 'lucide-react'
+import { useState } from 'react';
+import { Calendar, Clock, Save } from 'lucide-react';
 
 interface SchedulePublishingProps {
   published: boolean
@@ -10,27 +10,27 @@ interface SchedulePublishingProps {
 }
 
 export default function SchedulePublishing({ published, publishedAt, onScheduleChange }: SchedulePublishingProps) {
-  const [isScheduled, setIsScheduled] = useState(!!publishedAt && !published)
+  const [isScheduled, setIsScheduled] = useState(!!publishedAt && !published);
   const [scheduleDate, setScheduleDate] = useState(
     publishedAt ? new Date(publishedAt).toISOString().slice(0, 16) : ''
-  )
+  );
 
   const handleScheduleToggle = (scheduled: boolean) => {
-    setIsScheduled(scheduled)
+    setIsScheduled(scheduled);
     
     if (scheduled && scheduleDate) {
-      onScheduleChange(true, scheduleDate, false)
+      onScheduleChange(true, scheduleDate, false);
     } else {
-      onScheduleChange(false, undefined, false)
+      onScheduleChange(false, undefined, false);
     }
-  }
+  };
 
   const handleDateChange = (date: string) => {
-    setScheduleDate(date)
+    setScheduleDate(date);
     if (isScheduled) {
-      onScheduleChange(true, date, false)
+      onScheduleChange(true, date, false);
     }
-  }
+  };
 
   const formatScheduledDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
@@ -39,10 +39,10 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
-  const isDateInPast = scheduleDate && new Date(scheduleDate) < new Date()
+  const isDateInPast = scheduleDate && new Date(scheduleDate) < new Date();
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -60,8 +60,8 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
               name="publishing"
               checked={published && !isScheduled}
               onChange={() => {
-                setIsScheduled(false)
-                onScheduleChange(false, undefined, true) // true = publish immediately
+                setIsScheduled(false);
+                onScheduleChange(false, undefined, true); // true = publish immediately
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
@@ -74,8 +74,8 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
               name="publishing"
               checked={!published && !isScheduled}
               onChange={() => {
-                setIsScheduled(false)
-                onScheduleChange(false, undefined, false) // false = save as draft
+                setIsScheduled(false);
+                onScheduleChange(false, undefined, false); // false = save as draft
               }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
@@ -150,5 +150,5 @@ export default function SchedulePublishing({ published, publishedAt, onScheduleC
         </div>
       </div>
     </div>
-  )
+  );
 }

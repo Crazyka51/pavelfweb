@@ -1,5 +1,5 @@
-import { Metadata } from 'next'
-import NewsPage from './NewsPage'
+import { Metadata } from 'next';
+import NewsPage from './NewsPage';
 
 export const metadata: Metadata = {
   title: 'Aktuální novinky | Pavel Fišer - Praha 4',
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
     description: 'Sledujte nejnovější informace a aktuality z Prahy 4',
     type: 'website',
   }
-}
+};
 
 export default function Page() {
-  return <NewsPage />
+  return <NewsPage />;
 }

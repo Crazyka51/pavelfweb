@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { categoryService } from "@/lib/category-service"
+import { type NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-utils";
+import { categoryService } from "@/lib/category-service";
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
   try {
-    const { searchParams } = new URL(request.url)
-    const includeArticleCount = searchParams.get("includeArticleCount") === "true"
-    const categories = await categoryService.getCategories({ includeArticleCount })
-    const total = await categoryService.getTotalCategoryCount({})
+    const { searchParams } = new URL(request.url);
+    const includeArticleCount = searchParams.get("includeArticleCount") === "true";
+    const categories = await categoryService.getCategories({ includeArticleCount });
+    const total = await categoryService.getTotalCategoryCount({});
 
     return NextResponse.json({
       success: true,
@@ -15,9 +15,9 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
       pagination: {
         total,
       },
-    })
+    });
   } catch (error) {
-    console.error("Categories GET error:", error)
+    console.error("Categories GET error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -25,9 +25,9 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
-})
+});
 
 export const POST = requireAuth(async (request: NextRequest, authResult: any) => {
   try {
@@ -38,10 +38,10 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
           error: "Nedostatečná oprávnění",
         },
         { status: 403 },
-      )
+      );
     }
 
-    const categoryData = await request.json()
+    const categoryData = await request.json();
 
     if (!categoryData.name) {
       return NextResponse.json(
@@ -50,10 +50,10 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
           error: "Název je povinný",
         },
         { status: 400 },
-      )
+      );
     }
 
-    const newCategory = await categoryService.createCategory(categoryData)
+    const newCategory = await categoryService.createCategory(categoryData);
 
     return NextResponse.json(
       {
@@ -62,9 +62,9 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
         data: newCategory,
       },
       { status: 201 },
-    )
+    );
   } catch (error) {
-    console.error("Categories POST error:", error)
+    console.error("Categories POST error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -72,6 +72,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
-})
+});

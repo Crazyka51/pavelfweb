@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { create } from "zustand"
-import { persist, createJSONStorage } from "zustand/middleware"
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 // Types pro state
 interface Article {
@@ -104,7 +104,7 @@ const defaultFilters: AdminFilters = {
     selectedPeriod: "30d",
     selectedMetric: "pageviews",
   },
-}
+};
 
 export const useAdminStore = create<AdminState>()(
   persist(
@@ -195,23 +195,23 @@ export const useAdminStore = create<AdminState>()(
       }),
     },
   ),
-)
+);
 
 // Hook pro práci s cache
 export const useDataCache = () => {
-  const store = useAdminStore()
+  const store = useAdminStore();
 
   const shouldRefresh = (key: string, maxAge: number = 5 * 60 * 1000) => {
-    const lastUpdate = store.lastUpdated[key]
-    if (!lastUpdate) return true
+    const lastUpdate = store.lastUpdated[key];
+    if (!lastUpdate) return true;
 
-    const age = Date.now() - new Date(lastUpdate).getTime()
-    return age > maxAge
-  }
+    const age = Date.now() - new Date(lastUpdate).getTime();
+    return age > maxAge;
+  };
 
   return {
     shouldRefresh,
     updateCache: store.updateLastUpdated,
     clearCache: store.clearCache,
-  }
-}
+  };
+};

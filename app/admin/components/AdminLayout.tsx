@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   LayoutDashboard,
   FileText,
@@ -16,7 +16,7 @@ import {
   Menu,
   X,
   User,
-} from "lucide-react"
+} from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -33,7 +33,7 @@ export default function AdminLayout({
   onLogout,
   currentUser,
 }: AdminLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Přehled a statistiky" },
@@ -44,12 +44,12 @@ export default function AdminLayout({
     { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },
     { id: "backup", label: "Zálohy", icon: Archive, description: "Export a import dat" },
     { id: "settings", label: "Nastavení", icon: Settings, description: "Konfigurace systému" },
-  ]
+  ];
 
   const handleSectionChange = (sectionId: string) => {
-    onSectionChange(sectionId)
-    setIsSidebarOpen(false)
-  }
+    onSectionChange(sectionId);
+    setIsSidebarOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -83,8 +83,8 @@ export default function AdminLayout({
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
             {menuItems.map((item) => {
-              const Icon = item.icon
-              const isActive = currentSection === item.id
+              const Icon = item.icon;
+              const isActive = currentSection === item.id;
 
               return (
                 <button
@@ -109,7 +109,7 @@ export default function AdminLayout({
                     <div className="text-xs text-gray-500 mt-0.5">{item.description}</div>
                   </div>
                 </button>
-              )
+              );
             })}
           </nav>
 
@@ -169,5 +169,5 @@ export default function AdminLayout({
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
-  )
+  );
 }

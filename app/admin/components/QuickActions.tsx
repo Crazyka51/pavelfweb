@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 import { 
   MoreVertical, 
   Eye, 
@@ -12,7 +12,7 @@ import {
   Globe,
   EyeOff,
   Calendar
-} from 'lucide-react'
+} from 'lucide-react';
 
 interface Article {
   id: string
@@ -46,12 +46,12 @@ export default function QuickActions({
   onTogglePublish,
   onCopyUrl 
 }: QuickActionsProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleAction = (action: () => void) => {
-    action()
-    setIsOpen(false)
-  }
+    action();
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative">
@@ -160,7 +160,7 @@ export default function QuickActions({
         </>
       )}
     </div>
-  )
+  );
 }
 
 // Funkce pro export článku
@@ -168,18 +168,18 @@ function exportArticle(article: Article) {
   const exportData = {
     ...article,
     exportedAt: new Date().toISOString()
-  }
+  };
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], {
     type: 'application/json'
-  })
+  });
 
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `clanek-${article.title.toLowerCase().replace(/[^a-z0-9]/gi, '-')}.json`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `clanek-${article.title.toLowerCase().replace(/[^a-z0-9]/gi, '-')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

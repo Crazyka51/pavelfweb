@@ -1,24 +1,24 @@
-import { BetaAnalyticsDataClient } from "@google-analytics/data"
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
 // Initialize the Analytics Data API client
-let analyticsDataClient: BetaAnalyticsDataClient | null = null
+let analyticsDataClient: BetaAnalyticsDataClient | null = null;
 
 function getAnalyticsClient() {
   if (!analyticsDataClient) {
     try {
       // Parse the service account JSON from environment variable
-      const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+      const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
       if (credentials) {
-        const parsedCredentials = JSON.parse(credentials)
+        const parsedCredentials = JSON.parse(credentials);
         analyticsDataClient = new BetaAnalyticsDataClient({
           credentials: parsedCredentials,
-        })
+        });
       }
     } catch (error) {
-      console.error("Failed to initialize Google Analytics client:", error)
+      console.error("Failed to initialize Google Analytics client:", error);
     }
   }
-  return analyticsDataClient
+  return analyticsDataClient;
 }
 
 export interface AnalyticsData {
@@ -54,11 +54,11 @@ export async function getAnalyticsData(
   startDate = "7daysAgo",
   endDate = "today",
 ): Promise<AnalyticsData> {
-  const client = getAnalyticsClient()
+  const client = getAnalyticsClient();
 
   if (!client || !propertyId) {
     // Return mock data if GA4 API is not configured
-    return getMockAnalyticsData()
+    return getMockAnalyticsData();
   }
 
   try {
@@ -73,13 +73,13 @@ export async function getAnalyticsData(
         { name: "bounceRate" },
         { name: "averageSessionDuration" },
       ],
-    })
+    });
 
     // Get active users (real-time)
     const [activeUsersReport] = await client.runRealtimeReport({
       property: `properties/${propertyId}`,
       metrics: [{ name: "activeUsers" }],
-    })
+    });
 
     // Get top pages
     const [topPagesReport] = await client.runReport({
@@ -89,7 +89,7 @@ export async function getAnalyticsData(
       metrics: [{ name: "screenPageViews" }, { name: "totalUsers" }],
       orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
       limit: 10,
-    })
+    });
 
     // Get top countries
     const [topCountriesReport] = await client.runReport({
@@ -99,7 +99,7 @@ export async function getAnalyticsData(
       metrics: [{ name: "totalUsers" }],
       orderBys: [{ metric: { metricName: "totalUsers" }, desc: true }],
       limit: 10,
-    })
+    });
 
     // Get device categories
     const [deviceReport] = await client.runReport({
@@ -107,7 +107,7 @@ export async function getAnalyticsData(
       dateRanges: [{ startDate, endDate }],
       dimensions: [{ name: "deviceCategory" }],
       metrics: [{ name: "totalUsers" }],
-    })
+    });
 
     // Get traffic sources
     const [trafficSourcesReport] = await client.runReport({
@@ -116,15 +116,15 @@ export async function getAnalyticsData(
       dimensions: [{ name: "sessionDefaultChannelGroup" }],
       metrics: [{ name: "totalUsers" }],
       orderBys: [{ metric: { metricName: "totalUsers" }, desc: true }],
-    })
+    });
 
     // Parse the data
-    const totalUsers = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[0]?.value || "0")
-    const totalPageViews = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[1]?.value || "0")
-    const totalSessions = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[2]?.value || "0")
-    const bounceRate = Number.parseFloat(basicMetrics.rows?.[0]?.metricValues?.[3]?.value || "0")
-    const averageSessionDuration = Number.parseFloat(basicMetrics.rows?.[0]?.metricValues?.[4]?.value || "0")
-    const activeUsers = Number.parseInt(activeUsersReport.rows?.[0]?.metricValues?.[0]?.value || "0")
+    const totalUsers = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[0]?.value || "0");
+    const totalPageViews = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[1]?.value || "0");
+    const totalSessions = Number.parseInt(basicMetrics.rows?.[0]?.metricValues?.[2]?.value || "0");
+    const bounceRate = Number.parseFloat(basicMetrics.rows?.[0]?.metricValues?.[3]?.value || "0");
+    const averageSessionDuration = Number.parseFloat(basicMetrics.rows?.[0]?.metricValues?.[4]?.value || "0");
+    const activeUsers = Number.parseInt(activeUsersReport.rows?.[0]?.metricValues?.[0]?.value || "0");
 
     // Parse top pages
     const topPages =
@@ -132,40 +132,40 @@ export async function getAnalyticsData(
         page: row.dimensionValues?.[0]?.value || "",
         views: Number.parseInt(row.metricValues?.[0]?.value || "0"),
         users: Number.parseInt(row.metricValues?.[1]?.value || "0"),
-      })) || []
+      })) || [];
 
     // Parse top countries
     const topCountries =
       topCountriesReport.rows?.map((row) => ({
         country: row.dimensionValues?.[0]?.value || "",
         users: Number.parseInt(row.metricValues?.[0]?.value || "0"),
-      })) || []
+      })) || [];
 
     // Parse device categories
     const deviceData =
       deviceReport.rows?.map((row) => ({
         device: row.dimensionValues?.[0]?.value || "",
         users: Number.parseInt(row.metricValues?.[0]?.value || "0"),
-      })) || []
+      })) || [];
 
-    const totalDeviceUsers = deviceData.reduce((sum, item) => sum + item.users, 0)
+    const totalDeviceUsers = deviceData.reduce((sum, item) => sum + item.users, 0);
     const deviceCategories = deviceData.map((item) => ({
       ...item,
       percentage: totalDeviceUsers > 0 ? (item.users / totalDeviceUsers) * 100 : 0,
-    }))
+    }));
 
     // Parse traffic sources
     const trafficData =
       trafficSourcesReport.rows?.map((row) => ({
         source: row.dimensionValues?.[0]?.value || "",
         users: Number.parseInt(row.metricValues?.[0]?.value || "0"),
-      })) || []
+      })) || [];
 
-    const totalTrafficUsers = trafficData.reduce((sum, item) => sum + item.users, 0)
+    const totalTrafficUsers = trafficData.reduce((sum, item) => sum + item.users, 0);
     const trafficSources = trafficData.map((item) => ({
       ...item,
       percentage: totalTrafficUsers > 0 ? (item.users / totalTrafficUsers) * 100 : 0,
-    }))
+    }));
 
     return {
       totalUsers,
@@ -178,10 +178,10 @@ export async function getAnalyticsData(
       topCountries,
       deviceCategories,
       trafficSources,
-    }
+    };
   } catch (error) {
-    console.error("Error fetching Google Analytics data:", error)
-    return getMockAnalyticsData()
+    console.error("Error fetching Google Analytics data:", error);
+    return getMockAnalyticsData();
   }
 }
 
@@ -217,5 +217,5 @@ function getMockAnalyticsData(): AnalyticsData {
       { source: "Social", users: 180, percentage: 14.6 },
       { source: "Referral", users: 104, percentage: 8.4 },
     ],
-  }
+  };
 }

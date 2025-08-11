@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "../../components/ui/input"
-import { Textarea } from "../../components/ui/textarea"
-import { Button } from "../../components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form"
-import { toast } from "../../hooks/use-toast"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import { toast } from "../../hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -24,11 +24,11 @@ const formSchema = z.object({
   message: z.string().min(10, {
     message: "Zpráva musí mít alespoň 10 znaků.",
   }),
-})
+});
 
 export default function Contact() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,11 +38,11 @@ export default function Contact() {
       subject: "",
       message: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setSubmitStatus('idle')
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
     
     try {
       const response = await fetch('/api/send-email', {
@@ -51,28 +51,28 @@ export default function Contact() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      })
+      });
       
       if (response.ok) {
-        setSubmitStatus('success')
+        setSubmitStatus('success');
         toast({
           title: "Zpráva odeslána!",
           description: "Děkujeme za Vaši zprávu. Ozveme se Vám co nejdříve.",
-        })
-        form.reset()
+        });
+        form.reset();
       } else {
-        throw new Error('Failed to send email')
+        throw new Error('Failed to send email');
       }
     } catch (error) {
-      console.error('Error sending email:', error)
-      setSubmitStatus('error')
+      console.error('Error sending email:', error);
+      setSubmitStatus('error');
       toast({
         title: "Chyba při odesílání",
         description: "Zprávu se nepodařilo odeslat. Zkuste to prosím znovu.",
         variant: "destructive"
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -167,5 +167,5 @@ export default function Contact() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 
 interface TypewriterTextProps {
   text: string
@@ -9,22 +9,22 @@ interface TypewriterTextProps {
 }
 
 export function TypewriterText({ text, speed = 50, delay = 0 }: TypewriterTextProps) {
-  const [displayText, setDisplayText] = useState("")
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [displayText, setDisplayText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (currentIndex < text.length) {
       const timeout = setTimeout(
         () => {
-          setDisplayText((prev) => prev + text[currentIndex])
-          setCurrentIndex((prev) => prev + 1)
+          setDisplayText((prev) => prev + text[currentIndex]);
+          setCurrentIndex((prev) => prev + 1);
         },
         currentIndex === 0 ? delay : speed,
-      )
+      );
 
-      return () => clearTimeout(timeout)
+      return () => clearTimeout(timeout);
     }
-  }, [currentIndex, text, speed, delay])
+  }, [currentIndex, text, speed, delay]);
 
-  return <span>{displayText}</span>
+  return <span>{displayText}</span>;
 }

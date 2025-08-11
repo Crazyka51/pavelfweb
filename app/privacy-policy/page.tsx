@@ -1,7 +1,7 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, Shield, Eye, Lock, Share, Globe, Mail, Calendar, Database, Users, AlertTriangle, Trash2 } from 'lucide-react'
-import StructuredData from '../components/StructuredData'
+import { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowLeft, Shield, Eye, Lock, Share, Globe, Mail, Calendar, Database, Users, AlertTriangle, Trash2 } from 'lucide-react';
+import StructuredData from '../components/StructuredData';
 
 export const metadata: Metadata = {
   title: 'Zásady ochrany osobních údajů | Pavel Fišer - Zastupitel Praha 4',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description: 'Zásady ochrany osobních údajů pro webové stránky a služby Pavla Fišera, zastupitele Prahy 4.',
     images: ['/og-privacy.svg'],
   },
-}
+};
 
 export default function PrivacyPolicyPage() {
   return (
@@ -451,5 +451,5 @@ export default function PrivacyPolicyPage() {
       </footer>
       </div>
     </>
-  )
+  );
 }

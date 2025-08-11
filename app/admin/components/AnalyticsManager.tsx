@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { BarChart3, Users, Eye, Clock, TrendingUp, Globe, Smartphone, Monitor } from "lucide-react"
+import { useState, useEffect } from "react";
+import { BarChart3, Users, Eye, Clock, TrendingUp, Globe, Smartphone, Monitor } from "lucide-react";
 
 interface AnalyticsData {
   pageViews: {
@@ -45,66 +45,66 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsManager() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedPeriod, setSelectedPeriod] = useState("30d") // Corresponds to 'thisMonth' in backend logic
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState("30d"); // Corresponds to 'thisMonth' in backend logic
 
   useEffect(() => {
-    loadAnalyticsData()
-  }, [selectedPeriod])
+    loadAnalyticsData();
+  }, [selectedPeriod]);
 
   const loadAnalyticsData = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const now = new Date()
-      let fromDate: Date
-      const toDate: Date = now
+      const now = new Date();
+      let fromDate: Date;
+      const toDate: Date = now;
 
       switch (selectedPeriod) {
         case "7d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
-          break
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+          break;
         case "30d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
-          break
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+          break;
         case "90d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
-          break
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90);
+          break;
         default:
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30) // Default to 30 days
+          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30); // Default to 30 days
       }
 
-      const response = await fetch(`/api/admin/analytics?from=${fromDate.toISOString()}&to=${toDate.toISOString()}`)
+      const response = await fetch(`/api/admin/analytics?from=${fromDate.toISOString()}&to=${toDate.toISOString()}`);
 
       if (response.ok) {
-        const data: AnalyticsData = await response.json()
-        setAnalyticsData(data)
+        const data: AnalyticsData = await response.json();
+        setAnalyticsData(data);
       } else {
-        console.error("Failed to load analytics:", response.status, await response.text())
-        setAnalyticsData(null)
+        console.error("Failed to load analytics:", response.status, await response.text());
+        setAnalyticsData(null);
       }
     } catch (error) {
-      console.error("Error loading analytics:", error)
-      setAnalyticsData(null)
+      console.error("Error loading analytics:", error);
+      setAnalyticsData(null);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("cs-CZ").format(num)
-  }
+    return new Intl.NumberFormat("cs-CZ").format(num);
+  };
 
   const formatChange = (change: number) => {
-    const sign = change >= 0 ? "+" : ""
-    const color = change >= 0 ? "text-green-600" : "text-red-600"
+    const sign = change >= 0 ? "+" : "";
+    const color = change >= 0 ? "text-green-600" : "text-red-600";
     return (
       <span className={color}>
         {sign}
         {change.toFixed(1)}%
       </span>
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -122,7 +122,7 @@ export default function AnalyticsManager() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!analyticsData) {
@@ -133,7 +133,7 @@ export default function AnalyticsManager() {
           <p className="text-gray-500">Nepodařilo se načíst analytická data</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Mock daily views for chart, as backend doesn't provide this granular data yet
@@ -145,7 +145,7 @@ export default function AnalyticsManager() {
     { date: "2024-02-05", views: 345, visitors: 267 },
     { date: "2024-02-06", views: 312, visitors: 245 },
     { date: "2024-02-07", views: 278, visitors: 221 },
-  ]
+  ];
 
   return (
     <div className="p-8 space-y-6">
@@ -258,9 +258,9 @@ export default function AnalyticsManager() {
             <div className="space-y-4">
               {Object.entries(analyticsData.devices).map(([type, count]) => {
                 const totalDevices =
-                  analyticsData.devices.desktop + analyticsData.devices.mobile + analyticsData.devices.tablet
-                const percentage = totalDevices > 0 ? (count / totalDevices) * 100 : 0
-                const Icon = type === "desktop" ? Monitor : type === "mobile" ? Smartphone : Globe
+                  analyticsData.devices.desktop + analyticsData.devices.mobile + analyticsData.devices.tablet;
+                const percentage = totalDevices > 0 ? (count / totalDevices) * 100 : 0;
+                const Icon = type === "desktop" ? Monitor : type === "mobile" ? Smartphone : Globe;
                 return (
                   <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -276,7 +276,7 @@ export default function AnalyticsManager() {
                       <span className="text-sm text-gray-600 w-12 text-right">{percentage.toFixed(1)}%</span>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -351,5 +351,5 @@ export default function AnalyticsManager() {
         </div>
       </div>
     </div>
-  )
+  );
 }

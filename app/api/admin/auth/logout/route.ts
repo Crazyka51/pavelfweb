@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server"
-import { deleteSession } from "@/lib/auth-utils-new"
+import { NextResponse } from "next/server";
+import { deleteSession } from "@/lib/auth-utils-new";
 
 export async function POST() {
   try {
     // Smaže session pomocí našeho auth utility
-    await deleteSession()
+    await deleteSession();
     
     return NextResponse.json({
       success: true,
       message: "Odhlášení úspěšné",
-    })
+    });
   } catch (error) {
-    return NextResponse.json({ error: "Chyba při odhlašování" }, { status: 500 })
+    return NextResponse.json({ error: "Chyba při odhlašování" }, { status: 500 });
   }
 }

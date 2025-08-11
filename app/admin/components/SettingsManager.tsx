@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Save, RefreshCw, Globe, Mail, FileText, Shield, Bell, Palette, Database } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Save, RefreshCw, Globe, Mail, FileText, Shield, Bell, Palette, Database } from "lucide-react";
 
 interface CMSSettings {
   // Obecné nastavení
@@ -66,12 +66,12 @@ export default function SettingsManager() {
 
     sessionTimeout: 24,
     maxLoginAttempts: 5,
-  })
+  });
 
-  const [isSaving, setIsSaving] = useState(false)
-  const [lastSaved, setLastSaved] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState("general")
-  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("general");
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
 
   const colorOptions = [
     { value: "#3B82F6", label: "Modrá", preview: "bg-blue-500" },
@@ -80,47 +80,47 @@ export default function SettingsManager() {
     { value: "#F59E0B", label: "Oranžová", preview: "bg-yellow-500" },
     { value: "#8B5CF6", label: "Fialová", preview: "bg-purple-500" },
     { value: "#06B6D4", label: "Azurová", preview: "bg-cyan-500" },
-  ]
+  ];
 
   useEffect(() => {
-    loadSettings()
-    loadCategoriesForOptions()
-  }, [])
+    loadSettings();
+    loadCategoriesForOptions();
+  }, []);
 
   const loadSettings = async () => {
     try {
-      const response = await fetch("/api/admin/settings")
+      const response = await fetch("/api/admin/settings");
 
       if (response.ok) {
-        const data = await response.json()
-        setSettings(data)
+        const data = await response.json();
+        setSettings(data);
         if (data.updatedAt) {
-          setLastSaved(new Date(data.updatedAt).toLocaleString("cs-CZ"))
+          setLastSaved(new Date(data.updatedAt).toLocaleString("cs-CZ"));
         }
       } else {
-        console.error("Failed to load settings", response.status, await response.text())
+        console.error("Failed to load settings", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading settings:", error)
+      console.error("Error loading settings:", error);
     }
-  }
+  };
 
   const loadCategoriesForOptions = async () => {
     try {
-      const response = await fetch("/api/admin/categories?activeOnly=true")
+      const response = await fetch("/api/admin/categories?activeOnly=true");
       if (response.ok) {
-        const data = await response.json()
-        setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })))
+        const data = await response.json();
+        setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })));
       } else {
-        console.error("Failed to load categories for settings", response.status, await response.text())
+        console.error("Failed to load categories for settings", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading categories for settings:", error)
+      console.error("Error loading categories for settings:", error);
     }
-  }
+  };
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
 
     try {
       const response = await fetch("/api/admin/settings", {
@@ -129,47 +129,47 @@ export default function SettingsManager() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(settings),
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setSettings(data.settings) // Update with potentially normalized data from backend
-        setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"))
-        alert("Nastavení úspěšně uloženo!")
+        const data = await response.json();
+        setSettings(data.settings); // Update with potentially normalized data from backend
+        setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"));
+        alert("Nastavení úspěšně uloženo!");
       } else {
-        const errorData = await response.json()
-        alert(`Chyba při ukládání nastavení: ${errorData.message || response.statusText}`)
+        const errorData = await response.json();
+        alert(`Chyba při ukládání nastavení: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      console.error("Error saving settings:", error)
-      alert("Chyba při ukládání nastavení!")
+      console.error("Error saving settings:", error);
+      alert("Chyba při ukládání nastavení!");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleReset = async () => {
     if (confirm("Opravdu chcete obnovit výchozí nastavení? Všechny změny budou ztraceny.")) {
       try {
         const response = await fetch("/api/admin/settings", {
           method: "POST", // POST for reset
-        })
+        });
 
         if (response.ok) {
-          const data = await response.json()
-          setSettings(data.settings)
-          setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"))
-          alert("Nastavení bylo obnoveno na výchozí hodnoty")
+          const data = await response.json();
+          setSettings(data.settings);
+          setLastSaved(new Date(data.settings.updatedAt).toLocaleString("cs-CZ"));
+          alert("Nastavení bylo obnoveno na výchozí hodnoty");
         } else {
-          const errorData = await response.json()
-          alert(`Chyba při obnovování nastavení: ${errorData.message || response.statusText}`)
+          const errorData = await response.json();
+          alert(`Chyba při obnovování nastavení: ${errorData.message || response.statusText}`);
         }
       } catch (error) {
-        console.error("Error resetting settings:", error)
-        alert("Chyba při obnovování nastavení!")
+        console.error("Error resetting settings:", error);
+        alert("Chyba při obnovování nastavení!");
       }
     }
-  }
+  };
 
   const tabs = [
     { id: "general", label: "Obecné", icon: Globe },
@@ -178,7 +178,7 @@ export default function SettingsManager() {
     { id: "appearance", label: "Vzhled", icon: Palette },
     { id: "security", label: "Bezpečnost", icon: Shield },
     { id: "backup", label: "Zálohy", icon: Database },
-  ]
+  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -243,7 +243,7 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       case "editor":
         return (
@@ -348,7 +348,7 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       case "notifications":
         return (
@@ -397,7 +397,7 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       case "appearance":
         return (
@@ -445,7 +445,7 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       case "security":
         return (
@@ -489,7 +489,7 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       case "backup":
         return (
@@ -525,12 +525,12 @@ export default function SettingsManager() {
               </div>
             </div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="p-8 space-y-6">
@@ -566,7 +566,7 @@ export default function SettingsManager() {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
-            const Icon = tab.icon
+            const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -580,7 +580,7 @@ export default function SettingsManager() {
                 <Icon className="w-4 h-4" />
                 {tab.label}
               </button>
-            )
+            );
           })}
         </nav>
       </div>
@@ -588,5 +588,5 @@ export default function SettingsManager() {
       {/* Content */}
       <div className="bg-white rounded-lg shadow-sm border p-6">{renderTabContent()}</div>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 export default function Introduction() {
   return (
@@ -48,5 +48,5 @@ export default function Introduction() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

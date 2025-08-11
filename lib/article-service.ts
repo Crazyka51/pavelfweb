@@ -1,48 +1,17 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
+import { ArticleListOptions, CreateArticleInput, UpdateArticleInput, ArticleStatus } from '@/types/cms';
 
-const prisma = new PrismaClient()
+// Singleton instance pro celý projekt
+let prisma: PrismaClient;
 
-/* -------------------------------------------------------------------------- */
-/*                            Interface a typy                                */
-/* -------------------------------------------------------------------------- */
-
-export interface ArticleListOptions {
-  limit?: number;
-  offset?: number;
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  search?: string;
-  category?: string;
-}
-
-export interface CreateArticleInput {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt?: string;
-  categoryId: string;
-  authorId: string;
-  tags?: string[];
-  imageUrl?: string;
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  isFeatured?: boolean;
-  metaTitle?: string;
-  metaDescription?: string;
-  publishedAt?: Date | null;
-}
-
-export interface UpdateArticleInput {
-  title?: string;
-  slug?: string;
-  content?: string;
-  excerpt?: string;
-  categoryId?: string;
-  tags?: string[];
-  imageUrl?: string;
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  isFeatured?: boolean;
-  metaTitle?: string;
-  metaDescription?: string;
-  publishedAt?: Date | null;
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  // Prevent multiple instances of Prisma Client in development
+  if (!(global as any).prisma) {
+    (global as any).prisma = new PrismaClient();
+  }
+  prisma = (global as any).prisma;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -239,11 +208,11 @@ export async function getPublishedArticles(
   const articles = await articleService.getArticles({
     limit,
     offset,
-    status: 'PUBLISHED'
+    status: ArticleStatus.PUBLISHED
   });
   
   const total = await articleService.getTotalArticleCount({
-    status: 'PUBLISHED'
+    status: ArticleStatus.PUBLISHED
   });
   
   // Určíme, zda existují další stránky

@@ -1,25 +1,25 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { X, Cookie, Shield, Settings, Check, Info } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { X, Cookie, Shield, Settings, Check, Info } from 'lucide-react';
 import { 
   ConsentSettings,
   handleConsentChange, 
   trackEvent, 
   shouldShowConsentBanner,
   getCurrentConsentPreferences 
-} from './GoogleAnalytics'
+} from './GoogleAnalytics';
 
 export default function CookieBanner() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [consentSettings, setConsentSettings] = useState<ConsentSettings>({
     necessary: true, // Always true, cannot be changed
     analytics: false,
     marketing: false,
     personalization: false
-  })
+  });
 
   useEffect(() => {
     // Check if consent banner should be displayed
@@ -29,25 +29,25 @@ export default function CookieBanner() {
 
     
     // Load existing preferences if available
-    const currentPreferences = getCurrentConsentPreferences()
+    const currentPreferences = getCurrentConsentPreferences();
     if (currentPreferences) {
-      setConsentSettings(currentPreferences)
+      setConsentSettings(currentPreferences);
     }
-  }, [])
+  }, []);
 
   const saveConsentPreferences = (preferences: ConsentSettings) => {
-    handleConsentChange(preferences)
-    setIsVisible(false)
+    handleConsentChange(preferences);
+    setIsVisible(false);
     
     // Track the specific consent decision
     const grantedCategories = Object.entries(preferences)
       .filter(([key, value]) => key !== 'necessary' && value)
-      .map(([key]) => key)
+      .map(([key]) => key);
     
     trackEvent('consent_update', 'cookie_banner', 
       grantedCategories.length > 0 ? grantedCategories.join(',') : 'declined'
-    )
-  }
+    );
+  };
 
   const acceptAllCookies = () => {
     const allAccepted: ConsentSettings = {
@@ -55,10 +55,10 @@ export default function CookieBanner() {
       analytics: true,
       marketing: true,
       personalization: true
-    }
-    setConsentSettings(allAccepted)
-    saveConsentPreferences(allAccepted)
-  }
+    };
+    setConsentSettings(allAccepted);
+    saveConsentPreferences(allAccepted);
+  };
 
   const acceptNecessaryOnly = () => {
     const necessaryOnly: ConsentSettings = {
@@ -66,25 +66,25 @@ export default function CookieBanner() {
       analytics: false,
       marketing: false,
       personalization: false
-    }
-    setConsentSettings(necessaryOnly)
-    saveConsentPreferences(necessaryOnly)
-  }
+    };
+    setConsentSettings(necessaryOnly);
+    saveConsentPreferences(necessaryOnly);
+  };
 
   const acceptSelectedCookies = () => {
-    saveConsentPreferences(consentSettings)
-  }
+    saveConsentPreferences(consentSettings);
+  };
 
   const toggleSetting = (key: keyof ConsentSettings) => {
-    if (key === 'necessary') return // Cannot toggle necessary cookies
+    if (key === 'necessary') return; // Cannot toggle necessary cookies
     
     setConsentSettings(prev => ({
       ...prev,
       [key]: !prev[key]
-    }))
-  }
+    }));
+  };
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center p-4">
@@ -283,5 +283,5 @@ export default function CookieBanner() {
         </div>
       </div>
     </div>
-  )
+  );
 }

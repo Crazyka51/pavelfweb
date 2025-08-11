@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Users, Shield, Heart, School } from "lucide-react"
+import { motion } from "framer-motion";
+import { Users, Shield, Heart, School } from "lucide-react";
 
 const priorities = [
   {
@@ -28,7 +28,7 @@ const priorities = [
     description:
       "Věřím, že zapojení občanů je klíčem k nalezení efektivních řešení problémů, jež sužují komunitu. Prosazuji transparentní rozhodování a aktivní komunikaci s občany o všech důležitých otázkách.",
   },
-]
+];
 
 export default function Priorities() {
   return (
@@ -68,5 +68,5 @@ export default function Priorities() {
         </div>
       </div>
     </section>
-  )
+  );
 }

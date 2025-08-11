@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import jwt from 'jsonwebtoken'
-import { Resend } from 'resend'
+import { NextRequest, NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+import jwt from 'jsonwebtoken';
+import { Resend } from 'resend';
 
-const SUBSCRIBERS_FILE = path.join(process.cwd(), 'data', 'newsletter-subscribers.json')
-const CAMPAIGNS_FILE = path.join(process.cwd(), 'data', 'newsletter-campaigns.json')
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
+const SUBSCRIBERS_FILE = path.join(process.cwd(), 'data', 'newsletter-subscribers.json');
+const CAMPAIGNS_FILE = path.join(process.cwd(), 'data', 'newsletter-campaigns.json');
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 
 // Initialize Resend (it will use mock if no API key provided)
-const resend = new Resend(process.env.RESEND_API_KEY || 'test-key')
+const resend = new Resend(process.env.RESEND_API_KEY || 'test-key');
 
 interface Subscriber {
   id: string
@@ -48,22 +48,22 @@ interface Campaign {
 // Helper function to read subscribers
 async function readSubscribers(): Promise<Subscriber[]> {
   try {
-    const data = await fs.readFile(SUBSCRIBERS_FILE, 'utf8')
-    return JSON.parse(data)
+    const data = await fs.readFile(SUBSCRIBERS_FILE, 'utf8');
+    return JSON.parse(data);
   } catch (error) {
-    console.error('Error reading subscribers file:', error)
-    return []
+    console.error('Error reading subscribers file:', error);
+    return [];
   }
 }
 
 // Helper function to read campaigns
 async function readCampaigns(): Promise<Campaign[]> {
   try {
-    const data = await fs.readFile(CAMPAIGNS_FILE, 'utf8')
-    return JSON.parse(data)
+    const data = await fs.readFile(CAMPAIGNS_FILE, 'utf8');
+    return JSON.parse(data);
   } catch (error) {
-    console.error('Error reading campaigns file:', error)
-    return []
+    console.error('Error reading campaigns file:', error);
+    return [];
   }
 }
 
@@ -71,29 +71,29 @@ async function readCampaigns(): Promise<Campaign[]> {
 async function writeCampaigns(campaigns: Campaign[]): Promise<void> {
   try {
     // Ensure data directory exists
-    const dataDir = path.dirname(CAMPAIGNS_FILE)
-    await fs.mkdir(dataDir, { recursive: true })
+    const dataDir = path.dirname(CAMPAIGNS_FILE);
+    await fs.mkdir(dataDir, { recursive: true });
     
-    await fs.writeFile(CAMPAIGNS_FILE, JSON.stringify(campaigns, null, 2))
+    await fs.writeFile(CAMPAIGNS_FILE, JSON.stringify(campaigns, null, 2));
   } catch (error) {
-    console.error('Error writing campaigns file:', error)
-    throw error
+    console.error('Error writing campaigns file:', error);
+    throw error;
   }
 }
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest): Promise<boolean> {
   try {
-    const authHeader = request.headers.get('Authorization')
+    const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return false
+      return false;
     }
 
-    const token = authHeader.substring(7)
-    jwt.verify(token, JWT_SECRET)
-    return true
+    const token = authHeader.substring(7);
+    jwt.verify(token, JWT_SECRET);
+    return true;
   } catch (error) {
-    return false
+    return false;
   }
 }
 
@@ -111,7 +111,7 @@ async function sendNewsletterEmail(
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_BASE_URL není nastavena. Nastavte ji na https://fiserpavel.cz v prostředí Vercelu.");
   }
-  const unsubscribeUrl = `${baseUrl}/api/admin/newsletter?token=${unsubscribeToken}`
+  const unsubscribeUrl = `${baseUrl}/api/admin/newsletter?token=${unsubscribeToken}`;
   
   const emailHtml = `
     <!DOCTYPE html>
@@ -174,7 +174,7 @@ async function sendNewsletterEmail(
       </div>
     </body>
     </html>
-  `
+  `;
   
   // Try to send with Resend API if key is available
   if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'test-key') {
@@ -189,86 +189,86 @@ async function sendNewsletterEmail(
           'List-Unsubscribe': `<${unsubscribeUrl}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
         }
-      })
+      });
       
       if (result.data) {
-        console.log(`✅ E-mail úspěšně odeslán na: ${to} (ID: ${result.data.id})`)
+        console.log(`✅ E-mail úspěšně odeslán na: ${to} (ID: ${result.data.id})`);
         return { 
           success: true, 
           messageId: result.data.id 
-        }
+        };
       } else {
-        throw new Error(result.error?.message || 'Unknown error')
+        throw new Error(result.error?.message || 'Unknown error');
       }
     } catch (error: any) {
-      console.error(`❌ Chyba při odesílání na ${to}:`, error.message)
+      console.error(`❌ Chyba při odesílání na ${to}:`, error.message);
       return { 
         success: false, 
         error: error.message 
-      }
+      };
     }
   } else {
     // Mock sending for development/testing
-    console.log(`📧 [MOCK] Sending newsletter to: ${to}`)
-    console.log(`📧 [MOCK] Subject: ${subject}`)
+    console.log(`📧 [MOCK] Sending newsletter to: ${to}`);
+    console.log(`📧 [MOCK] Subject: ${subject}`);
     
     // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     // Simulate 95% success rate
-    const success = Math.random() > 0.05
+    const success = Math.random() > 0.05;
     
     if (success) {
       return { 
         success: true, 
         messageId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` 
-      }
+      };
     } else {
       return { 
         success: false, 
         error: 'Mock email delivery failed' 
-      }
+      };
     }
   }
 }
 
 // POST - Send newsletter campaign (admin only)
 export async function POST(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
+  const isAdmin = await verifyAdminToken(request);
   if (!isAdmin) {
     return NextResponse.json(
       { message: 'Neautorizovaný přístup' },
       { status: 401 }
-    )
+    );
   }
 
   try {
     const { template, recipients }: { 
       template: EmailTemplate, 
       recipients: string[] 
-    } = await request.json()
+    } = await request.json();
 
     if (!template || !template.subject || !template.htmlContent) {
       return NextResponse.json(
         { message: 'Neplatná šablona e-mailu' },
         { status: 400 }
-      )
+      );
     }
 
     // Get active subscribers if no specific recipients provided
-    let targetRecipients = recipients
+    let targetRecipients = recipients;
     if (!recipients || recipients.length === 0) {
-      const subscribers = await readSubscribers()
+      const subscribers = await readSubscribers();
       targetRecipients = subscribers
         .filter(sub => sub.isActive)
-        .map(sub => sub.email)
+        .map(sub => sub.email);
     }
 
     if (targetRecipients.length === 0) {
       return NextResponse.json(
         { message: 'Žádní odběratelé k odeslání' },
         { status: 400 }
-      )
+      );
     }
 
     // Create campaign record
@@ -285,49 +285,49 @@ export async function POST(request: NextRequest) {
         delivered: 0,
         failed: 0
       }
-    }
+    };
 
     // Save campaign
-    const campaigns = await readCampaigns()
-    campaigns.push(campaign)
-    await writeCampaigns(campaigns)
+    const campaigns = await readCampaigns();
+    campaigns.push(campaign);
+    await writeCampaigns(campaigns);
 
     // Send emails (in production, this should be done in background/queue)
-    const subscribers = await readSubscribers()
+    const subscribers = await readSubscribers();
     const sendResults = await Promise.allSettled(
       targetRecipients.map(async (email) => {
-        const subscriber = subscribers.find(sub => sub.email === email)
+        const subscriber = subscribers.find(sub => sub.email === email);
         const result = await sendNewsletterEmail(
           email,
           template.subject,
           template.htmlContent,
           template.textContent,
           subscriber?.unsubscribeToken
-        )
+        );
         
         if (result.success) {
-          campaign.stats.delivered++
+          campaign.stats.delivered++;
         } else {
-          campaign.stats.failed++
+          campaign.stats.failed++;
         }
         
-        campaign.stats.sent++
-        return result
+        campaign.stats.sent++;
+        return result;
       })
-    )
+    );
 
     // Update campaign status
-    campaign.status = campaign.stats.failed === 0 ? 'sent' : 'sent'
+    campaign.status = campaign.stats.failed === 0 ? 'sent' : 'sent';
     
     // Update campaigns file
     const updatedCampaigns = campaigns.map(c => 
       c.id === campaign.id ? campaign : c
-    )
-    await writeCampaigns(updatedCampaigns)
+    );
+    await writeCampaigns(updatedCampaigns);
 
     const successCount = sendResults.filter(
       result => result.status === 'fulfilled' && result.value.success
-    ).length
+    ).length;
 
     return NextResponse.json({
       message: `Newsletter byl odeslán! Úspěšně doručeno: ${successCount}/${targetRecipients.length}`,
@@ -337,25 +337,25 @@ export async function POST(request: NextRequest) {
         delivered: campaign.stats.delivered,
         failed: campaign.stats.failed
       }
-    })
+    });
 
   } catch (error) {
-    console.error('Error sending newsletter:', error)
+    console.error('Error sending newsletter:', error);
     return NextResponse.json(
       { message: 'Chyba při odesílání newsletteru' },
       { status: 500 }
-    )
+    );
   }
 }
 
 // GET - Get campaign history (admin only)
 export async function GET(request: NextRequest) {
-  const isAdmin = await verifyAdminToken(request)
+  const isAdmin = await verifyAdminToken(request);
   if (!isAdmin) {
     return NextResponse.json(
       { message: 'Neautorizovaný přístup' },
       { status: 401 }
-    )
+    );
   }
 
   try {

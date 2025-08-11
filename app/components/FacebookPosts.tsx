@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ExternalLink, Heart, MessageCircle, Share2, AlertCircle, Info } from "lucide-react"
+import { useState, useEffect } from "react";
+import { ExternalLink, Heart, MessageCircle, Share2, AlertCircle, Info } from "lucide-react";
 
 interface FacebookPost {
   id: string
@@ -21,35 +21,35 @@ interface FacebookResponse {
 }
 
 export default function FacebookPosts() {
-  const [posts, setPosts] = useState<FacebookPost[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isMockData, setIsMockData] = useState(false)
-  const [apiMessage, setApiMessage] = useState("")
+  const [posts, setPosts] = useState<FacebookPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isMockData, setIsMockData] = useState(false);
+  const [apiMessage, setApiMessage] = useState("");
 
   useEffect(() => {
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      const response = await fetch("/api/facebook-posts")
+      const response = await fetch("/api/facebook-posts");
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: FacebookResponse = await response.json()
+      const result: FacebookResponse = await response.json();
 
-      setPosts(result.data || [])
-      setIsMockData(result.isMockData)
-      setApiMessage(result.message)
+      setPosts(result.data || []);
+      setIsMockData(result.isMockData);
+      setApiMessage(result.message);
     } catch (err) {
-      console.error("Error fetching Facebook posts:", err)
-      setError("Nepodařilo se načíst Facebook příspěvky")
+      console.error("Error fetching Facebook posts:", err);
+      setError("Nepodařilo se načíst Facebook příspěvky");
 
       // Fallback mock data
       setPosts([
@@ -62,12 +62,12 @@ export default function FacebookPosts() {
           shares: { count: 0 },
           permalink_url: "#",
         },
-      ])
-      setIsMockData(true)
+      ]);
+      setIsMockData(true);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("cs-CZ", {
@@ -76,8 +76,8 @@ export default function FacebookPosts() {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   if (loading) {
     return (
@@ -101,7 +101,7 @@ export default function FacebookPosts() {
           </div>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -143,7 +143,7 @@ export default function FacebookPosts() {
                     alt="Facebook post"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.style.display = "none"
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 </div>
@@ -196,5 +196,5 @@ export default function FacebookPosts() {
         )}
       </div>
     </section>
-  )
+  );
 }

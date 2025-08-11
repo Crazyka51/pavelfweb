@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "../../components/ui/input"
-import { Button } from "../../components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "../../components/ui/form"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "../../components/ui/form";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Zadejte platnou e-mailovou adresu." }),
-})
+});
 
 export default function NewsletterSubscribe() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setMessage(null)
+    setIsSubmitting(true);
+    setMessage(null);
     
     try {
       const response = await fetch('/api/admin/newsletter', {
@@ -35,24 +35,24 @@ export default function NewsletterSubscribe() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: values.email }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        setMessage({ text: data.message, type: 'success' })
-        form.reset()
+        setMessage({ text: data.message, type: 'success' });
+        form.reset();
       } else {
-        setMessage({ text: data.message, type: 'error' })
+        setMessage({ text: data.message, type: 'error' });
       }
     } catch (error) {
-      console.error('Newsletter subscription error:', error)
+      console.error('Newsletter subscription error:', error);
       setMessage({ 
         text: 'Chyba při přihlašování k odběru. Zkuste to prosím později.', 
         type: 'error' 
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -114,5 +114,5 @@ export default function NewsletterSubscribe() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

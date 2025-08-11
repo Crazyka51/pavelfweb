@@ -1,37 +1,37 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth-utils"
-import { newsletterService } from "@/lib/services/newsletter-service"
-import type { NewsletterCampaign } from "@/lib/database"
+import { type NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-utils";
+import { newsletterService } from "@/lib/services/newsletter-service";
+import type { NewsletterCampaign } from "@/lib/database";
 
 // GET - Get all campaigns
 export const GET = requireAuth(async (request: NextRequest, authData: any) => {
 
   try {
-    const campaigns = await newsletterService.getCampaigns()
+    const campaigns = await newsletterService.getCampaigns();
 
-    return NextResponse.json(campaigns)
+    return NextResponse.json(campaigns);
   } catch (error) {
-    console.error("Error fetching campaigns:", error)
+    console.error("Error fetching campaigns:", error);
     return NextResponse.json(
       {
         message: "Chyba při načítání kampaní",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
-})
+});
 
 // POST - Create new campaign
 export const POST = requireAuth(async (request: NextRequest, authData: any) => {
 
   try {
-    const campaignData = await request.json()
+    const campaignData = await request.json();
     const { subject, content, htmlContent, textContent, templateId, status, scheduledAt, createdBy, tags, segmentId } =
-      campaignData
+      campaignData;
 
     if (!subject || !content) {
-      return NextResponse.json({ message: "Předmět a obsah kampaně jsou povinné" }, { status: 400 })
+      return NextResponse.json({ message: "Předmět a obsah kampaně jsou povinné" }, { status: 400 });
     }
 
     // For simplicity, recipientCount, openRate, clickRate are set to 0 initially
@@ -58,9 +58,9 @@ export const POST = requireAuth(async (request: NextRequest, authData: any) => {
       created_by: createdBy || "admin", // Replace with actual user ID
       tags: tags || [],
       segment_id: segmentId || null,
-    }
+    };
 
-    const createdCampaign = await newsletterService.createCampaign(newCampaign)
+    const createdCampaign = await newsletterService.createCampaign(newCampaign);
 
     return NextResponse.json(
       {
@@ -68,17 +68,17 @@ export const POST = requireAuth(async (request: NextRequest, authData: any) => {
         campaign: createdCampaign,
       },
       { status: 201 },
-    )
+    );
   } catch (error) {
-    console.error("Error creating campaign:", error)
+    console.error("Error creating campaign:", error);
     return NextResponse.json(
       {
         message: "Chyba při vytváření kampaně",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
-})
+});
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";

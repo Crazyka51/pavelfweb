@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Skeleton } from "../../../components/ui/skeleton"
-import { BarChart3 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { BarChart3 } from "lucide-react";
 
 export default function AnalyticsLoading() {
   return (
@@ -46,5 +46,5 @@ export default function AnalyticsLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

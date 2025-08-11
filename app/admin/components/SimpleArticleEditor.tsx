@@ -1,7 +1,9 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Save, X, Eye, FileText } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Save, X, Eye, FileText } from 'lucide-react';
+import { TiptapEditor } from './TiptapEditor';
+
 
 interface Article {
   id: string
@@ -25,44 +27,44 @@ interface SimpleArticleEditorProps {
 }
 
 export default function SimpleArticleEditor({ article, categories, onSave, onCancel }: SimpleArticleEditorProps) {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [excerpt, setExcerpt] = useState('')
-  const [category, setCategory] = useState('')
-  const [tags, setTags] = useState('')
-  const [published, setPublished] = useState(false)
-  const [imageUrl, setImageUrl] = useState('')
-  const [isPreview, setIsPreview] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
+  const [published, setPublished] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [isPreview, setIsPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (article) {
-      setTitle(article.title)
-      setContent(article.content)
-      setExcerpt(article.excerpt)
-      setCategory(article.category)
-      setTags(article.tags.join(', '))
-      setPublished(article.published)
-      setImageUrl(article.imageUrl || '')
+      setTitle(article.title);
+      setContent(article.content);
+      setExcerpt(article.excerpt);
+      setCategory(article.category);
+      setTags(article.tags.join(', '));
+      setPublished(article.published);
+      setImageUrl(article.imageUrl || '');
     } else {
       // Reset form for new article
-      setTitle('')
-      setContent('')
-      setExcerpt('')
-      setCategory(categories[0] || '')
-      setTags('')
-      setPublished(false)
-      setImageUrl('')
+      setTitle('');
+      setContent('');
+      setExcerpt('');
+      setCategory(categories[0] || '');
+      setTags('');
+      setPublished(false);
+      setImageUrl('');
     }
-  }, [article, categories])
+  }, [article, categories]);
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      alert('Název a obsah jsou povinné!')
-      return
+      alert('Název a obsah jsou povinné!');
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     
     const articleData = {
       title: title.trim(),
@@ -72,17 +74,17 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
       tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       published,
       imageUrl: imageUrl.trim() || undefined
-    }
+    };
 
-    await onSave(articleData)
-    setIsSaving(false)
-  }
+    await onSave(articleData);
+    setIsSaving(false);
+  };
 
   const generateExcerpt = (content: string) => {
     // Odstraň HTML tagy a vezmi prvních 150 znaků
-    const textContent = content.replace(/<[^>]*>/g, '')
-    return textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent
-  }
+    const textContent = content.replace(/<[^>]*>/g, '');
+    return textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent;
+  };
 
   if (isPreview) {
     return (
@@ -130,12 +132,11 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
             {excerpt && (
               <p className="text-xl text-gray-600 mb-6 font-medium">{excerpt}</p>
             )}
-            <div 
+            <div
               className="prose prose-lg max-w-none"
-              style={{ whiteSpace: 'pre-wrap' }}
-            >
-              {content}
-            </div>
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+
             {tags.trim() && (
               <div className="mt-8 pt-6 border-t">
                 <div className="flex flex-wrap gap-2">
@@ -153,7 +154,7 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
           </article>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -217,26 +218,17 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
               />
             </div>
 
-            {/* Content - Simple textarea instead of rich editor */}
+            {/* Content - Tiptap Editor */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Obsah článku * 
+                Obsah článku *
               </label>
-              <div className="text-sm text-gray-500 mb-2">
-                Můžete použít základní HTML tagy jako &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt; atd.
-              </div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={20}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                placeholder="Začněte psát obsah článku... Můžete použít HTML tagy pro formátování."
-                required
+              <TiptapEditor
+                content={content}
+                onChange={setContent}
               />
-              <div className="mt-2 text-sm text-gray-500">
-                Počet znaků: {content.length}
-              </div>
             </div>
+
 
             {/* Excerpt */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -336,7 +328,7 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
                     alt="Náhled" 
                     className="w-full h-32 object-cover rounded-lg"
                     onError={(e) => {
-                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.style.display = 'none';
                     }}
                   />
                 </div>
@@ -349,5 +341,5 @@ export default function SimpleArticleEditor({ article, categories, onSave, onCan
         </div>
       </main>
     </div>
-  )
+  );
 }

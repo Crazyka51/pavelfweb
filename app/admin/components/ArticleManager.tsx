@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Edit,
@@ -14,76 +14,76 @@ import {
   CheckSquare,
   Square,
   FileText,
-} from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-
-interface Category {
-  id: string
-  name: string
-}
-
-interface Author {
-  id: string
-  name: string | null
-}
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string | null
-  category: Category
-  categoryId: string
-  tags: string[]
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
-  createdAt: string
-  updatedAt: string
-  author: Author
-  authorId: string
-  imageUrl?: string | null
-  publishedAt?: string | null
-}
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Article, ArticleStatus } from "@/types/cms";
 
 interface ArticleManagerProps {
-  onEditArticle?: (article: Article) => void
-  onCreateNew?: () => void
+  onEditArticle?: (article: Article) => void;
+  onCreateNew?: () => void;
+  articles?: Article[];
+  onRefresh?: () => Promise<void>;
 }
 
-export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleManagerProps) {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedArticles, setSelectedArticles] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState<"updated" | "created" | "title">("updated")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  const [isLoading, setIsLoading] = useState(true)
-  const [showActions, setShowActions] = useState<string | null>(null)
+export default function ArticleManager({ onEditArticle, onCreateNew, articles: propArticles = [], onRefresh }: ArticleManagerProps) {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"updated" | "created" | "title">("updated");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showActions, setShowActions] = useState<string | null>(null);
 
-  const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"]
+  const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"];
 
+  // Aktualizujeme články, když se změní props
+  useEffect(() => {
+    if (propArticles && propArticles.length > 0) {
+      console.log("ArticleManager: Použití článků z props", propArticles.length);
+      setArticles(propArticles);
+      setIsLoading(false);
+    } else if (onRefresh) {
+      // Pokud nejsou články v props, použijeme onRefresh pro jejich načtení
+      setIsLoading(true);
+      onRefresh().then(() => setIsLoading(false));
+    } else {
+      // Fallback na původní metodu načítání
+      loadArticles();
+    }
+  }, [propArticles, onRefresh]);
+
+  // Ponecháme původní funkci pro případ, že by props nebyly dostupné
   const loadArticles = useCallback(async () => {
-    const token = localStorage.getItem("adminToken")
+    const token = localStorage.getItem("adminToken");
     if (!token) {
-      setIsLoading(false)
-      return
+      setIsLoading(false);
+      alert("Nejste přihlášeni. Přihlaste se prosím znovu.");
+      return;
     }
     try {
+      setIsLoading(true);
       const response = await fetch("/api/admin/articles", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       if (result.success) {
         // Přidáváme console.log pro vypsání struktury objektů článků z API
         console.log("Loaded articles from API:", JSON.parse(JSON.stringify(result.data)));
         
         // Validace dat článků pro zajištění, že všechny objekty mají požadované vlastnosti
-        const validatedArticles = (Array.isArray(result.data) ? result.data : []).map((article: any) => {
+        const articles = result.data.articles || [];
+        const validatedArticles = articles.map((article: any) => {
           if (!article) return null;
           
           // Ověříme, zda objekt má základní požadované vlastnosti a přidáme výchozí hodnoty kde je potřeba
@@ -106,139 +106,106 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         }).filter(Boolean); // Odstraní null hodnoty
         
         console.log("Validated articles:", validatedArticles.length);
-        
-        // Kontrola cyklických referencí
-        try {
-          // Pokus o detekci cyklických referencí
-          const checkCircular = () => {
-            const seen = new WeakSet();
-            const detectCircular = (obj: any, path: string[] = []): boolean => {
-              if (obj && typeof obj === 'object') {
-                if (seen.has(obj)) {
-                  console.error(`Cyklická reference detekována v cestě: ${path.join('.')}`, obj);
-                  return true;
-                }
-                seen.add(obj);
-                
-                return Object.entries(obj).some(([key, value]) => 
-                  detectCircular(value, [...path, key])
-                );
-              }
-              return false;
-            };
-            
-            for (let i = 0; i < validatedArticles.length; i++) {
-              if (detectCircular(validatedArticles[i], [`article[${i}]`])) {
-                console.error(`Článek s indexem ${i} obsahuje cyklické reference:`, validatedArticles[i]);
-              }
-            }
-          };
-          
-          checkCircular();
-        } catch (e) {
-          console.error("Chyba při kontrole cyklických referencí:", e);
-        }
-        
-        setArticles(validatedArticles)
+        setArticles(validatedArticles);
       } else {
-        console.error("Error loading articles:", result.error)
+        console.error("Chyba při načítání článků:", result.error);
+        alert(`Chyba při načítání článků: ${result.error || "Neznámá chyba"}`);
       }
     } catch (error) {
-      console.error("Error loading articles:", error)
+      console.error("Chyba při načítání článků:", error);
+      alert(`Chyba při načítání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   const filterArticles = useCallback(() => {
-    let filtered = [...articles]
+    let filtered = [...articles];
 
     // Text search
     if (searchTerm.trim()) {
-      const search = searchTerm.toLowerCase()
+      const search = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (article) =>
           article.title.toLowerCase().includes(search) ||
           (article.excerpt || "").toLowerCase().includes(search) ||
           article.content.toLowerCase().includes(search) ||
           article.tags.some((tag) => tag.toLowerCase().includes(search)),
-      )
+      );
     }
 
     // Category filter
     if (selectedCategory !== "all") {
-      filtered = filtered.filter((article) => article.category.name === selectedCategory)
+      filtered = filtered.filter((article) => article.category.name === selectedCategory);
     }
 
     // Status filter
     if (selectedStatus !== "all") {
       switch (selectedStatus) {
         case "published":
-          filtered = filtered.filter((article) => article.status === "PUBLISHED")
-          break
+          filtered = filtered.filter((article) => article.status === "PUBLISHED");
+          break;
         case "draft":
-          filtered = filtered.filter((article) => article.status === "DRAFT")
-          break
+          filtered = filtered.filter((article) => article.status === "DRAFT");
+          break;
         case "scheduled":
-          filtered = filtered.filter((article) => article.publishedAt && new Date(article.publishedAt) > new Date())
-          break
+          filtered = filtered.filter((article) => article.publishedAt && new Date(article.publishedAt) > new Date());
+          break;
       }
     }
 
     // Sorting
     filtered.sort((a, b) => {
-      let compareValue = 0
+      let compareValue = 0;
 
       switch (sortBy) {
         case "title":
-          compareValue = a.title.localeCompare(b.title)
-          break
+          compareValue = a.title.localeCompare(b.title);
+          break;
         case "created":
-          compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          break
+          compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
         case "updated":
         default:
-          compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-          break
+          compareValue = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
       }
 
-      return sortOrder === "asc" ? compareValue : -compareValue
-    })
+      return sortOrder === "asc" ? compareValue : -compareValue;
+    });
 
-    setFilteredArticles(filtered)
-  }, [articles, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder])
+    setFilteredArticles(filtered);
+  }, [articles, searchTerm, selectedCategory, selectedStatus, sortBy, sortOrder]);
 
-  useEffect(() => {
-    loadArticles()
-  }, [loadArticles])
+  // Odstraněn původní useEffect, který volal loadArticles, protože nyní řídíme načítání pomocí props
 
   useEffect(() => {
-    filterArticles()
-  }, [filterArticles])
+    filterArticles();
+  }, [filterArticles]);
 
   const handleSelectAll = () => {
     if (selectedArticles.length === filteredArticles.length) {
-      setSelectedArticles([])
+      setSelectedArticles([]);
     } else {
-      setSelectedArticles(filteredArticles.map((article) => article.id))
+      setSelectedArticles(filteredArticles.map((article) => article.id));
     }
-  }
+  };
 
   const handleSelectArticle = (articleId: string) => {
     setSelectedArticles((prev) =>
       prev.includes(articleId) ? prev.filter((id) => id !== articleId) : [...prev, articleId],
-    )
-  }
+    );
+  };
 
   const handleBulkDelete = async () => {
     if (selectedArticles.length === 0) {
-      alert("Nejprve vyberte články ke smazání")
-      return
+      alert("Nejprve vyberte články ke smazání");
+      return;
     }
 
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
-      const token = localStorage.getItem("adminToken")
-      if (!token) return alert("Chyba autorizace")
+      const token = localStorage.getItem("adminToken");
+      if (!token) return alert("Chyba autorizace");
 
       try {
         for (const articleId of selectedArticles) {
@@ -247,27 +214,27 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          })
+          });
 
-          const result = await response.json()
+          const result = await response.json();
           if (!result.success) {
-            throw new Error(`Chyba při mazání článku ${articleId}: ${result.error}`)
+            throw new Error(`Chyba při mazání článku ${articleId}: ${result.error}`);
           }
         }
-        await loadArticles()
-        setSelectedArticles([])
-        alert("Články byly úspěšně smazány")
+        await loadArticles();
+        setSelectedArticles([]);
+        alert("Články byly úspěšně smazány");
       } catch (error) {
-        console.error("Error deleting articles:", error)
-        alert(`Chyba při mazání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
+        console.error("Error deleting articles:", error);
+        alert(`Chyba při mazání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
       }
     }
-  }
+  };
 
   const handleBulkPublish = async () => {
-    if (selectedArticles.length === 0) return
-    const token = localStorage.getItem("adminToken")
-    if (!token) return alert("Chyba autorizace")
+    if (selectedArticles.length === 0) return;
+    const token = localStorage.getItem("adminToken");
+    if (!token) return alert("Chyba autorizace");
 
     try {
       for (const articleId of selectedArticles) {
@@ -278,25 +245,25 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ status: "PUBLISHED" }),
-        })
-        const result = await response.json()
+        });
+        const result = await response.json();
         if (!result.success) {
-          console.error(`Chyba při publikování článku ${articleId}: ${result.error}`)
+          console.error(`Chyba při publikování článku ${articleId}: ${result.error}`);
         }
       }
-      await loadArticles()
-      setSelectedArticles([])
-      alert("Články byly úspěšně publikovány")
+      await loadArticles();
+      setSelectedArticles([]);
+      alert("Články byly úspěšně publikovány");
     } catch (error) {
-      console.error("Error publishing articles:", error)
-      alert("Chyba při publikování článků")
+      console.error("Error publishing articles:", error);
+      alert("Chyba při publikování článků");
     }
-  }
+  };
 
   const handleBulkUnpublish = async () => {
-    if (selectedArticles.length === 0) return
-    const token = localStorage.getItem("adminToken")
-    if (!token) return alert("Chyba autorizace")
+    if (selectedArticles.length === 0) return;
+    const token = localStorage.getItem("adminToken");
+    if (!token) return alert("Chyba autorizace");
 
     try {
       for (const articleId of selectedArticles) {
@@ -307,50 +274,50 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ status: "DRAFT" }),
-        })
-        const result = await response.json()
+        });
+        const result = await response.json();
         if (!result.success) {
-          console.error(`Chyba při převádění na koncept ${articleId}: ${result.error}`)
+          console.error(`Chyba při převádění na koncept ${articleId}: ${result.error}`);
         }
       }
-      await loadArticles()
-      setSelectedArticles([])
-      alert("Články byly převedeny na koncepty")
+      await loadArticles();
+      setSelectedArticles([]);
+      alert("Články byly převedeny na koncepty");
     } catch (error) {
-      console.error("Error unpublishing articles:", error)
-      alert("Chyba při převádění na koncepty")
+      console.error("Error unpublishing articles:", error);
+      alert("Chyba při převádění na koncepty");
     }
-  }
+  };
 
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm("Opravdu chcete smazat tento článek?")) {
-      const token = localStorage.getItem("adminToken")
-      if (!token) return alert("Chyba autorizace")
+      const token = localStorage.getItem("adminToken");
+      if (!token) return alert("Chyba autorizace");
       try {
         const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
 
-        const result = await response.json()
+        const result = await response.json();
         if (result.success) {
-          await loadArticles()
-          alert("Článek byl úspěšně smazán")
+          await loadArticles();
+          alert("Článek byl úspěšně smazán");
         } else {
-          throw new Error(result.error || "Neznámá chyba při mazání článku")
+          throw new Error(result.error || "Neznámá chyba při mazání článku");
         }
       } catch (error) {
-        console.error("Error deleting article:", error)
-        alert(`Chyba při mazání článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
+        console.error("Error deleting article:", error);
+        alert(`Chyba při mazání článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
       }
     }
-  }
+  };
 
   const handleDuplicateArticle = async (article: any) => {
-    const token = localStorage.getItem("adminToken")
-    if (!token) return alert("Chyba autorizace")
+    const token = localStorage.getItem("adminToken");
+    if (!token) return alert("Chyba autorizace");
     try {
       // Přidáno logování pro lepší diagnostiku
       console.log("Duplicating article:", article);
@@ -363,7 +330,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         tags: article.tags || [],
         imageUrl: article.imageUrl,
         status: "DRAFT",
-      }
+        authorId: article.authorId, // přidáno authorId pro správnou funkčnost
+      };
 
       const response = await fetch("/api/admin/articles", {
         method: "POST",
@@ -372,20 +340,20 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newArticleData),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
       if (result.success) {
-        await loadArticles()
-        alert("Článek byl úspěšně duplikován")
+        await loadArticles();
+        alert("Článek byl úspěšně duplikován");
       } else {
-        throw new Error(result.error || "Chyba při duplikování článku")
+        throw new Error(result.error || "Chyba při duplikování článku");
       }
     } catch (error) {
-      console.error("Error duplicating article:", error)
-      alert(`Chyba při duplikování článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`)
+      console.error("Error duplicating article:", error);
+      alert(`Chyba při duplikování článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
     }
-  }
+  };
 
   const exportArticles = () => {
     // Vytvořit nové pole objektů bez cyklických referencí
@@ -406,16 +374,16 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
       publishedAt: article.publishedAt,
     }));
     
-    const dataStr = JSON.stringify(exportableArticles, null, 2)
-    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
+    const dataStr = JSON.stringify(exportableArticles, null, 2);
+    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `articles_${new Date().toISOString().split("T")[0]}.json`
+    const exportFileDefaultName = `articles_${new Date().toISOString().split("T")[0]}.json`;
 
-    const linkElement = document.createElement("a")
-    linkElement.setAttribute("href", dataUri)
-    linkElement.setAttribute("download", exportFileDefaultName)
-    linkElement.click()
-  }
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -429,25 +397,25 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
       hour: "2-digit",
       minute: "2-digit",
     });
-  }
+  };
 
   const getStatusBadge = (article: Article) => {
     if (article.publishedAt && new Date(article.publishedAt) > new Date()) {
       return (
         <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Naplánováno</span>
-      )
+      );
     }
     switch (article.status) {
       case "PUBLISHED":
-        return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>
+        return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Publikováno</span>;
       case "DRAFT":
-        return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Koncept</span>
+        return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Koncept</span>;
       case "ARCHIVED":
-        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Archivováno</span>
+        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Archivováno</span>;
       default:
-        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">{article.status}</span>
+        return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">{article.status}</span>;
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -460,7 +428,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -536,9 +504,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
           <select
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => {
-              const [field, order] = e.target.value.split("-")
-              setSortBy(field as "updated" | "created" | "title")
-              setSortOrder(order as "asc" | "desc")
+              const [field, order] = e.target.value.split("-");
+              setSortBy(field as "updated" | "created" | "title");
+              setSortOrder(order as "asc" | "desc");
             }}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
@@ -665,7 +633,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                         ) : null}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-gray-900 truncate">{article.title}</h4>
-                          <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
+                          <p className="text-sm text-gray-500 truncate">{article.excerpt || 'Bez popisku'}</p>
                           {article.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {article.tags.slice(0, 3).map((tag, index) => (
@@ -686,11 +654,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{article.category.name}</span>
+                      <span className="text-sm text-gray-900">{article.category?.name || "Bez kategorie"}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(article)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(article.updatedAt)}
+                      {article.updatedAt ? formatDate(article.updatedAt) : "Neznámé datum"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="relative">
@@ -712,9 +680,9 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                                       id: article.id,
                                       title: article.title,
                                       // Zbytek potřebných vlastností bude načten při otevření editoru
-                                    } as any)
+                                    } as any);
                                   }
-                                  setShowActions(null)
+                                  setShowActions(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                               >
@@ -736,8 +704,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                                     status: article.status,
                                   };
                                   console.log("Article to duplicate:", articleToDuplicate);
-                                  handleDuplicateArticle(articleToDuplicate)
-                                  setShowActions(null)
+                                  handleDuplicateArticle(articleToDuplicate);
+                                  setShowActions(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                               >
@@ -756,8 +724,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
                               </a>
                               <button
                                 onClick={() => {
-                                  handleDeleteArticle(article.id)
-                                  setShowActions(null)
+                                  handleDeleteArticle(article.id);
+                                  setShowActions(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                               >
@@ -777,5 +745,5 @@ export default function ArticleManager({ onEditArticle, onCreateNew }: ArticleMa
         )}
       </div>
     </div>
-  )
+  );
 }

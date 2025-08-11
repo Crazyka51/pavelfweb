@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Script from "next/script"
+import { useEffect } from "react";
+import Script from "next/script";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH"
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH";
 
 export function GoogleAnalytics() {
   useEffect(() => {
     // Initialize dataLayer
-    window.dataLayer = window.dataLayer || []
+    window.dataLayer = window.dataLayer || [];
 
     function gtag(...args: any[]) {
-      window.dataLayer.push(args)
+      window.dataLayer.push(args);
     }
 
-    window.gtag = gtag
+    window.gtag = gtag;
 
     // Configure Google Analytics
-    gtag("js", new Date())
+    gtag("js", new Date());
     gtag("config", GA_MEASUREMENT_ID, {
       page_title: document.title,
       page_location: window.location.href,
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <>
@@ -43,7 +43,7 @@ export function GoogleAnalytics() {
         }}
       />
     </>
-  )
+  );
 }
 
 // Consent management
@@ -56,7 +56,7 @@ export interface ConsentSettings {
 
 export function handleConsentChange(consent: ConsentSettings) {
   if (typeof window !== "undefined") {
-    localStorage.setItem("cookie-consent", JSON.stringify(consent))
+    localStorage.setItem("cookie-consent", JSON.stringify(consent));
 
     if (window.gtag) {
       window.gtag("consent", "update", {
@@ -67,7 +67,7 @@ export function handleConsentChange(consent: ConsentSettings) {
         personalization_storage: consent.personalization ? "granted" : "denied",
         functionality_storage: "granted", // Always granted for necessary cookies
         security_storage: "granted", // Always granted for necessary cookies
-      })
+      });
     }
   }
 }
@@ -78,30 +78,30 @@ export function trackEvent(action: string, category: string, label?: string, val
       event_category: category,
       event_label: label,
       value: value,
-    })
+    });
   }
 }
 
 export function shouldShowConsentBanner(): boolean {
-  if (typeof window === "undefined") return false
-  return !localStorage.getItem("cookie-consent")
+  if (typeof window === "undefined") return false;
+  return !localStorage.getItem("cookie-consent");
 }
 
 export function getCurrentConsentPreferences(): ConsentSettings {
   if (typeof window === "undefined") {
-    return { necessary: true, analytics: false, marketing: false, personalization: false }
+    return { necessary: true, analytics: false, marketing: false, personalization: false };
   }
 
-  const stored = localStorage.getItem("cookie-consent")
+  const stored = localStorage.getItem("cookie-consent");
   if (stored) {
     try {
-      return JSON.parse(stored)
+      return JSON.parse(stored);
     } catch {
-      return { necessary: true, analytics: false, marketing: false, personalization: false }
+      return { necessary: true, analytics: false, marketing: false, personalization: false };
     }
   }
 
-  return { necessary: true, analytics: false, marketing: false, personalization: false }
+  return { necessary: true, analytics: false, marketing: false, personalization: false };
 }
 
-export default GoogleAnalytics
+export default GoogleAnalytics;

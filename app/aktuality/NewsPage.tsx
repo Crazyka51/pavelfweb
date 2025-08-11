@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Calendar, Tag, Search, Filter, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import { Calendar, Tag, Search, Filter, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 interface Article {
   id: string
@@ -24,39 +24,39 @@ interface ApiResponse {
 }
 
 export default function NewsPage() {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalArticles, setTotalArticles] = useState(0)
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalArticles, setTotalArticles] = useState(0);
   
-  const articlesPerPage = 6
-  const categories = ['Aktuality', 'Městská politika', 'Doprava', 'Životní prostředí', 'Kultura', 'Sport']
+  const articlesPerPage = 6;
+  const categories = ['Aktuality', 'Městská politika', 'Doprava', 'Životní prostředí', 'Kultura', 'Sport'];
 
   useEffect(() => {
-    loadArticles()
-  }, [currentPage, selectedCategory, searchTerm])
+    loadArticles();
+  }, [currentPage, selectedCategory, searchTerm]);
 
   const loadArticles = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Použijeme správný API endpoint
-      const response = await fetch('/api/admin/public/articles')
+      const response = await fetch('/api/admin/public/articles');
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const articles: Article[] = await response.json()
+      const articles: Article[] = await response.json();
       
       // Client-side filtering and pagination
-      let filteredArticles = articles
+      let filteredArticles = articles;
       
       // Filter by category
       if (selectedCategory !== 'all') {
-        filteredArticles = filteredArticles.filter(article => article.category === selectedCategory)
+        filteredArticles = filteredArticles.filter(article => article.category === selectedCategory);
       }
       
       // Filter by search term
@@ -65,34 +65,34 @@ export default function NewsPage() {
           article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
           article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-        )
+        );
       }
       
       // Apply pagination - FIXED
-      const offset = (currentPage - 1) * articlesPerPage
-      const paginatedArticles = filteredArticles.slice(offset, offset + articlesPerPage)
+      const offset = (currentPage - 1) * articlesPerPage;
+      const paginatedArticles = filteredArticles.slice(offset, offset + articlesPerPage);
       
-      setArticles(paginatedArticles)
-      setTotalArticles(filteredArticles.length)
-      setError(null) // Clear any previous errors
+      setArticles(paginatedArticles);
+      setTotalArticles(filteredArticles.length);
+      setError(null); // Clear any previous errors
     } catch (error) {
-      console.error('Error loading articles:', error)
-      setError('Nepodařilo se načíst články')
+      console.error('Error loading articles:', error);
+      setError('Nepodařilo se načíst články');
       // Zobrazíme prázdný seznam místo mock dat
-      setArticles([])
-      setTotalArticles(0)
+      setArticles([]);
+      setTotalArticles(0);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    })
-  }
+    });
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
@@ -102,11 +102,11 @@ export default function NewsPage() {
       'Životní prostředí': 'bg-emerald-100 text-emerald-800',
       'Kultura': 'bg-pink-100 text-pink-800',
       'Sport': 'bg-orange-100 text-orange-800'
-    }
-    return colors[category] || 'bg-gray-100 text-gray-800'
-  }
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
 
-  const totalPages = Math.ceil(totalArticles / articlesPerPage)
+  const totalPages = Math.ceil(totalArticles / articlesPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,8 +153,8 @@ export default function NewsPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => {
-                  setSelectedCategory(e.target.value)
-                  setCurrentPage(1)
+                  setSelectedCategory(e.target.value);
+                  setCurrentPage(1);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
@@ -310,5 +310,5 @@ export default function NewsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

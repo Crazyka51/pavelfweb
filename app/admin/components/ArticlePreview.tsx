@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { X, Calendar, Tag, ExternalLink } from 'lucide-react'
+import { X, Calendar, Tag, ExternalLink } from 'lucide-react';
 
 interface Article {
   id: string
@@ -28,8 +28,8 @@ export default function ArticlePreview({ article, onClose }: ArticlePreviewProps
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,5 +161,5 @@ export default function ArticlePreview({ article, onClose }: ArticlePreviewProps
         </div>
       </main>
     </div>
-  )
+  );
 }

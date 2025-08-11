@@ -1,0 +1,11 @@
+# Pravidla pro robotické vyhledávače
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://pavelfiser.cz/sitemap.xml
+
+# Disallow specifické admin cesty
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login/

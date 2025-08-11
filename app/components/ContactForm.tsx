@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "../../components/ui/input"
-import { Textarea } from "../../components/ui/textarea"
-import { Button } from "../../components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form"
-import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Jméno musí mít alespoň 2 znaky." }),
   email: z.string().email({ message: "Zadejte platnou e-mailovou adresu." }),
   subject: z.string().min(5, { message: "Předmět musí mít alespoň 5 znaků." }),
   message: z.string().min(10, { message: "Zpráva musí mít alespoň 10 znaků." }),
-})
+});
 
 export default function ContactForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -30,11 +30,11 @@ export default function ContactForm() {
       subject: "",
       message: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-    setSubmitStatus('idle')
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
     
     try {
       const response = await fetch('/api/send-email', {
@@ -43,19 +43,19 @@ export default function ContactForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      })
+      });
       
       if (response.ok) {
-        setSubmitStatus('success')
-        form.reset()
+        setSubmitStatus('success');
+        form.reset();
       } else {
-        throw new Error('Failed to send email')
+        throw new Error('Failed to send email');
       }
     } catch (error) {
-      console.error('Error sending email:', error)
-      setSubmitStatus('error')
+      console.error('Error sending email:', error);
+      setSubmitStatus('error');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -238,5 +238,5 @@ export default function ContactForm() {
         </div>
       </div>
     </section>
-  )
+  );
 }

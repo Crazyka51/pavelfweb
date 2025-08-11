@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Users, Mail, TrendingUp, Download, Send, History, Plus, Eye } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Users, Mail, TrendingUp, Download, Send, History, Plus, Eye } from "lucide-react";
 
 interface Subscriber {
   id: string
@@ -29,87 +29,87 @@ interface Campaign {
 }
 
 export default function NewsletterManager() {
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([])
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<NewsletterStats>({
     total: 0,
     recent: 0,
     active: 0,
     totalCampaigns: 0,
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<"subscribers" | "campaigns" | "create">("subscribers")
-  const [selectedEmails, setSelectedEmails] = useState<string[]>([])
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"subscribers" | "campaigns" | "create">("subscribers");
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
   const [newCampaign, setNewCampaign] = useState({
     subject: "",
     content: "",
-  })
+  });
 
   useEffect(() => {
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const loadData = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const [subscribersResponse, campaignsResponse] = await Promise.all([
         fetch("/api/admin/newsletter?activeOnly=false"), // Fetch all subscribers to get full stats
         fetch("/api/admin/newsletter/campaigns"),
-      ])
+      ]);
 
       if (subscribersResponse.ok) {
-        const subscribersData = await subscribersResponse.json()
-        setSubscribers(subscribersData.subscribers || [])
+        const subscribersData = await subscribersResponse.json();
+        setSubscribers(subscribersData.subscribers || []);
         setStats((prev) => ({
           ...prev,
           total: subscribersData.stats.total,
           recent: subscribersData.stats.recent,
           active: subscribersData.stats.active,
-        }))
+        }));
       } else {
-        console.error("Chyba při načítání odběratelů:", subscribersResponse.status, await subscribersResponse.text())
-        setSubscribers([])
-        setStats((prev) => ({ ...prev, total: 0, recent: 0, active: 0 }))
+        console.error("Chyba při načítání odběratelů:", subscribersResponse.status, await subscribersResponse.text());
+        setSubscribers([]);
+        setStats((prev) => ({ ...prev, total: 0, recent: 0, active: 0 }));
       }
 
       if (campaignsResponse.ok) {
-        const campaignsData = await campaignsResponse.json()
-        setCampaigns(campaignsData || [])
-        setStats((prev) => ({ ...prev, totalCampaigns: campaignsData.length }))
+        const campaignsData = await campaignsResponse.json();
+        setCampaigns(campaignsData || []);
+        setStats((prev) => ({ ...prev, totalCampaigns: campaignsData.length }));
       } else {
-        console.error("Chyba při načítání kampaní:", campaignsResponse.status, await campaignsResponse.text())
-        setCampaigns([])
-        setStats((prev) => ({ ...prev, totalCampaigns: 0 }))
+        console.error("Chyba při načítání kampaní:", campaignsResponse.status, await campaignsResponse.text());
+        setCampaigns([]);
+        setStats((prev) => ({ ...prev, totalCampaigns: 0 }));
       }
     } catch (error) {
-      console.error("Error loading newsletter data:", error)
-      setSubscribers([])
-      setCampaigns([])
+      console.error("Error loading newsletter data:", error);
+      setSubscribers([]);
+      setCampaigns([]);
       setStats({
         total: 0,
         recent: 0,
         active: 0,
         totalCampaigns: 0,
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSelectAll = () => {
     if (selectedEmails.length === subscribers.filter((s) => s.is_active).length) {
-      setSelectedEmails([])
+      setSelectedEmails([]);
     } else {
-      setSelectedEmails(subscribers.filter((s) => s.is_active).map((s) => s.email))
+      setSelectedEmails(subscribers.filter((s) => s.is_active).map((s) => s.email));
     }
-  }
+  };
 
   const handleSelectEmail = (email: string) => {
-    setSelectedEmails((prev) => (prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email]))
-  }
+    setSelectedEmails((prev) => (prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email]));
+  };
 
   const handleUnsubscribe = async (email: string) => {
-    if (!confirm(`Opravdu chcete odhlásit ${email} z newsletteru?`)) return
+    if (!confirm(`Opravdu chcete odhlásit ${email} z newsletteru?`)) return;
 
     try {
       const response = await fetch("/api/admin/newsletter", {
@@ -118,33 +118,33 @@ export default function NewsletterManager() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }), // Admin unsubscribe uses email in body
-      })
+      });
 
       if (response.ok) {
-        await loadData() // Reload all data to reflect changes
-        alert("Odběratel byl úspěšně odhlášen")
+        await loadData(); // Reload all data to reflect changes
+        alert("Odběratel byl úspěšně odhlášen");
       } else {
-        const errorData = await response.json()
-        alert(`Chyba při odhlašování: ${errorData.message || response.statusText}`)
+        const errorData = await response.json();
+        alert(`Chyba při odhlašování: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      console.error("Error unsubscribing:", error)
-      alert("Chyba při odhlašování odběratele")
+      console.error("Error unsubscribing:", error);
+      alert("Chyba při odhlašování odběratele");
     }
-  }
+  };
 
   const handleSendCampaign = async () => {
     if (!newCampaign.subject.trim() || !newCampaign.content.trim()) {
-      alert("Vyplňte předmět a obsah kampaně")
-      return
+      alert("Vyplňte předmět a obsah kampaně");
+      return;
     }
 
     const recipients =
-      selectedEmails.length > 0 ? selectedEmails : subscribers.filter((s) => s.is_active).map((s) => s.email)
+      selectedEmails.length > 0 ? selectedEmails : subscribers.filter((s) => s.is_active).map((s) => s.email);
 
     if (recipients.length === 0) {
-      alert("Nejsou žádní aktivní příjemci")
-      return
+      alert("Nejsou žádní aktivní příjemci");
+      return;
     }
 
     if (confirm(`Odeslat kampaň "${newCampaign.subject}" na ${recipients.length} adres?`)) {
@@ -162,23 +162,23 @@ export default function NewsletterManager() {
             status: "sent", // Mark as sent immediately for this mock
             createdBy: "admin", // Replace with actual user ID
           }),
-        })
+        });
 
         if (response.ok) {
-          await loadData() // Reload data to show new campaign
-          setNewCampaign({ subject: "", content: "" })
-          setActiveTab("campaigns")
-          alert("Kampaň byla odeslána!")
+          await loadData(); // Reload data to show new campaign
+          setNewCampaign({ subject: "", content: "" });
+          setActiveTab("campaigns");
+          alert("Kampaň byla odeslána!");
         } else {
-          const errorData = await response.json()
-          alert(`Chyba při odesílání kampaně: ${errorData.message || response.statusText}`)
+          const errorData = await response.json();
+          alert(`Chyba při odesílání kampaně: ${errorData.message || response.statusText}`);
         }
       } catch (error) {
-        console.error("Error sending campaign:", error)
-        alert("Chyba při odesílání kampaně")
+        console.error("Error sending campaign:", error);
+        alert("Chyba při odesílání kampaně");
       }
     }
-  }
+  };
 
   const exportSubscribers = () => {
     const csvContent = [
@@ -191,14 +191,14 @@ export default function NewsletterManager() {
       ]),
     ]
       .map((row) => row.join(","))
-      .join("\n")
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const link = document.createElement("a")
-    link.href = URL.createObjectURL(blob)
-    link.download = `newsletter-subscribers-${new Date().toISOString().split("T")[0]}.csv`
-    link.click()
-  }
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `newsletter-subscribers-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("cs-CZ", {
@@ -207,8 +207,8 @@ export default function NewsletterManager() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   if (isLoading) {
     return (
@@ -222,7 +222,7 @@ export default function NewsletterManager() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -304,7 +304,7 @@ export default function NewsletterManager() {
               { id: "campaigns", label: "Kampaně", icon: History },
               { id: "create", label: "Nová kampaň", icon: Plus },
             ].map((tab) => {
-              const Icon = tab.icon
+              const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
@@ -318,7 +318,7 @@ export default function NewsletterManager() {
                   <Icon className="w-4 h-4" />
                   {tab.label}
                 </button>
-              )
+              );
             })}
           </nav>
         </div>
@@ -509,5 +509,5 @@ export default function NewsletterManager() {
         </div>
       </div>
     </div>
-  )
+  );
 }

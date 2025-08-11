@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
-import { Button } from "../../components/ui/button"
-import { Skeleton } from "../../components/ui/skeleton"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Skeleton } from "../../components/ui/skeleton";
 // Definice typu Article na základě modelu Prisma
 interface Article {
   id: string;
@@ -38,43 +38,43 @@ interface ArticlesResponse {
 }
 
 export default function RecentNews() {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const loadRecentArticles = async (pageNumber: number) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`/api/admin/public/articles?page=${pageNumber}&limit=6`)
+      const response = await fetch(`/api/admin/public/articles?page=${pageNumber}&limit=6`);
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Chyba při načítání článků: ${response.status} - ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Chyba při načítání článků: ${response.status} - ${errorText}`);
       }
-      const data: ArticlesResponse = await response.json()
+      const data: ArticlesResponse = await response.json();
 
       // The Article type from lib/services/article-service.ts already handles mapping
       // from DB snake_case to camelCase, so we can use it directly.
-      setArticles((prevArticles) => (pageNumber === 1 ? data.articles : [...prevArticles, ...data.articles]))
-      setHasMore(data.hasMore)
+      setArticles((prevArticles) => (pageNumber === 1 ? data.articles : [...prevArticles, ...data.articles]));
+      setHasMore(data.hasMore);
     } catch (err: any) {
-      console.error("Error loading articles:", err)
-      setError(err.message || "Nepodařilo se načíst nejnovější články.")
+      console.error("Error loading articles:", err);
+      setError(err.message || "Nepodařilo se načíst nejnovější články.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadRecentArticles(1)
-  }, [])
+    loadRecentArticles(1);
+  }, []);
 
   const handleLoadMore = () => {
-    setPage((prevPage) => prevPage + 1)
-    loadRecentArticles(page + 1)
-  }
+    setPage((prevPage) => prevPage + 1);
+    loadRecentArticles(page + 1);
+  };
 
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900">
@@ -163,5 +163,5 @@ export default function RecentNews() {
         )}
       </div>
     </section>
-  )
+  );
 }

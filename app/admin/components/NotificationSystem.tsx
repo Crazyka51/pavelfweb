@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'
 
@@ -28,41 +28,41 @@ export default function NotificationSystem({ notifications, onRemove }: Notifica
     notifications.forEach(notification => {
       if (notification.duration && notification.duration > 0) {
         const timer = setTimeout(() => {
-          onRemove(notification.id)
-        }, notification.duration)
+          onRemove(notification.id);
+        }, notification.duration);
 
-        return () => clearTimeout(timer)
+        return () => clearTimeout(timer);
       }
-    })
-  }, [notifications, onRemove])
+    });
+  }, [notifications, onRemove]);
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'error':
-        return <XCircle className="w-5 h-5 text-red-500" />
+        return <XCircle className="w-5 h-5 text-red-500" />;
       case 'warning':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
       case 'info':
-        return <Info className="w-5 h-5 text-blue-500" />
+        return <Info className="w-5 h-5 text-blue-500" />;
     }
-  }
+  };
 
   const getStyles = (type: NotificationType) => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200 text-green-900'
+        return 'bg-green-50 border-green-200 text-green-900';
       case 'error':
-        return 'bg-red-50 border-red-200 text-red-900'
+        return 'bg-red-50 border-red-200 text-red-900';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-900'
+        return 'bg-yellow-50 border-yellow-200 text-yellow-900';
       case 'info':
-        return 'bg-blue-50 border-blue-200 text-blue-900'
+        return 'bg-blue-50 border-blue-200 text-blue-900';
     }
-  }
+  };
 
-  if (notifications.length === 0) return null
+  if (notifications.length === 0) return null;
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
@@ -116,25 +116,25 @@ export default function NotificationSystem({ notifications, onRemove }: Notifica
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 // Hook pro snadné používání notifikací
 export function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const addNotification = (notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-    setNotifications(prev => [...prev, { ...notification, id }])
-  }
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
 
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id))
-  }
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   const clearAll = () => {
-    setNotifications([])
-  }
+    setNotifications([]);
+  };
 
   // Předpřipravené metody pro různé typy notifikací
   const notify = {
@@ -149,7 +149,7 @@ export function useNotifications() {
     
     info: (title: string, message?: string, duration = 5000) => 
       addNotification({ type: 'info', title, message, duration }),
-  }
+  };
 
   return {
     notifications,
@@ -157,5 +157,5 @@ export function useNotifications() {
     removeNotification,
     clearAll,
     notify
-  }
+  };
 }

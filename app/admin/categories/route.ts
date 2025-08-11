@@ -1,28 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 // Helper function to verify authentication
 function verifyAuth(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
+  const authHeader = request.headers.get('authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Neplatný token')
+    throw new Error('Neplatný token');
   }
 
-  const token = authHeader.substring(7)
-  const jwtSecret = process.env.JWT_SECRET
+  const token = authHeader.substring(7);
+  const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
-    throw new Error('Chyba konfigurace serveru')
+    throw new Error('Chyba konfigurace serveru');
   }
 
   try {
-    return jwt.verify(token, jwtSecret)
+    return jwt.verify(token, jwtSecret);
   } catch (error) {
-    throw new Error('Neplatný token')
+    throw new Error('Neplatný token');
   }
 }
 
@@ -35,38 +35,38 @@ export async function GET(request: NextRequest) {
       orderBy: {
         name: 'asc',
       },
-    })
-    return NextResponse.json(categories)
+    });
+    return NextResponse.json(categories);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Chyba při načítání kategorií'
-    return NextResponse.json({ message: errorMessage }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Chyba při načítání kategorií';
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }
 
 // POST /api/admin/categories - Create a new category
 export async function POST(request: NextRequest) {
   try {
-    verifyAuth(request)
-    const categoryData = await request.json()
+    verifyAuth(request);
+    const categoryData = await request.json();
 
     // Validate required fields
     if (!categoryData.name) {
       return NextResponse.json(
         { message: 'Název kategorie je povinný' },
         { status: 400 }
-      )
+      );
     }
 
     const newCategory = await prisma.category.create({
       data: {
         name: categoryData.name,
       },
-    })
+    });
 
-    return NextResponse.json(newCategory, { status: 201 })
+    return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Chyba při vytváření kategorie'
-    const status = errorMessage === 'Neplatný token' ? 401 : 500
-    return NextResponse.json({ message: errorMessage }, { status })
+    const errorMessage = error instanceof Error ? error.message : 'Chyba při vytváření kategorie';
+    const status = errorMessage === 'Neplatný token' ? 401 : 500;
+    return NextResponse.json({ message: errorMessage }, { status });
   }
 }

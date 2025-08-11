@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { FileText, Eye, Calendar, TrendingUp, Edit3, Clock, BarChart3, PlusCircle, Activity } from "lucide-react"
-import { TypewriterText } from "./TypewriterText"
-import AnalyticsWidget from "./AnalyticsWidget"
-import Image from "next/image"
+import { useState, useEffect } from "react";
+import { FileText, Eye, Calendar, TrendingUp, Edit3, Clock, BarChart3, PlusCircle, Activity } from "lucide-react";
+import { TypewriterText } from "./TypewriterText";
+import AnalyticsWidget from "./AnalyticsWidget";
+import Image from "next/image";
 
 interface Article {
   id: string
@@ -52,50 +52,50 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
     avgWordsPerArticle: 0,
     lastWeekArticles: 0,
     recentActivity: [],
-  })
-  const [recentArticles, setRecentArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  });
+  const [recentArticles, setRecentArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    loadDashboardData();
+  }, []);
 
   const loadDashboardData = async () => {
     try {
       // Load articles with authorization
-      const token = localStorage.getItem("admin_token")
+      const token = localStorage.getItem("admin_token");
       const response = await fetch("/api/admin/articles", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
       if (response.ok) {
-        const articles: Article[] = await response.json()
+        const articles: Article[] = await response.json();
 
         // Calculate content statistics
-        const published = articles.filter((a) => a.published && !a.publishedAt)
-        const drafts = articles.filter((a) => !a.published && !a.publishedAt)
-        const scheduled = articles.filter((a) => a.publishedAt)
+        const published = articles.filter((a) => a.published && !a.publishedAt);
+        const drafts = articles.filter((a) => !a.published && !a.publishedAt);
+        const scheduled = articles.filter((a) => a.publishedAt);
 
         // Count words in all articles
         const totalWords = articles.reduce((sum, article) => {
           // Simple word count - remove HTML tags and count words
-          const plainText = article.content.replace(/<[^>]*>/g, " ")
-          const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length
-          return sum + wordCount
-        }, 0)
+          const plainText = article.content.replace(/<[^>]*>/g, " ");
+          const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length;
+          return sum + wordCount;
+        }, 0);
 
-        const avgWords = articles.length > 0 ? Math.round(totalWords / articles.length) : 0
+        const avgWords = articles.length > 0 ? Math.round(totalWords / articles.length) : 0;
 
         // Count articles from last week
-        const lastWeek = new Date()
-        lastWeek.setDate(lastWeek.getDate() - 7)
-        const lastWeekCount = articles.filter((a) => new Date(a.createdAt) >= lastWeek).length
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const lastWeekCount = articles.filter((a) => new Date(a.createdAt) >= lastWeek).length;
 
         // Get recent articles (last 5)
         const recent = articles
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-          .slice(0, 5)
+          .slice(0, 5);
 
         // Generate recent activity
         const activity = articles
@@ -106,7 +106,7 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
             title: article.title,
             timestamp: article.updatedAt,
           }))
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
         setStats({
           totalArticles: articles.length,
@@ -117,16 +117,16 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
           avgWordsPerArticle: avgWords,
           lastWeekArticles: lastWeekCount,
           recentActivity: activity,
-        })
+        });
 
-        setRecentArticles(recent)
+        setRecentArticles(recent);
       }
     } catch (error) {
-      console.error("Error loading dashboard data:", error)
+      console.error("Error loading dashboard data:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("cs-CZ", {
@@ -134,52 +134,52 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-    if (diffDays > 0) return `před ${diffDays} dny`
-    if (diffHours > 0) return `před ${diffHours} h`
-    if (diffMinutes > 0) return `před ${diffMinutes} min`
-    return "právě teď"
-  }
+    if (diffDays > 0) return `před ${diffDays} dny`;
+    if (diffHours > 0) return `před ${diffHours} h`;
+    if (diffMinutes > 0) return `před ${diffMinutes} min`;
+    return "právě teď";
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "publish":
-        return <Eye className="w-4 h-4 text-green-600" />
+        return <Eye className="w-4 h-4 text-green-600" />;
       case "draft":
-        return <Edit3 className="w-4 h-4 text-yellow-600" />
+        return <Edit3 className="w-4 h-4 text-yellow-600" />;
       case "create":
-        return <PlusCircle className="w-4 h-4 text-blue-600" />
+        return <PlusCircle className="w-4 h-4 text-blue-600" />;
       case "update":
-        return <Clock className="w-4 h-4 text-purple-600" />
+        return <Clock className="w-4 h-4 text-purple-600" />;
       default:
-        return <Activity className="w-4 h-4 text-gray-600" />
+        return <Activity className="w-4 h-4 text-gray-600" />;
     }
-  }
+  };
 
   const getActivityColor = (type: string) => {
     switch (type) {
       case "publish":
-        return "bg-green-50 border-green-200"
+        return "bg-green-50 border-green-200";
       case "draft":
-        return "bg-yellow-50 border-yellow-200"
+        return "bg-yellow-50 border-yellow-200";
       case "create":
-        return "bg-blue-50 border-blue-200"
+        return "bg-blue-50 border-blue-200";
       case "update":
-        return "bg-purple-50 border-purple-200"
+        return "bg-purple-50 border-purple-200";
       default:
-        return "bg-gray-50 border-gray-200"
+        return "bg-gray-50 border-gray-200";
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -197,7 +197,7 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -436,5 +436,5 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
         </div>
       </div>
     </div>
-  )
+  );
 }

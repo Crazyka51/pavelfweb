@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
-import { Button } from "../../../components/ui/button"
-import { Badge } from "../../../components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import {
   Users,
   Eye,
@@ -17,7 +17,7 @@ import {
   Smartphone,
   Monitor,
   Tablet,
-} from "lucide-react"
+} from "lucide-react";
 
 interface AnalyticsData {
   overview: {
@@ -53,35 +53,35 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsWidget() {
-  const [data, setData] = useState<AnalyticsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [timeRange, setTimeRange] = useState("7d")
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState("7d");
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchAnalytics = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/analytics?range=${timeRange}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
         },
-      })
+      });
 
       if (response.ok) {
-        const analyticsData = await response.json()
-        setData(analyticsData)
+        const analyticsData = await response.json();
+        setData(analyticsData);
       } else {
         // Fallback to mock data if API fails
-        setData(getMockData())
+        setData(getMockData());
       }
     } catch (error) {
-      console.error("Analytics fetch error:", error)
-      setData(getMockData())
+      console.error("Analytics fetch error:", error);
+      setData(getMockData());
     } finally {
-      setIsLoading(false)
-      setLastUpdated(new Date())
+      setIsLoading(false);
+      setLastUpdated(new Date());
     }
-  }
+  };
 
   const getMockData = (): AnalyticsData => ({
     overview: {
@@ -120,41 +120,41 @@ export default function AnalyticsWidget() {
       { source: "Referral", users: 87, percentage: 7.0 },
       { source: "Email", users: 14, percentage: 1.2 },
     ],
-  })
+  });
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [timeRange])
+    fetchAnalytics();
+  }, [timeRange]);
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("cs-CZ").format(num)
-  }
+    return new Intl.NumberFormat("cs-CZ").format(num);
+  };
 
   const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
 
   const getDeviceIcon = (category: string) => {
     switch (category.toLowerCase()) {
       case "mobile":
-        return <Smartphone className="h-4 w-4" />
+        return <Smartphone className="h-4 w-4" />;
       case "tablet":
-        return <Tablet className="h-4 w-4" />
+        return <Tablet className="h-4 w-4" />;
       default:
-        return <Monitor className="h-4 w-4" />
+        return <Monitor className="h-4 w-4" />;
     }
-  }
+  };
 
   const TrendIcon = ({ change }: { change: number }) => {
     if (change > 0) {
-      return <TrendingUp className="h-4 w-4 text-green-600" />
+      return <TrendingUp className="h-4 w-4 text-green-600" />;
     } else if (change < 0) {
-      return <TrendingDown className="h-4 w-4 text-red-600" />
+      return <TrendingDown className="h-4 w-4 text-red-600" />;
     }
-    return null
-  }
+    return null;
+  };
 
   if (isLoading) {
     return (
@@ -170,7 +170,7 @@ export default function AnalyticsWidget() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   if (!data) {
@@ -180,7 +180,7 @@ export default function AnalyticsWidget() {
           <p className="text-gray-500">Nepodařilo se načíst analytická data.</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -379,5 +379,5 @@ export default function AnalyticsWidget() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
+import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 /**
  * Postgres table definition for "articles".
@@ -17,7 +17,7 @@ export const articles = pgTable("articles", {
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   created_by: text("created_by").notNull(),
-})
+});
 
 /**
  * Postgres table definition for "categories".
@@ -34,7 +34,7 @@ export const categories = pgTable("categories", {
   is_active: boolean("is_active").notNull().default(true),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-})
+});
 
 /**
  * Postgres table definition for "newsletter_subscribers".
@@ -47,7 +47,7 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   unsubscribe_token: text("unsubscribe_token").unique(),
   subscribed_at: timestamp("subscribed_at", { withTimezone: true }).defaultNow().notNull(),
   unsubscribed_at: timestamp("unsubscribed_at", { withTimezone: true }),
-})
+});
 
 /**
  * Postgres table definition for "newsletter_campaigns".
@@ -74,7 +74,7 @@ export const newsletterCampaigns = pgTable("newsletter_campaigns", {
   created_by: text("created_by").notNull(),
   tags: text("tags").array(),
   segment_id: uuid("segment_id"),
-})
+});
 
 /**
  * Postgres table definition for "newsletter_templates".
@@ -90,7 +90,7 @@ export const newsletterTemplates = pgTable("newsletter_templates", {
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   created_by: text("created_by").notNull(),
-})
+});
 
 /**
  * Postgres table definition for "admin_users".
@@ -105,7 +105,7 @@ export const adminUsers = pgTable("admin_users", {
   last_login: timestamp("last_login", { withTimezone: true }),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-})
+});
 
 /**
  * Postgres table definition for "cms_settings".
@@ -134,7 +134,7 @@ export const cmsSettings = pgTable("cms_settings", {
   max_login_attempts: text("max_login_attempts").notNull().default("5"),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-})
+});
 
 /**
  * Postgres table definition for "analytics_events".
@@ -152,7 +152,7 @@ export const analyticsEvents = pgTable("analytics_events", {
   referrer: text("referrer"),
   timestamp: timestamp("timestamp", { withTimezone: true }).defaultNow().notNull(),
   metadata: text("metadata"),
-})
+});
 
 /**
  * 🎁  Namespace export expected elsewhere:
@@ -169,4 +169,4 @@ export const schema = {
   adminUsers,
   cmsSettings,
   analyticsEvents,
-}
+};

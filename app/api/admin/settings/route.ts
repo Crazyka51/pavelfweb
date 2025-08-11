@@ -1,38 +1,50 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { settingsService } from "@/lib/settings-service"
-import { requireAuth } from "@/lib/auth-utils"
+import { type NextRequest, NextResponse } from "next/server";
+import { settingsService } from "@/lib/settings-service";
+import { requireAuth } from "@/lib/auth-utils";
 
 // GET /api/admin/settings
 export const GET = requireAuth(
   async (request: NextRequest) => {
     try {
-      const settings = await settingsService.getAllSettings()
-      return NextResponse.json(settings)
+      const settings = await settingsService.getSettingsObject();
+      return NextResponse.json(settings);
     } catch (error) {
-      console.error("Error fetching settings:", error)
-      return NextResponse.json({ message: "Failed to fetch settings" }, { status: 500 })
+      console.error("Error fetching settings:", error);
+      return NextResponse.json({ message: "Failed to fetch settings" }, { status: 500 });
     }
   },
   ["admin", "editor"],
-)
+);
 
-// POST /api/admin/settings
+// POST /api/admin/settings - Reset nastavení
 export const POST = requireAuth(
   async (request: NextRequest) => {
     try {
-      const { key, value } = await request.json()
-      if (!key) {
-        return NextResponse.json({ message: "Key is required" }, { status: 400 })
-      }
-      const updatedSetting = await settingsService.setSetting(key, value)
-      if (!updatedSetting) {
-        return NextResponse.json({ message: "Failed to update setting" }, { status: 500 })
-      }
-      return NextResponse.json(updatedSetting, { status: 200 })
+      // Reset všech nastavení na výchozí hodnoty
+      const settings = await settingsService.resetSettings();
+      return NextResponse.json({ message: "Settings reset successfully", settings }, { status: 200 });
     } catch (error) {
-      console.error("Error updating setting:", error)
-      return NextResponse.json({ message: "Failed to update setting" }, { status: 500 })
+      console.error("Error resetting settings:", error);
+      return NextResponse.json({ message: "Failed to reset settings" }, { status: 500 });
     }
   },
   ["admin"],
-)
+);
+
+// PUT /api/admin/settings - Aktualizace všech nastavení
+export const PUT = requireAuth(
+  async (request: NextRequest) => {
+    try {
+      const settings = await request.json();
+      const updatedSettings = await settingsService.updateAllSettings(settings);
+      return NextResponse.json({ 
+        message: "Settings updated successfully", 
+        settings: updatedSettings 
+      }, { status: 200 });
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      return NextResponse.json({ message: "Failed to update settings" }, { status: 500 });
+    }
+  },
+  ["admin"],
+);

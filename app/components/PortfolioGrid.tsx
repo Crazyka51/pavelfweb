@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const projects = [
   {
@@ -47,14 +47,14 @@ const projects = [
     imageUrl: "/placeholder.svg?height=800&width=600",
     category: "Product Design",
   },
-]
+];
 
-const categories = ["All", ...new Set(projects.map((project) => project.category))]
+const categories = ["All", ...new Set(projects.map((project) => project.category))];
 
 export default function PortfolioGrid() {
-  const [filter, setFilter] = useState("All")
+  const [filter, setFilter] = useState("All");
 
-  const filteredProjects = filter === "All" ? projects : projects.filter((project) => project.category === filter)
+  const filteredProjects = filter === "All" ? projects : projects.filter((project) => project.category === filter);
 
   return (
     <section className="py-20 bg-background">
@@ -141,5 +141,5 @@ export default function PortfolioGrid() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

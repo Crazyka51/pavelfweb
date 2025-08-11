@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 export default function Marquee() {
   return (
@@ -25,5 +25,5 @@ export default function Marquee() {
         ))}
       </motion.div>
     </div>
-  )
+  );
 }

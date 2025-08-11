@@ -1,6 +1,6 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, FileText, Scale, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowLeft, FileText, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Podmínky použití | Pavel Fišer - Zastupitel Praha 4',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: 'Podmínky použití webových stránek a služeb Pavla Fišera, zastupitele Prahy 4.',
     images: ['/og-terms.svg'],
   },
-}
+};
 
 export default function TermsOfServicePage() {
   return (
@@ -329,5 +329,5 @@ export default function TermsOfServicePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

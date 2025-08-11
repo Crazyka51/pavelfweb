@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { FileText, Clock, Download, Trash2, X } from 'lucide-react'
+import { useState } from 'react';
+import { FileText, Clock, Download, Trash2, X } from 'lucide-react';
 
 interface DraftData {
   title: string
@@ -22,36 +22,36 @@ interface DraftManagerProps {
 
 export default function DraftManager({ onLoadDraft, onClose }: DraftManagerProps) {
   const [drafts, setDrafts] = useState<DraftData[]>(() => {
-    if (typeof window === 'undefined') return []
+    if (typeof window === 'undefined') return [];
     
     try {
-      const savedDraft = localStorage.getItem('article_draft')
+      const savedDraft = localStorage.getItem('article_draft');
       if (savedDraft) {
-        const draft = JSON.parse(savedDraft)
-        return [draft]
+        const draft = JSON.parse(savedDraft);
+        return [draft];
       }
     } catch (error) {
-      console.error('Error loading drafts:', error)
+      console.error('Error loading drafts:', error);
     }
-    return []
-  })
+    return [];
+  });
 
   const handleLoadDraft = (draft: DraftData) => {
-    onLoadDraft(draft)
-    onClose()
-  }
+    onLoadDraft(draft);
+    onClose();
+  };
 
   const handleDeleteDraft = (index: number) => {
     if (confirm('Opravdu chcete smazat tento koncept?')) {
-      const newDrafts = drafts.filter((_, i) => i !== index)
-      setDrafts(newDrafts)
+      const newDrafts = drafts.filter((_, i) => i !== index);
+      setDrafts(newDrafts);
       
       // Pro jednoduchost zatím pouze localStorage draft
       if (newDrafts.length === 0) {
-        localStorage.removeItem('article_draft')
+        localStorage.removeItem('article_draft');
       }
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
@@ -60,13 +60,13 @@ export default function DraftManager({ onLoadDraft, onClose }: DraftManagerProps
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   const getPreviewText = (content: string) => {
-    const textContent = content.replace(/<[^>]*>/g, '')
-    return textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent
-  }
+    const textContent = content.replace(/<[^>]*>/g, '');
+    return textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -172,5 +172,5 @@ export default function DraftManager({ onLoadDraft, onClose }: DraftManagerProps
         </div>
       </div>
     </div>
-  )
+  );
 }

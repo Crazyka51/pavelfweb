@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { motion } from "framer-motion"
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 interface ProjectCardProps {
   title: string
@@ -31,5 +31,5 @@ export default function ProjectCard({ title, description, image, size }: Project
         </div>
       </motion.div>
     </motion.div>
-  )
+  );
 }

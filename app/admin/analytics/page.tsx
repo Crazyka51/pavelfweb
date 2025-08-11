@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import AdminLayout from '../components/AdminLayout'
-import AnalyticsManager from '../components/AnalyticsManager'
+import { useState } from 'react';
+import AdminLayout from '../components/AdminLayout';
+import AnalyticsManager from '../components/AnalyticsManager';
 
 export default function AnalyticsPage() {
-  const [currentSection, setCurrentSection] = useState('analytics')
+  const [currentSection, setCurrentSection] = useState('analytics');
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    window.location.href = '/'
-  }
+    localStorage.removeItem('isAuthenticated');
+    window.location.href = '/';
+  };
 
   return (
     <AdminLayout 
@@ -20,5 +20,5 @@ export default function AnalyticsPage() {
     >
       <AnalyticsManager />
     </AdminLayout>
-  )
+  );
 }

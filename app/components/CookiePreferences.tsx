@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { X, Cookie, Shield, Settings, Check, Info } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { X, Cookie, Shield, Settings, Check, Info } from 'lucide-react';
 import { 
   ConsentSettings,
   handleConsentChange, 
   trackEvent, 
   getCurrentConsentPreferences 
-} from './GoogleAnalytics'
+} from './GoogleAnalytics';
 
 interface CookiePreferencesProps {
   isOpen: boolean
@@ -20,29 +20,29 @@ export default function CookiePreferences({ isOpen, onClose }: CookiePreferences
     analytics: false,
     marketing: false,
     personalization: false
-  })
+  });
 
   useEffect(() => {
     // Load existing preferences if available
-    const currentPreferences = getCurrentConsentPreferences()
+    const currentPreferences = getCurrentConsentPreferences();
     if (currentPreferences) {
-      setConsentSettings(currentPreferences)
+      setConsentSettings(currentPreferences);
     }
-  }, [])
+  }, []);
 
   const saveConsentPreferences = (preferences: ConsentSettings) => {
-    handleConsentChange(preferences)
-    onClose()
+    handleConsentChange(preferences);
+    onClose();
     
     // Track the specific consent decision
     const grantedCategories = Object.entries(preferences)
       .filter(([key, value]) => key !== 'necessary' && value)
-      .map(([key]) => key)
+      .map(([key]) => key);
     
     trackEvent('consent_update', 'cookie_preferences', 
       grantedCategories.length > 0 ? grantedCategories.join(',') : 'declined'
-    )
-  }
+    );
+  };
 
   const acceptAllCookies = () => {
     const allAccepted: ConsentSettings = {
@@ -50,10 +50,10 @@ export default function CookiePreferences({ isOpen, onClose }: CookiePreferences
       analytics: true,
       marketing: true,
       personalization: true
-    }
-    setConsentSettings(allAccepted)
-    saveConsentPreferences(allAccepted)
-  }
+    };
+    setConsentSettings(allAccepted);
+    saveConsentPreferences(allAccepted);
+  };
 
   const acceptNecessaryOnly = () => {
     const necessaryOnly: ConsentSettings = {
@@ -61,25 +61,25 @@ export default function CookiePreferences({ isOpen, onClose }: CookiePreferences
       analytics: false,
       marketing: false,
       personalization: false
-    }
-    setConsentSettings(necessaryOnly)
-    saveConsentPreferences(necessaryOnly)
-  }
+    };
+    setConsentSettings(necessaryOnly);
+    saveConsentPreferences(necessaryOnly);
+  };
 
   const acceptSelectedCookies = () => {
-    saveConsentPreferences(consentSettings)
-  }
+    saveConsentPreferences(consentSettings);
+  };
 
   const toggleSetting = (key: keyof ConsentSettings) => {
-    if (key === 'necessary') return // Cannot toggle necessary cookies
+    if (key === 'necessary') return; // Cannot toggle necessary cookies
     
     setConsentSettings(prev => ({
       ...prev,
       [key]: !prev[key]
-    }))
-  }
+    }));
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -217,5 +217,5 @@ export default function CookiePreferences({ isOpen, onClose }: CookiePreferences
         </div>
       </div>
     </div>
-  )
+  );
 }

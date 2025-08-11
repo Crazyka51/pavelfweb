@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Save, Eye, Send, Mail, Settings, X } from 'lucide-react'
-import TiptapEditor from './TiptapEditor'
+import { useState, useEffect } from 'react';
+import { Save, Eye, Send, Mail, Settings, X } from 'lucide-react';
+import TiptapEditor from './TiptapEditor';
 
 interface EmailTemplate {
   id: string
@@ -31,22 +31,22 @@ export default function CampaignEditor({
   subscriberCount,
   token 
 }: CampaignEditorProps) {
-  const [name, setName] = useState('')
-  const [subject, setSubject] = useState('')
-  const [htmlContent, setHtmlContent] = useState('')
-  const [isPreview, setIsPreview] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isSending, setIsSending] = useState(false)
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
+  const [isPreview, setIsPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     if (template) {
-      setName(template.name)
-      setSubject(template.subject)
-      setHtmlContent(template.htmlContent)
+      setName(template.name);
+      setSubject(template.subject);
+      setHtmlContent(template.htmlContent);
     } else {
       // Default template
-      setName('Nová kampaň')
-      setSubject('Novinky z Prahy 4')
+      setName('Nová kampaň');
+      setSubject('Novinky z Prahy 4');
       setHtmlContent(`
         <h2>Vážení čtenáři,</h2>
         
@@ -62,17 +62,17 @@ export default function CampaignEditor({
         <p>Více informací najdete na našem webu.</p>
         
         <p>S pozdravem,<br>Pavel Fišer</p>
-      `)
+      `);
     }
-  }, [template])
+  }, [template]);
 
   const handleSave = async () => {
     if (!name.trim() || !subject.trim() || !htmlContent.trim()) {
-      alert('Vyplňte všechna povinná pole!')
-      return
+      alert('Vyplňte všechna povinná pole!');
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     
     const templateData: EmailTemplate = {
       id: template?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -82,25 +82,25 @@ export default function CampaignEditor({
       textContent: htmlContent.replace(/<[^>]*>/g, ''), // Simple HTML to text conversion
       createdAt: template?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    }
+    };
 
-    await onSave(templateData)
-    setIsSaving(false)
-  }
+    await onSave(templateData);
+    setIsSaving(false);
+  };
 
   const handleSendCampaign = async () => {
     if (!name.trim() || !subject.trim() || !htmlContent.trim()) {
-      alert('Vyplňte všechna povinná pole před odesláním!')
-      return
+      alert('Vyplňte všechna povinná pole před odesláním!');
+      return;
     }
 
     const confirmed = confirm(
       `Opravdu chcete odeslat newsletter "${subject}" všem ${subscriberCount} odběratelům?`
-    )
+    );
     
-    if (!confirmed) return
+    if (!confirmed) return;
 
-    setIsSending(true)
+    setIsSending(true);
     
     const templateData: EmailTemplate = {
       id: template?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -110,18 +110,18 @@ export default function CampaignEditor({
       textContent: htmlContent.replace(/<[^>]*>/g, ''),
       createdAt: template?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    }
+    };
 
     try {
-      await onSendCampaign(templateData, []) // Empty array means send to all subscribers
-      alert('Newsletter byl úspěšně odeslán!')
-      onCancel()
+      await onSendCampaign(templateData, []); // Empty array means send to all subscribers
+      alert('Newsletter byl úspěšně odeslán!');
+      onCancel();
     } catch (error) {
-      alert('Chyba při odesílání newsletteru. Zkuste to prosím později.')
+      alert('Chyba při odesílání newsletteru. Zkuste to prosím později.');
     } finally {
-      setIsSending(false)
+      setIsSending(false);
     }
-  }
+  };
 
   const generatePreviewHTML = () => {
     return `
@@ -185,8 +185,8 @@ export default function CampaignEditor({
         </div>
       </body>
       </html>
-    `
-  }
+    `;
+  };
 
   if (isPreview) {
     return (
@@ -232,7 +232,7 @@ export default function CampaignEditor({
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -370,5 +370,5 @@ export default function CampaignEditor({
         </div>
       </main>
     </div>
-  )
+  );
 }

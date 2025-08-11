@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +20,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { ChevronDown, Trash2, Eye, EyeOff, Copy, Tag, FolderOpen, Download, Mail } from "lucide-react"
+} from "@/components/ui/alert-dialog";
+import { ChevronDown, Trash2, Eye, EyeOff, Copy, Tag, FolderOpen, Download, Mail } from "lucide-react";
 
 interface BulkAction {
   id: string
@@ -50,7 +50,7 @@ export function BulkActionsToolbar({
   isLoading = false,
   customActions = [],
 }: BulkActionsToolbarProps) {
-  const [confirmAction, setConfirmAction] = useState<BulkAction | null>(null)
+  const [confirmAction, setConfirmAction] = useState<BulkAction | null>(null);
 
   const getDefaultActions = (): BulkAction[] => {
     const commonActions: BulkAction[] = [
@@ -71,7 +71,7 @@ export function BulkActionsToolbar({
         icon: Download,
         variant: "secondary",
       },
-    ]
+    ];
 
     switch (entityType) {
       case "articles":
@@ -107,7 +107,7 @@ export function BulkActionsToolbar({
             variant: "secondary",
           },
           ...commonActions,
-        ]
+        ];
 
       case "subscribers":
         return [
@@ -130,7 +130,7 @@ export function BulkActionsToolbar({
             variant: "default",
           },
           ...commonActions,
-        ]
+        ];
 
       case "categories":
         return [
@@ -144,32 +144,32 @@ export function BulkActionsToolbar({
             confirmationDescription: "Vybrané kategorie budou sloučeny do jedné.",
           },
           ...commonActions,
-        ]
+        ];
 
       default:
-        return commonActions
+        return commonActions;
     }
-  }
+  };
 
-  const allActions = [...getDefaultActions(), ...customActions]
+  const allActions = [...getDefaultActions(), ...customActions];
 
   const handleActionClick = async (action: BulkAction) => {
     if (action.requiresConfirmation) {
-      setConfirmAction(action)
+      setConfirmAction(action);
     } else {
-      await onAction(action.id)
+      await onAction(action.id);
     }
-  }
+  };
 
   const handleConfirmedAction = async () => {
     if (confirmAction) {
-      await onAction(confirmAction.id)
-      setConfirmAction(null)
+      await onAction(confirmAction.id);
+      setConfirmAction(null);
     }
-  }
+  };
 
   if (selectedCount === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -187,7 +187,7 @@ export function BulkActionsToolbar({
         <div className="flex items-center gap-2">
           {/* Quick actions */}
           {allActions.slice(0, 2).map((action) => {
-            const Icon = action.icon
+            const Icon = action.icon;
             return (
               <Button
                 key={action.id}
@@ -200,7 +200,7 @@ export function BulkActionsToolbar({
                 <Icon className="w-4 h-4" />
                 {action.label}
               </Button>
-            )
+            );
           })}
 
           {/* More actions dropdown */}
@@ -214,7 +214,7 @@ export function BulkActionsToolbar({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 {allActions.slice(2).map((action, index) => {
-                  const Icon = action.icon
+                  const Icon = action.icon;
                   return (
                     <div key={action.id}>
                       {index === allActions.length - 3 && <DropdownMenuSeparator />}
@@ -226,7 +226,7 @@ export function BulkActionsToolbar({
                         {action.label}
                       </DropdownMenuItem>
                     </div>
-                  )
+                  );
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -255,5 +255,5 @@ export function BulkActionsToolbar({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

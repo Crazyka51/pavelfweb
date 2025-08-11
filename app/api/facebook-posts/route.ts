@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 import crypto from 'crypto';
 
 // Funkce pro generování appsecret_proof pro zabezpečení FB API požadavků
@@ -71,33 +71,33 @@ const mockFacebookPosts = [
     permalink_url: "https://facebook.com/pavel.fiser/posts/6", 
     full_picture: "https://www.praha4.cz/image/x700_y400/zivotni-prostredi-tyden.jpg",
   }
-]
+];
 
 export async function GET() {
   try {
     // Zkusíme načíst reálná data z Facebook API
-    const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID
-    const accessToken = process.env.FACEBOOK_ACCESS_TOKEN
-    const appSecret = process.env.FACEBOOK_APP_SECRET
+    const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID;
+    const accessToken = process.env.FACEBOOK_ACCESS_TOKEN;
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
 
     if (!pageId || !accessToken || !appSecret) {
-      console.log("Facebook API není nakonfigurováno, používám mock data")
+      console.log("Facebook API není nakonfigurováno, používám mock data");
       return NextResponse.json({
         data: mockFacebookPosts,
         isMockData: true,
         message: "Zobrazují se ukázková data - Facebook API není nakonfigurováno",
-      })
+      });
     }
 
     // Pokus o načtení reálných dat
     // Vytvoření appsecret_proof pro zabezpečení požadavku
-    const appSecretProof = generateAppSecretProof(accessToken, appSecret)
+    const appSecretProof = generateAppSecretProof(accessToken, appSecret);
     
     // Přidání appsecret_proof do URL požadavku pro větší zabezpečení
     const response = await fetch(
       `https://graph.facebook.com/v23.0/${pageId}/posts?fields=id,message,created_time,likes.summary(true),comments.summary(true),shares,permalink_url,full_picture&access_token=${accessToken}&appsecret_proof=${appSecretProof}&limit=10`,
       { next: { revalidate: 300 } }, // Cache na 5 minut
-    )
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response' } }));
@@ -108,24 +108,24 @@ export async function GET() {
         data: mockFacebookPosts,
         isMockData: true,
         message: `Zobrazují se ukázková data - problém s Facebook API: ${errorData?.error?.message || response.status}`,
-      })
+      });
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     return NextResponse.json({
       data: data.data || mockFacebookPosts,
       isMockData: false,
       message: "Reálná data z Facebook",
-    })
+    });
   } catch (error) {
-    console.error("Facebook API error:", error)
+    console.error("Facebook API error:", error);
 
     // Fallback na mock data
     return NextResponse.json({
       data: mockFacebookPosts,
       isMockData: true,
       message: "Zobrazují se ukázková data - chyba při načítání z Facebook",
-    })
+    });
   }
 }

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Calendar, Users, CheckCircle, XCircle, Eye, Trash2 } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Calendar, Users, CheckCircle, XCircle, Eye, Trash2 } from 'lucide-react';
 
 interface Campaign {
   id: string
@@ -24,38 +24,38 @@ interface CampaignHistoryProps {
 }
 
 export default function CampaignHistory({ token, onBack }: CampaignHistoryProps) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadCampaigns()
-  }, [token])
+    loadCampaigns();
+  }, [token]);
 
   const loadCampaigns = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch('/api/admin/newsletter/send', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Chyba při načítání kampaní')
+        throw new Error('Chyba při načítání kampaní');
       }
 
-      const data = await response.json()
-      setCampaigns(data.campaigns)
-      setError(null)
+      const data = await response.json();
+      setCampaigns(data.campaigns);
+      setError(null);
     } catch (error) {
-      console.error('Error loading campaigns:', error)
-      setError('Nepodařilo se načíst historii kampaní')
+      console.error('Error loading campaigns:', error);
+      setError('Nepodařilo se načíst historii kampaní');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('cs-CZ', {
@@ -64,34 +64,34 @@ export default function CampaignHistory({ token, onBack }: CampaignHistoryProps)
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'sent':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800';
       case 'failed':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800';
       case 'sending':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'sent':
-        return 'Odesláno'
+        return 'Odesláno';
       case 'failed':
-        return 'Chyba'
+        return 'Chyba';
       case 'sending':
-        return 'Odesílání'
+        return 'Odesílání';
       default:
-        return 'Neznámý'
+        return 'Neznámý';
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -99,7 +99,7 @@ export default function CampaignHistory({ token, onBack }: CampaignHistoryProps)
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span className="ml-2">Načítání historie kampaní...</span>
       </div>
-    )
+    );
   }
 
   return (
@@ -261,5 +261,5 @@ export default function CampaignHistory({ token, onBack }: CampaignHistoryProps)
         )}
       </div>
     </div>
-  )
+  );
 }

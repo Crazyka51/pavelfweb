@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useRef, useEffect, useState } from "react"
-import { motion, useAnimation, useMotionValue } from "framer-motion"
+import { useRef, useEffect, useState } from "react";
+import { motion, useAnimation, useMotionValue } from "framer-motion";
 
 const features = [
   {
@@ -29,28 +29,28 @@ const features = [
     description: "Built to help your site rank higher in search results.",
     icon: "🔍",
   },
-]
+];
 
 export default function FeatureCarousel() {
-  const [width, setWidth] = useState(0)
-  const carousel = useRef<HTMLDivElement>(null)
-  const x = useMotionValue(0)
-  const controls = useAnimation()
+  const [width, setWidth] = useState(0);
+  const carousel = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const controls = useAnimation();
 
   useEffect(() => {
     if (carousel.current) {
-      setWidth(carousel.current.scrollWidth - carousel.current.offsetWidth)
+      setWidth(carousel.current.scrollWidth - carousel.current.offsetWidth);
     }
-  }, [])
+  }, []);
 
   const handleDragEnd = () => {
-    const currentX = x.get()
+    const currentX = x.get();
     if (currentX > 0) {
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } })
+      controls.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } });
     } else if (currentX < -width) {
-      controls.start({ x: -width, transition: { type: "spring", stiffness: 300, damping: 30 } })
+      controls.start({ x: -width, transition: { type: "spring", stiffness: 300, damping: 30 } });
     }
-  }
+  };
 
   return (
     <div className="py-20 bg-gradient-to-b from-background to-secondary/20">
@@ -92,5 +92,5 @@ export default function FeatureCarousel() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

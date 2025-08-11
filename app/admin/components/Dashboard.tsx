@@ -1,45 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { FileText, Eye, Edit3, Calendar, TrendingUp, Mail, BarChart3, Clock, PlusCircle, Activity } from "lucide-react"
-import { TypewriterText } from "./TypewriterText"
-
-interface Article {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  category: { name: string }
-  tags: string[]
-  published: boolean
-  createdAt: string
-  updatedAt: string
-  imageUrl?: string
-  publishedAt?: string
-}
-
-interface DashboardStats {
-  totalArticles: number
-  publishedArticles: number
-  draftArticles: number
-  scheduledArticles: number
-  totalWords: number
-  avgWordsPerArticle: number
-  lastWeekArticles: number
-  newsletterSubscribers: number
-  recentActivity: Array<{
-    id: string
-    type: "create" | "update" | "publish" | "draft"
-    title: string
-    timestamp: string
-  }>
-}
+import { useState, useEffect } from "react";
+import { FileText, Eye, Edit3, Calendar, TrendingUp, Mail, BarChart3, Clock, PlusCircle, Activity } from "lucide-react";
+import { TypewriterText } from "./TypewriterText";
+import { Article, DashboardStats, ArticleStatus } from "@/types/cms";
 
 interface DashboardProps {
   onCreateNew?: () => void;
+  articles?: Article[];
+  onRefresh?: () => Promise<void>;
 }
 
-export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
+export default function Dashboard({ onCreateNew = () => {}, articles = [], onRefresh }: DashboardProps) {
   const [stats, setStats] = useState<DashboardStats>({
     totalArticles: 0,
     publishedArticles: 0,
@@ -50,52 +22,117 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
     lastWeekArticles: 0,
     newsletterSubscribers: 0,
     recentActivity: [],
-  })
-  const [recentArticles, setRecentArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  });
+  const [recentArticles, setRecentArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    // Používáme články poskytnuté v props místo načítání vlastních
+    if (articles && articles.length > 0) {
+      processDashboardData(articles);
+      setIsLoading(false);
+    } else {
+      // Když nejsou k dispozici články, zkusíme je načíst
+      if (onRefresh) {
+        onRefresh().then(() => setIsLoading(false));
+      } else {
+        loadDashboardData();
+      }
+    }
+  }, [articles, onRefresh]);
 
+  // Funkce pro zpracování dat bez jejich načítání
+  const processDashboardData = (articles: Article[]) => {
+    // Stejná logika jako v původní loadDashboardData, ale bez načítání
+    // Calculate statistics
+    const published = articles.filter((a) => (a.status === "PUBLISHED" || a.published) && !a.publishedAt);
+    const drafts = articles.filter((a) => (a.status === "DRAFT" || !a.published) && !a.publishedAt);
+    const scheduled = articles.filter((a) => a.publishedAt);
+
+    // Count words
+    const totalWords = articles.reduce((sum, article) => {
+      const plainText = article.content.replace(/<[^>]*>/g, " ");
+      const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length;
+      return sum + wordCount;
+    }, 0);
+
+    const avgWords = articles.length > 0 ? Math.round(totalWords / articles.length) : 0;
+
+    // Count articles from last week
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const lastWeekCount = articles.filter((a) => new Date(a.createdAt) >= lastWeek).length;
+
+    // Get recent articles
+    const recent = articles
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 5);
+
+    // Generate recent activity
+    const activity = articles
+      .slice(0, 8)
+      .map((article) => ({
+        id: article.id,
+        type: article.published ? ("publish" as const) : ("draft" as const),
+        title: article.title,
+        timestamp: article.updatedAt,
+      }))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    setStats({
+      totalArticles: articles.length,
+      publishedArticles: published.length,
+      draftArticles: drafts.length,
+      scheduledArticles: scheduled.length,
+      totalWords: totalWords,
+      avgWordsPerArticle: avgWords,
+      lastWeekArticles: lastWeekCount,
+      newsletterSubscribers: 127, // Mock data
+      recentActivity: activity,
+    });
+
+    setRecentArticles(recent);
+  };
+
+  // Ponecháme původní funkci pro případ, že by props nebyly dostupné
   const loadDashboardData = async () => {
     try {
-      const token = localStorage.getItem("adminToken")
+      const token = localStorage.getItem("adminToken");
 
       // Load articles
       const articlesResponse = await fetch("/api/admin/articles", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
       if (articlesResponse.ok) {
-        const result = await articlesResponse.json()
-        const articles: Article[] = result.data.articles
+        const result = await articlesResponse.json();
+        const articles: Article[] = result.data.articles;
 
         // Calculate statistics
-        const published = articles.filter((a) => a.published && !a.publishedAt)
-        const drafts = articles.filter((a) => !a.published && !a.publishedAt)
-        const scheduled = articles.filter((a) => a.publishedAt)
+        const published = articles.filter((a) => a.published && !a.publishedAt);
+        const drafts = articles.filter((a) => !a.published && !a.publishedAt);
+        const scheduled = articles.filter((a) => a.publishedAt);
 
         // Count words
         const totalWords = articles.reduce((sum, article) => {
-          const plainText = article.content.replace(/<[^>]*>/g, " ")
-          const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length
-          return sum + wordCount
-        }, 0)
+          const plainText = article.content.replace(/<[^>]*>/g, " ");
+          const wordCount = plainText.split(/\s+/).filter((word) => word.length > 0).length;
+          return sum + wordCount;
+        }, 0);
 
-        const avgWords = articles.length > 0 ? Math.round(totalWords / articles.length) : 0
+        const avgWords = articles.length > 0 ? Math.round(totalWords / articles.length) : 0;
 
         // Count articles from last week
-        const lastWeek = new Date()
-        lastWeek.setDate(lastWeek.getDate() - 7)
-        const lastWeekCount = articles.filter((a) => new Date(a.createdAt) >= lastWeek).length
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const lastWeekCount = articles.filter((a) => new Date(a.createdAt) >= lastWeek).length;
 
         // Get recent articles
         const recent = articles
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-          .slice(0, 5)
+          .slice(0, 5);
 
         // Generate recent activity
         const activity = articles
@@ -106,7 +143,7 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
             title: article.title,
             timestamp: article.updatedAt,
           }))
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
         setStats({
           totalArticles: articles.length,
@@ -118,16 +155,16 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
           lastWeekArticles: lastWeekCount,
           newsletterSubscribers: 127, // Mock data
           recentActivity: activity,
-        })
+        });
 
-        setRecentArticles(recent)
+        setRecentArticles(recent);
       }
     } catch (error) {
-      console.error("Error loading dashboard data:", error)
+      console.error("Error loading dashboard data:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("cs-CZ", {
@@ -135,52 +172,52 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-    if (diffDays > 0) return `před ${diffDays} dny`
-    if (diffHours > 0) return `před ${diffHours} h`
-    if (diffMinutes > 0) return `před ${diffMinutes} min`
-    return "právě teď"
-  }
+    if (diffDays > 0) return `před ${diffDays} dny`;
+    if (diffHours > 0) return `před ${diffHours} h`;
+    if (diffMinutes > 0) return `před ${diffMinutes} min`;
+    return "právě teď";
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "publish":
-        return <Eye className="w-4 h-4 text-green-600" />
+        return <Eye className="w-4 h-4 text-green-600" />;
       case "draft":
-        return <Edit3 className="w-4 h-4 text-yellow-600" />
+        return <Edit3 className="w-4 h-4 text-yellow-600" />;
       case "create":
-        return <PlusCircle className="w-4 h-4 text-blue-600" />
+        return <PlusCircle className="w-4 h-4 text-blue-600" />;
       case "update":
-        return <Clock className="w-4 h-4 text-purple-600" />
+        return <Clock className="w-4 h-4 text-purple-600" />;
       default:
-        return <Activity className="w-4 h-4 text-gray-600" />
+        return <Activity className="w-4 h-4 text-gray-600" />;
     }
-  }
+  };
 
   const getActivityColor = (type: string) => {
     switch (type) {
       case "publish":
-        return "bg-green-50 border-green-200"
+        return "bg-green-50 border-green-200";
       case "draft":
-        return "bg-yellow-50 border-yellow-200"
+        return "bg-yellow-50 border-yellow-200";
       case "create":
-        return "bg-blue-50 border-blue-200"
+        return "bg-blue-50 border-blue-200";
       case "update":
-        return "bg-purple-50 border-purple-200"
+        return "bg-purple-50 border-purple-200";
       default:
-        return "bg-gray-50 border-gray-200"
+        return "bg-gray-50 border-gray-200";
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -198,7 +235,7 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -326,17 +363,17 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
                     )}
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-gray-900 truncate">{article.title}</h4>
-                      <p className="text-sm text-gray-500 truncate">{article.excerpt}</p>
+                      <p className="text-sm text-gray-500 truncate">{article.excerpt || 'Bez popisku'}</p>
                       <div className="flex items-center mt-2 space-x-4 text-xs text-gray-400">
                         <span
                           className={`px-2 py-1 rounded-full ${
-                            article.published ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                            article.status === "PUBLISHED" || article.published ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {article.published ? "Publikováno" : "Koncept"}
+                          {article.status === "PUBLISHED" || article.published ? "Publikováno" : "Koncept"}
                         </span>
-                        <span>{formatDate(article.updatedAt)}</span>
-                        <span>{article.category?.name}</span>
+                        <span>{article.updatedAt ? formatDate(article.updatedAt) : "Neznámý datum"}</span>
+                        <span>{article.category?.name || "Bez kategorie"}</span>
                       </div>
                     </div>
                   </div>
@@ -431,5 +468,5 @@ export default function Dashboard({ onCreateNew = () => {} }: DashboardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

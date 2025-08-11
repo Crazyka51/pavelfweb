@@ -1,10 +1,10 @@
-"use client"
-import { motion } from "framer-motion"
-import { Tab } from "@headlessui/react"
-import { CheckCircle, Calendar, Users, Building } from "lucide-react"
+"use client";
+import { motion } from "framer-motion";
+import { Tab } from "@headlessui/react";
+import { CheckCircle, Calendar, Users, Building } from "lucide-react";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ")
+  return classes.filter(Boolean).join(" ");
 }
 
 const projects = {
@@ -95,7 +95,7 @@ const projects = {
         "Projekt počítá s revitalizací náměstí, vytvoření nových odpočinkových zón a zlepšení celkového vzhledu veřejných prostranství v Praze 4. Součástí je i zapojení obyvatel do plánování těchto změn.",
     },
   ],
-}
+};
 
 export default function Projects() {
   return (
@@ -173,5 +173,5 @@ export default function Projects() {
         </Tab.Group>
       </div>
     </section>
-  )
+  );
 }

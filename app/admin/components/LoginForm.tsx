@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "../../../components/ui/button"
-import { Input } from "../../../components/ui/input"
-import { Label } from "../../../components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
-import { useToast } from "../../../hooks/use-toast"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
+import { useToast } from "../../../hooks/use-toast";
 
 interface LoginFormProps {
   onLogin: (credentials: { username: string; password: string }) => Promise<void>;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      await onLogin({ username, password })
+      await onLogin({ username, password });
       
       toast({
         title: "Přihlášení úspěšné",
         description: "Vítejte v administraci!",
         variant: "default",
-      })
+      });
       
-      router.push("/admin") // Přesměrování na základní URL administrace
+      router.push("/admin"); // Přesměrování na základní URL administrace
     } catch (error: any) {
-      console.error("Login error:", error)
+      console.error("Login error:", error);
       toast({
         title: "Chyba přihlášení",
         description: error.message || "Nesprávné uživatelské jméno nebo heslo.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-950">
@@ -86,5 +86,5 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

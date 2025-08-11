@@ -1,32 +1,32 @@
-import { PrismaClient } from '@prisma/client'
-import { randomBytes } from 'crypto'
+import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 // Re-export types from Prisma for external use if needed
-export type { NewsletterSubscriber, NewsletterCampaign, NewsletterTemplate } from '@prisma/client'
+export type { NewsletterSubscriber, NewsletterCampaign, NewsletterTemplate } from '@prisma/client';
 
 export class NewsletterService {
   // Subscriber management
   async getSubscribers(activeOnly = true) {
     try {
-      const whereClause = activeOnly ? { isActive: true } : {}
+      const whereClause = activeOnly ? { isActive: true } : {};
       return await prisma.newsletterSubscriber.findMany({
         where: whereClause,
 
         orderBy: {
           subscribedAt: 'desc',
         },
-      })
+      });
     } catch (error) {
-      console.error("Failed to get subscribers:", error)
-      throw new Error("Failed to fetch subscribers")
+      console.error("Failed to get subscribers:", error);
+      throw new Error("Failed to fetch subscribers");
     }
   }
 
   async subscribeEmail(email: string, source = "web") {
     try {
-      const unsubscribeToken = randomBytes(16).toString('hex')
+      const unsubscribeToken = randomBytes(16).toString('hex');
       return await prisma.newsletterSubscriber.upsert({
         where: { email },
         update: {
@@ -40,10 +40,10 @@ export class NewsletterService {
           source,
           unsubscribeToken,
         },
-      })
+      });
     } catch (error) {
-      console.error("Failed to subscribe email:", error)
-      throw new Error("Failed to subscribe email")
+      console.error("Failed to subscribe email:", error);
+      throw new Error("Failed to subscribe email");
     }
   }
 
@@ -55,11 +55,11 @@ export class NewsletterService {
           isActive: false,
           unsubscribedAt: new Date(),
         },
-      })
-      return !!updated
+      });
+      return !!updated;
     } catch (error) {
-      console.error("Failed to unsubscribe email:", error)
-      return false
+      console.error("Failed to unsubscribe email:", error);
+      return false;
     }
   }
 
@@ -72,41 +72,41 @@ export class NewsletterService {
           isActive: false,
           unsubscribedAt: new Date(),
         },
-      })
-      return !!updated
+      });
+      return !!updated;
     } catch (error) {
-      console.error("Failed to unsubscribe by token:", error)
-      return false
+      console.error("Failed to unsubscribe by token:", error);
+      return false;
     }
   }
 
   async deleteSubscriber(id: string) {
     try {
-      await prisma.newsletterSubscriber.delete({ where: { id } })
-      return true
+      await prisma.newsletterSubscriber.delete({ where: { id } });
+      return true;
     } catch (error) {
-      console.error("Failed to delete subscriber:", error)
-      return false
+      console.error("Failed to delete subscriber:", error);
+      return false;
     }
   }
 
   // Statistics
   async getSubscriberStats() {
     try {
-      const total = await prisma.newsletterSubscriber.count()
-      const active = await prisma.newsletterSubscriber.count({ where: { isActive: true } })
-      const inactive = total - active
+      const total = await prisma.newsletterSubscriber.count();
+      const active = await prisma.newsletterSubscriber.count({ where: { isActive: true } });
+      const inactive = total - active;
       const recent = await prisma.newsletterSubscriber.count({
         where: {
           subscribedAt: {
             gte: new Date(new Date().setDate(new Date().getDate() - 30)),
           },
         },
-      })
-      return { total, active, inactive, recent }
+      });
+      return { total, active, inactive, recent };
     } catch (error) {
-      console.error("Failed to get subscriber stats:", error)
-      return { total: 0, active: 0, inactive: 0, recent: 0 }
+      console.error("Failed to get subscriber stats:", error);
+      return { total: 0, active: 0, inactive: 0, recent: 0 };
     }
   }
 
@@ -118,20 +118,20 @@ export class NewsletterService {
           createdAt: 'desc',
 
         },
-      })
+      });
     } catch (error) {
-      console.error("Failed to get campaigns:", error)
-      throw new Error("Failed to fetch campaigns")
+      console.error("Failed to get campaigns:", error);
+      throw new Error("Failed to fetch campaigns");
     }
   }
   
   async getCampaign(id: string) {
     try {
-      return await prisma.newsletterCampaign.findUnique({ where: { id } })
+      return await prisma.newsletterCampaign.findUnique({ where: { id } });
     } catch (error) {
 
-      console.error("Failed to get campaign:", error)
-      return null
+      console.error("Failed to get campaign:", error);
+      return null;
     }
   }
   
@@ -151,10 +151,10 @@ export class NewsletterService {
             tags: campaignData.tags || [],
             segmentId: campaignData.segmentId,
         }
-      })
+      });
     } catch (error) {
-      console.error("Failed to create campaign:", error)
-      throw new Error("Failed to create campaign")
+      console.error("Failed to create campaign:", error);
+      throw new Error("Failed to create campaign");
     }
   }
   
@@ -164,48 +164,48 @@ export class NewsletterService {
         where: { id },
         data: campaignData,
 
-      })
+      });
     } catch (error) {
-      console.error("Failed to update campaign:", error)
-      return null
+      console.error("Failed to update campaign:", error);
+      return null;
     }
   }
   
   async deleteCampaign(id: string) {
     try {
-      await prisma.newsletterCampaign.delete({ where: { id } })
-      return true
+      await prisma.newsletterCampaign.delete({ where: { id } });
+      return true;
     } catch (error) {
 
-      console.error("Failed to delete campaign:", error)
-      return false
+      console.error("Failed to delete campaign:", error);
+      return false;
     }
   }
   
   // Template management
   async getTemplates(activeOnly = true) {
     try {
-      const whereClause = activeOnly ? { isActive: true } : {}
+      const whereClause = activeOnly ? { isActive: true } : {};
       return await prisma.newsletterTemplate.findMany({
         where: whereClause,
         orderBy: {
 
           name: 'asc',
         },
-      })
+      });
     } catch (error) {
-      console.error("Failed to get templates:", error)
-      throw new Error("Failed to fetch templates")
+      console.error("Failed to get templates:", error);
+      throw new Error("Failed to fetch templates");
     }
   }
   
   async getTemplate(id: string) {
     try {
-      return await prisma.newsletterTemplate.findUnique({ where: { id } })
+      return await prisma.newsletterTemplate.findUnique({ where: { id } });
     } catch (error) {
 
-      console.error("Failed to get template:", error)
-      return null
+      console.error("Failed to get template:", error);
+      return null;
     }
   }
 
@@ -221,10 +221,10 @@ export class NewsletterService {
           isActive: templateData.isActive ?? true,
           createdById: templateData.createdById,
         },
-      })
+      });
     } catch (error) {
-      console.error("Failed to create template:", error)
-      throw new Error("Failed to create template")
+      console.error("Failed to create template:", error);
+      throw new Error("Failed to create template");
     }
   }
   
@@ -234,34 +234,34 @@ export class NewsletterService {
         where: { id },
         data: templateData,
 
-      })
+      });
     } catch (error) {
-      console.error("Failed to update template:", error)
-      return null
+      console.error("Failed to update template:", error);
+      return null;
     }
   }
   
   async deleteTemplate(id: string) {
     try {
-      await prisma.newsletterTemplate.delete({ where: { id } })
-      return true
+      await prisma.newsletterTemplate.delete({ where: { id } });
+      return true;
     } catch (error) {
 
-      console.error("Failed to delete template:", error)
-      return false
+      console.error("Failed to delete template:", error);
+      return false;
     }
   }
 
   // Singleton instance
-  private static instance: NewsletterService
+  private static instance: NewsletterService;
 
   static getInstance(): NewsletterService {
     if (!NewsletterService.instance) {
-      NewsletterService.instance = new NewsletterService()
+      NewsletterService.instance = new NewsletterService();
     }
-    return NewsletterService.instance
+    return NewsletterService.instance;
   }
 }
 
 // Export instance of the service
-export const newsletterService = NewsletterService.getInstance()
+export const newsletterService = NewsletterService.getInstance();

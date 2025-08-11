@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Badge } from "../../components/ui/badge"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Badge } from "../../components/ui/badge";
 
 interface Article {
   id: string;
@@ -18,30 +18,30 @@ interface Article {
 }
 
 export default function RecentArticles() {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchRecentArticles() {
       try {
-        setLoading(true)
-        const response = await fetch(`/api/public/articles?page=1&limit=3`)
+        setLoading(true);
+        const response = await fetch(`/api/public/articles?page=1&limit=3`);
         if (!response.ok) {
-          throw new Error(`Chyba při načítání článků: ${response.status}`)
+          throw new Error(`Chyba při načítání článků: ${response.status}`);
         }
-        const data = await response.json()
-        setArticles(data.articles || [])
+        const data = await response.json();
+        setArticles(data.articles || []);
       } catch (err: any) {
-        console.error("Chyba při načítání nedávných článků:", err)
-        setError(err.message)
+        console.error("Chyba při načítání nedávných článků:", err);
+        setError(err.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchRecentArticles()
-  }, [])
+    fetchRecentArticles();
+  }, []);
 
   if (loading) {
     return (
@@ -57,7 +57,7 @@ export default function RecentArticles() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -66,7 +66,7 @@ export default function RecentArticles() {
         <h2 className="text-2xl font-bold mb-4">Nedávné články</h2>
         <p className="text-red-500">Nepodařilo se načíst články: {error}</p>
       </div>
-    )
+    );
   }
 
   if (articles.length === 0) {
@@ -75,7 +75,7 @@ export default function RecentArticles() {
         <h2 className="text-2xl font-bold mb-4">Nedávné články</h2>
         <p>Žádné články k zobrazení.</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -116,5 +116,5 @@ export default function RecentArticles() {
         ))}
       </div>
     </div>
-  )
+  );
 }

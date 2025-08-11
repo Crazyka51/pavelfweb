@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export default function CustomCursor() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
 
-    window.addEventListener("mousemove", updateMousePosition)
+    window.addEventListener("mousemove", updateMousePosition);
 
     return () => {
-      window.removeEventListener("mousemove", updateMousePosition)
-    }
-  }, [])
+      window.removeEventListener("mousemove", updateMousePosition);
+    };
+  }, []);
 
   return (
     <motion.div
@@ -26,5 +26,5 @@ export default function CustomCursor() {
     >
       <div className="w-3 h-3 bg-white rounded-full" />
     </motion.div>
-  )
+  );
 }

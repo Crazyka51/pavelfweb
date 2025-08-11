@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
-import Image from '@tiptap/extension-image'
-import TextAlign from '@tiptap/extension-text-align'
-import Placeholder from '@tiptap/extension-placeholder'
-import { useCallback } from 'react'
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
+import { useCallback } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -21,7 +21,7 @@ import {
   AlignRight,
   Undo,
   Redo
-} from 'lucide-react'
+} from 'lucide-react';
 
 interface TiptapEditorProps {
   content: string
@@ -60,31 +60,31 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
     ],
     content: content,
     onUpdate({ editor }) {
-      onChange(editor.getHTML())
+      onChange(editor.getHTML());
     },
-  })
+  });
 
   // Funkce pro vkládání odkazu
   const addLink = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('URL odkazu:')
+    if (!editor) return;
+    const url = window.prompt('URL odkazu:');
     if (url) {
-      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
     }
-  }, [editor])
+  }, [editor]);
 
   // Funkce pro vkládání obrázku
   const addImage = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('URL obrázku:')
+    if (!editor) return;
+    const url = window.prompt('URL obrázku:');
     if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+      editor.chain().focus().setImage({ src: url }).run();
     }
-  }, [editor])
+  }, [editor]);
 
   // Pokud editor není inicializován
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -199,5 +199,5 @@ export default function TiptapEditor({ content, onChange, placeholder }: TiptapE
       </div>
       <EditorContent editor={editor} className="prose prose-sm max-w-none p-4 min-h-[200px] focus:outline-none" />
     </div>
-  )
+  );
 }

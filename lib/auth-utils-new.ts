@@ -88,12 +88,12 @@ export async function deleteSession() {
  * Pro použití ve server komponentách a server akcích
  * @returns Informace o uživateli nebo null pokud není přihlášen
  */
-export async function getAuthUser(): Promise<UserPayload | null> {
-  const cookieJar = await cookies();
-  const sessionCookie = cookieJar.get("session");
+export async function getAuthUser(request: NextRequest): Promise<UserPayload | null> {
+  const sessionCookie = request.cookies.get("session");
   const session = sessionCookie?.value;
   
   if (!session) return null;
+
   
   const decrypted = await decrypt(session);
   if (!decrypted) return null;

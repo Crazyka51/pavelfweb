@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const products = [
   {
@@ -23,18 +23,18 @@ const products = [
     description: "Memorable and impactful branding that tells your story.",
     image: "/placeholder.svg?height=600&width=600",
   },
-]
+];
 
 export default function ProductShowcase() {
-  const [currentProduct, setCurrentProduct] = useState(0)
+  const [currentProduct, setCurrentProduct] = useState(0);
 
   const nextProduct = () => {
-    setCurrentProduct((prev) => (prev + 1) % products.length)
-  }
+    setCurrentProduct((prev) => (prev + 1) % products.length);
+  };
 
   const prevProduct = () => {
-    setCurrentProduct((prev) => (prev - 1 + products.length) % products.length)
-  }
+    setCurrentProduct((prev) => (prev - 1 + products.length) % products.length);
+  };
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 overflow-hidden">
@@ -81,5 +81,5 @@ export default function ProductShowcase() {
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import Link from "next/link"
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -92,7 +92,7 @@ export default function Footer() {
                 <button 
                   onClick={() => {
                     // Dispatch custom event to open cookie preferences
-                    window.dispatchEvent(new CustomEvent('openCookiePreferences'))
+                    window.dispatchEvent(new CustomEvent('openCookiePreferences'));
                   }}
                   className="text-blue-200 hover:text-white transition-colors text-left"
                 >
@@ -132,5 +132,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

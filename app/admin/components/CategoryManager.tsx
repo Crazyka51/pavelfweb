@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useToast } from "@/hooks/use-toast"
-import "../styles/dynamic-colors.css"
-import { Plus, Edit, Trash2, Tag } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import "../styles/dynamic-colors.css";
+import { Plus, Edit, Trash2, Tag } from "lucide-react";
 
 interface Category {
   id: string
@@ -22,10 +22,10 @@ interface Category {
 }
 
 export default function CategoryManager() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -33,39 +33,39 @@ export default function CategoryManager() {
     parentId: "",
     displayOrder: 0,
     isActive: true,
-  })
+  });
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
-  const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"]
+  const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"];
 
   useEffect(() => {
-    loadCategories()
-  }, [])
+    loadCategories();
+  }, []);
 
   const loadCategories = async () => {
     try {
-      const response = await fetch("/api/admin/categories?includeArticleCount=true")
+      const response = await fetch("/api/admin/categories?includeArticleCount=true");
 
       if (response.ok) {
-        const result = await response.json()
+        const result = await response.json();
         if (result.success) {
-          setCategories(result.data)
+          setCategories(result.data);
         } else {
-          console.error("Error loading categories: Invalid data format", result)
+          console.error("Error loading categories: Invalid data format", result);
         }
       } else {
-        console.error("Failed to load categories", response.status, await response.text())
+        console.error("Failed to load categories", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading categories:", error)
+      console.error("Error loading categories:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
       if (editingCategory) {
@@ -83,14 +83,14 @@ export default function CategoryManager() {
             order: formData.displayOrder, // Map to 'order' for API route
             isActive: formData.isActive,
           }),
-        })
+        });
 
         if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně aktualizována")
+          await loadCategories();
+          alert("Kategorie byla úspěšně aktualizována");
         } else {
-          const errorData = await response.json()
-          alert(`Chyba při aktualizaci kategorie: ${errorData.message || response.statusText}`)
+          const errorData = await response.json();
+          alert(`Chyba při aktualizaci kategorie: ${errorData.message || response.statusText}`);
         }
       } else {
         // Create new category
@@ -107,33 +107,33 @@ export default function CategoryManager() {
             displayOrder: formData.displayOrder,
             isActive: formData.isActive,
           }),
-        })
+        });
 
         if (response.ok) {
           const newCategory = await response.json();
           setCategories([...categories, newCategory.data]);
-          toast({ title: "Kategorie byla úspěšně vytvořena" })
+          toast({ title: "Kategorie byla úspěšně vytvořena" });
         } else {
-          const errorData = await response.json()
+          const errorData = await response.json();
           toast({
             title: "Chyba při vytváření kategorie",
             description: errorData.message || response.statusText,
             variant: "destructive",
-          })
+          });
         }
       }
 
-      setIsDialogOpen(false)
-      setEditingCategory(null)
-      setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
+      setIsDialogOpen(false);
+      setEditingCategory(null);
+      setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true });
     } catch (error) {
-      console.error("Error saving category:", error)
-      alert("Chyba při ukládání kategorie")
+      console.error("Error saving category:", error);
+      alert("Chyba při ukládání kategorie");
     }
-  }
+  };
 
   const handleEdit = (category: Category) => {
-    setEditingCategory(category)
+    setEditingCategory(category);
     setFormData({
       name: category.name,
       description: category.description || "",
@@ -141,36 +141,36 @@ export default function CategoryManager() {
       parentId: category.parentId || "",
       displayOrder: category.display_order,
       isActive: category.is_active,
-    })
-    setIsDialogOpen(true)
-  }
+    });
+    setIsDialogOpen(true);
+  };
 
   const handleDelete = async (categoryId: string) => {
     if (confirm("Opravdu chcete smazat tuto kategorii?")) {
       try {
         const response = await fetch(`/api/admin/categories/${categoryId}`, {
           method: "DELETE",
-        })
+        });
 
         if (response.ok) {
-          await loadCategories()
-          alert("Kategorie byla úspěšně smazána")
+          await loadCategories();
+          alert("Kategorie byla úspěšně smazána");
         } else {
-          const errorData = await response.json()
-          alert(`Chyba při mazání kategorie: ${errorData.message || response.statusText}`)
+          const errorData = await response.json();
+          alert(`Chyba při mazání kategorie: ${errorData.message || response.statusText}`);
         }
       } catch (error) {
-        console.error("Error deleting category:", error)
-        alert("Chyba při mazání kategorie")
+        console.error("Error deleting category:", error);
+        alert("Chyba při mazání kategorie");
       }
     }
-  }
+  };
 
   const handleNewCategory = () => {
-    setEditingCategory(null)
-    setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true })
-    setIsDialogOpen(true)
-  }
+    setEditingCategory(null);
+    setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true });
+    setIsDialogOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -184,7 +184,7 @@ export default function CategoryManager() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -363,5 +363,5 @@ export default function CategoryManager() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
-import { z } from 'zod'
+import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
+import { z } from 'zod';
 
 // Force dynamic rendering pro API emailů
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Validační schéma pro příchozí data
 const contactFormSchema = z.object({
@@ -13,28 +13,28 @@ const contactFormSchema = z.object({
   email: z.string().email({ message: "Zadejte platnou e-mailovou adresu." }),
   subject: z.string().min(5, { message: "Předmět musí mít alespoň 5 znaků." }),
   message: z.string().min(10, { message: "Zpráva musí mít alespoň 10 znaků." }),
-})
+});
 
 export async function POST(request: NextRequest) {
   try {
     // Získání dat z requestu
-    const body = await request.json()
+    const body = await request.json();
     
     // Validace dat
-    const validatedData = contactFormSchema.parse(body)
-    const { name, email, subject, message } = validatedData
+    const validatedData = contactFormSchema.parse(body);
+    const { name, email, subject, message } = validatedData;
 
     // Kontrola API klíče a konfigurace
     if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY není nastaven')
+      console.error('RESEND_API_KEY není nastaven');
       return NextResponse.json(
         { error: 'Služba e-mailu není dostupná. Kontaktujte administrátora.' },
         { status: 500 }
-      )
+      );
     }
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-    const toEmail = process.env.RESEND_TO_EMAIL || 'matejhrabak@gmail.com'
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    const toEmail = process.env.RESEND_TO_EMAIL || 'matejhrabak@gmail.com';
 
     // Příprava HTML obsahu e-mailu
     const htmlContent = `
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           </div>
         </body>
       </html>
-    `
+    `;
 
     // Příprava textové verze e-mailu
     const textContent = `
@@ -99,7 +99,7 @@ ${message}
 
 ---
 Čas odeslání: ${new Date().toLocaleString('cs-CZ')}
-    `
+    `;
 
     // Odeslání e-mailu
     const emailData = await resend.emails.send({
@@ -112,9 +112,9 @@ ${message}
       headers: {
         'X-Entity-Ref-ID': `contact-form-${Date.now()}`,
       },
-    })
+    });
 
-    console.log('E-mail úspěšně odeslán:', emailData)
+    console.log('E-mail úspěšně odeslán:', emailData);
 
     return NextResponse.json(
       { 
@@ -123,10 +123,10 @@ ${message}
         emailData: emailData 
       },
       { status: 200 }
-    )
+    );
 
   } catch (error) {
-    console.error('Chyba při odesílání e-mailu:', error)
+    console.error('Chyba při odesílání e-mailu:', error);
 
     // Rozlišení různých typů chyb
     if (error instanceof z.ZodError) {
@@ -136,7 +136,7 @@ ${message}
           details: (error as any).format() 
         },
         { status: 400 }
-      )
+      );
     }
 
     // Resend API chyby
@@ -144,14 +144,14 @@ ${message}
       return NextResponse.json(
         { error: 'Chyba při odesílání e-mailu. Zkuste to prosím později.' },
         { status: 503 }
-      )
+      );
     }
 
     // Obecná chyba
     return NextResponse.json(
       { error: 'Došlo k neočekávané chybě. Zkuste to prosím později.' },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -160,5 +160,5 @@ export async function GET() {
   return NextResponse.json(
     { error: 'Metoda není podporována' },
     { status: 405 }
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { db, sql, type CMSSettings } from "../database"
-import { cmsSettings } from "../schema"
-import { eq } from "drizzle-orm"
+import { db, sql, type CMSSettings } from "../database";
+import { cmsSettings } from "../schema";
+import { eq } from "drizzle-orm";
 
 // Vytvoření mapovací funkce pro konverzi snake_case na camelCase
 const mapDbSettingsToCMSSettings = (dbSettings: any): CMSSettings => {
@@ -27,7 +27,7 @@ const mapDbSettingsToCMSSettings = (dbSettings: any): CMSSettings => {
     updated_at: dbSettings.updated_at
     // odstraněno created_at, která není v typu CMSSettings
   };
-}
+};
 
 export class SettingsService {
   constructor(private db: typeof sql) {}
@@ -35,12 +35,12 @@ export class SettingsService {
   async getSettings(): Promise<CMSSettings | null> {
     try {
       // Použijeme db.select místo this.db.select
-      const result = await db.select().from(cmsSettings).limit(1)
-      if (!result || result.length === 0) return null
-      return mapDbSettingsToCMSSettings(result[0])
+      const result = await db.select().from(cmsSettings).limit(1);
+      if (!result || result.length === 0) return null;
+      return mapDbSettingsToCMSSettings(result[0]);
     } catch (error) {
-      console.error("Error fetching settings:", error)
-      return null
+      console.error("Error fetching settings:", error);
+      return null;
     }
   }
 
@@ -55,20 +55,20 @@ export class SettingsService {
           updated_at: new Date(),
         })
         .where(eq(cmsSettings.id, "default-settings-id"))
-        .returning() // Use a fixed ID or fetch the existing one
-      return mapDbSettingsToCMSSettings(updatedSettings)
+        .returning(); // Use a fixed ID or fetch the existing one
+      return mapDbSettingsToCMSSettings(updatedSettings);
     } catch (error) {
-      console.error("Error updating settings:", error)
-      return null
+      console.error("Error updating settings:", error);
+      return null;
     }
   }
 
   async initializeDefaultSettings(): Promise<CMSSettings | null> {
     try {
-      const existingSettings = await this.getSettings()
+      const existingSettings = await this.getSettings();
       if (existingSettings) {
-        console.log("Default settings already exist.")
-        return existingSettings
+        console.log("Default settings already exist.");
+        return existingSettings;
       }
 
       const defaultSettings = {
@@ -93,17 +93,17 @@ export class SettingsService {
         max_login_attempts: "5", // změněno zpět na řetězec
         created_at: new Date(),
         updated_at: new Date(),
-      }
+      };
 
       // @ts-ignore - ignorujeme typové chyby
-      const [newSettings] = await db.insert(cmsSettings).values(defaultSettings).returning()
-      console.log("Default settings initialized.")
-      return mapDbSettingsToCMSSettings(newSettings)
+      const [newSettings] = await db.insert(cmsSettings).values(defaultSettings).returning();
+      console.log("Default settings initialized.");
+      return mapDbSettingsToCMSSettings(newSettings);
     } catch (error) {
-      console.error("Error initializing default settings:", error)
-      return null
+      console.error("Error initializing default settings:", error);
+      return null;
     }
   }
 }
 
-export const settingsService = new SettingsService(sql)
+export const settingsService = new SettingsService(sql);

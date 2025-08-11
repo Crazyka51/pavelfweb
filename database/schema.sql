@@ -78,6 +78,33 @@ CREATE TABLE IF NOT EXISTS admin_users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- CMS settings table
+CREATE TABLE IF NOT EXISTS cms_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key TEXT NOT NULL UNIQUE,
+    value TEXT,
+    site_name TEXT,
+    site_description TEXT,
+    admin_email TEXT,
+    language TEXT NOT NULL DEFAULT 'en',
+    timezone TEXT NOT NULL DEFAULT 'UTC',
+    default_category_id UUID,
+    auto_save_interval TEXT NOT NULL DEFAULT '30000',
+    allow_image_upload BOOLEAN NOT NULL DEFAULT true,
+    max_file_size TEXT NOT NULL DEFAULT '5242880',
+    require_approval BOOLEAN NOT NULL DEFAULT false,
+    default_visibility TEXT NOT NULL DEFAULT 'public',
+    enable_scheduling BOOLEAN NOT NULL DEFAULT true,
+    email_notifications BOOLEAN NOT NULL DEFAULT true,
+    new_article_notification BOOLEAN NOT NULL DEFAULT true,
+    primary_color TEXT NOT NULL DEFAULT '#3b82f6',
+    dark_mode BOOLEAN NOT NULL DEFAULT false,
+    session_timeout TEXT NOT NULL DEFAULT '3600000',
+    max_login_attempts TEXT NOT NULL DEFAULT '5',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
 -- Activity log table
 CREATE TABLE IF NOT EXISTS activity_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,6 +116,22 @@ CREATE TABLE IF NOT EXISTS activity_log (
     ip_address INET,
     user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Analytics events table
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_name TEXT NOT NULL,
+    event_data TEXT,
+    type TEXT,
+    path TEXT,
+    title TEXT,
+    user_id TEXT,
+    session_id TEXT,
+    user_agent TEXT,
+    referrer TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    metadata TEXT
 );
 
 -- Indexes

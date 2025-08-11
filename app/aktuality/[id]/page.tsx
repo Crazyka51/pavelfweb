@@ -1,14 +1,15 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
 // Tato stránka je vždy generována dynamicky (SSR), aby nedocházelo k chybám s fetch a cookies
-export const dynamic = "force-dynamic"
-import Image from "next/image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { ArrowLeft, Calendar, User, Tag } from "lucide-react"
-import { Card, CardContent, CardHeader } from "../../../components/ui/card"
-import { Badge } from "../../../components/ui/badge"
-import { Button } from "../../../components/ui/button"
+export const dynamic = "force-dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Calendar, User, Tag } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
+import { Card, CardContent, CardHeader } from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Button } from "../../../components/ui/button";
 
 interface Article {
   id: string
@@ -35,44 +36,44 @@ async function getArticle(id: string): Promise<Article | null> {
       {
         cache: "no-store",
       },
-    )
+    );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch articles")
+      throw new Error("Failed to fetch articles");
     }
 
-    const articles: Article[] = await response.json()
-    return articles.find((article) => article.id === id || article.slug === id) || null
+    const articles: Article[] = await response.json();
+    return articles.find((article) => article.id === id || article.slug === id) || null;
   } catch (error) {
-    console.error("Error fetching article:", error)
+    console.error("Error fetching article:", error);
 
     // Fallback na lokální data
     try {
-      const fs = await import("fs")
-      const path = await import("path")
-      const articlesPath = path.join(process.cwd(), "data", "articles.json")
+      const fs = await import("fs");
+      const path = await import("path");
+      const articlesPath = path.join(process.cwd(), "data", "articles.json");
 
       if (fs.existsSync(articlesPath)) {
-        const articlesData = fs.readFileSync(articlesPath, "utf8")
-        const articles: Article[] = JSON.parse(articlesData)
-        return articles.find((article) => article.id === id || article.slug === id) || null
+        const articlesData = fs.readFileSync(articlesPath, "utf8");
+        const articles: Article[] = JSON.parse(articlesData);
+        return articles.find((article) => article.id === id || article.slug === id) || null;
       }
     } catch (fallbackError) {
-      console.error("Error loading fallback data:", fallbackError)
+      console.error("Error loading fallback data:", fallbackError);
     }
 
-    return null
+    return null;
   }
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const article = await getArticle(params.id)
+  const article = await getArticle(params.id);
 
   if (!article) {
     return {
       title: "Článek nenalezen - Pavel Fišer",
       description: "Požadovaný článek nebyl nalezen.",
-    }
+    };
   }
 
   return {
@@ -105,18 +106,19 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     keywords: article.tags.join(", "),
     authors: [{ name: article.author }],
     category: article.category,
-  }
+  };
 }
 
 export default async function ArticlePage({ params }: { params: { id: string } }) {
-  const article = await getArticle(params.id)
+  const article = await getArticle(params.id);
 
   if (!article) {
-    notFound()
+    notFound();
   }
 
   // Toto zajistí, že TypeScript ví, že article není null
   const articleData = article as Article;
+  const sanitizedContent = DOMPurify.sanitize(articleData.content);
 
   return (
     <div className="min-h-screen bg-slate-900 text-gray-100">
@@ -189,7 +191,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                 prose-headings:text-white prose-p:text-gray-300 prose-a:text-blue-400 
                 prose-strong:text-white prose-code:text-gray-300 prose-pre:bg-slate-700
                 prose-blockquote:border-l-blue-500 prose-blockquote:text-gray-300"
-              dangerouslySetInnerHTML={{ __html: articleData.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
           </CardContent>
         </Card>
@@ -202,7 +204,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export async function generateStaticParams() {
@@ -216,13 +218,13 @@ export async function generateStaticParams() {
       {
         cache: "no-store",
       },
-    )
+    );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch articles")
+      throw new Error("Failed to fetch articles");
     }
 
-    const articles: Article[] = await response.json()
+    const articles: Article[] = await response.json();
 
     // Ensure articles is an array before mapping
     if (!Array.isArray(articles)) {
@@ -232,19 +234,19 @@ export async function generateStaticParams() {
 
     return articles.map((article) => ({
       id: article.id,
-    }))
+    }));
   } catch (error) {
-    console.error("Error generating static params:", error)
+    console.error("Error generating static params:", error);
 
     // Fallback na lokální data
     try {
-      const fs = await import("fs")
-      const path = await import("path")
-      const articlesPath = path.join(process.cwd(), "data", "articles.json")
+      const fs = await import("fs");
+      const path = await import("path");
+      const articlesPath = path.join(process.cwd(), "data", "articles.json");
 
       if (fs.existsSync(articlesPath)) {
-        const articlesData = fs.readFileSync(articlesPath, "utf8")
-        const articles: Article[] = JSON.parse(articlesData)
+        const articlesData = fs.readFileSync(articlesPath, "utf8");
+        const articles: Article[] = JSON.parse(articlesData);
 
         // Ensure articles is an array before mapping
         if (!Array.isArray(articles)) {
@@ -254,12 +256,12 @@ export async function generateStaticParams() {
 
         return articles.map((article) => ({
           id: article.id,
-        }))
+        }));
       }
     } catch (fallbackError) {
-      console.error("Error loading fallback data for static params:", fallbackError)
+      console.error("Error loading fallback data for static params:", fallbackError);
     }
 
-    return []
+    return [];
   }
 }

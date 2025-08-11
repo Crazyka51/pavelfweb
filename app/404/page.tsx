@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Link from "next/link"
-import { Home, ArrowLeft } from "lucide-react"
-import { Button } from "../../components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { useEffect } from "react";
+import Link from "next/link";
+import { Home, ArrowLeft } from "lucide-react";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 
 export default function NotFound() {
   useEffect(() => {
@@ -13,9 +13,9 @@ export default function NotFound() {
       window.gtag("event", "page_view_404", {
         event_category: "error",
         event_label: window.location.pathname,
-      })
+      });
     }
-  }, [])
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 text-gray-100 p-4">
@@ -62,5 +62,5 @@ export default function NotFound() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

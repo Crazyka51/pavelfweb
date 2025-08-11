@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Globe, Smartphone, Monitor } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Globe, Smartphone, Monitor } from 'lucide-react';
 
 interface SeoPreviewProps {
   title: string
@@ -10,11 +10,11 @@ interface SeoPreviewProps {
 }
 
 export default function SeoPreview({ title, excerpt, url = 'pavelfiser.cz/aktuality/nazev-clanku' }: SeoPreviewProps) {
-  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
   
   // Generování SEO-optimalizovaných textů
-  const seoTitle = title.length > 60 ? title.substring(0, 57) + '...' : title
-  const seoDescription = excerpt.length > 160 ? excerpt.substring(0, 157) + '...' : excerpt
+  const seoTitle = title.length > 60 ? title.substring(0, 57) + '...' : title;
+  const seoDescription = excerpt.length > 160 ? excerpt.substring(0, 157) + '...' : excerpt;
   
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -100,5 +100,5 @@ export default function SeoPreview({ title, excerpt, url = 'pavelfiser.cz/aktual
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -6,27 +6,22 @@
  * a zajišťuje automatické poolování spojení.
  */
 
-import { neon, neonConfig } from "@neondatabase/serverless"
-import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http"
-import { sql as drizzleSql } from "drizzle-orm"
-import * as schema from "./schema"
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
+import { sql as drizzleSql } from "drizzle-orm";
+import * as schema from "./schema";
 
 // Ujistíme se, že máme nastavenou DATABASE_URL
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set")
-}
-
-// Konfigurace pro vývojové prostředí (není potřeba v produkci)
-if (process.env.NODE_ENV === 'development') {
-  neonConfig.fetchConnectionCache = true;
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 // Create Neon SQL client
-export const sql = neon(process.env.DATABASE_URL!)
-export const db: NeonHttpDatabase<typeof schema> = drizzle(sql, { schema })
+export const sql = neon(process.env.DATABASE_URL!);
+export const db: NeonHttpDatabase<typeof schema> = drizzle(sql, { schema });
 
 // Export the SQL template tag pro drizzle dotazy
-export { drizzleSql }
+export { drizzleSql };
 
 // Database connection health check
 export async function checkDatabaseConnection(): Promise<boolean> {
@@ -35,8 +30,8 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     const result = await sql`SELECT 1 as health_check`;
     return result && result.length > 0;
   } catch (error) {
-    console.error("Database connection failed:", error)
-    return false
+    console.error("Database connection failed:", error);
+    return false;
   }
 }
 
@@ -46,11 +41,11 @@ export async function initializeDatabase() {
     // Enable UUID extension
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
-    console.log("Database initialized successfully")
-    return true
+    console.log("Database initialized successfully");
+    return true;
   } catch (error) {
-    console.error("Database initialization failed:", error)
-    return false
+    console.error("Database initialization failed:", error);
+    return false;
   }
 }
 

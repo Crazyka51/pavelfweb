@@ -1,6 +1,6 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, Mail, Globe, Shield, Trash2, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowLeft, Mail, Globe, Shield, Trash2, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Žádost o smazání údajů | Pavel Fišer - Zastupitel Praha 4',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: 'Jednoduchý způsob, jak požádat o smazání vašich osobních údajů v souladu s GDPR a zásadami Meta/Facebook.',
     images: ['/og-data-deletion.svg'],
   },
-}
+};
 
 export default function DataDeletionPage() {
   return (
@@ -358,5 +358,5 @@ export default function DataDeletionPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

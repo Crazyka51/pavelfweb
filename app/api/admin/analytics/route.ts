@@ -1,15 +1,15 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "../../../../lib/auth-utils"
-import { sql, type AnalyticsEvent } from "../../../../lib/database"
+import { type NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "../../../../lib/auth-utils";
+import { sql, type AnalyticsEvent } from "../../../../lib/database";
 
 // Helper function to get date ranges
 function getDateRanges() {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
   return {
     today,
@@ -17,33 +17,33 @@ function getDateRanges() {
     thisMonth,
     lastMonth,
     lastMonthEnd,
-  }
+  };
 }
 
 // Helper function to detect device type from user agent
 function getDeviceType(userAgent: string): "desktop" | "mobile" | "tablet" {
-  const ua = userAgent.toLowerCase()
+  const ua = userAgent.toLowerCase();
 
   if (ua.includes("tablet") || ua.includes("ipad")) {
-    return "tablet"
+    return "tablet";
   }
 
   if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
-    return "mobile"
+    return "mobile";
   }
 
-  return "desktop"
+  return "desktop";
 }
 
 // Helper function to extract referrer domain
 function getReferrerDomain(referrer: string): string {
-  if (!referrer) return "Direct"
+  if (!referrer) return "Direct";
 
   try {
-    const url = new URL(referrer)
-    return url.hostname
+    const url = new URL(referrer);
+    return url.hostname;
   } catch {
-    return "Unknown"
+    return "Unknown";
   }
 }
 
@@ -51,19 +51,19 @@ function getReferrerDomain(referrer: string): string {
 export const GET = requireAuth(async (request: NextRequest, auth: any) => {
 
   try {
-    const { searchParams } = new URL(request.url)
-    const fromParam = searchParams.get("from")
-    const toParam = searchParams.get("to")
+    const { searchParams } = new URL(request.url);
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
 
-    let query = sql`SELECT * FROM analytics_events`
-    const whereClauses: string[] = []
-    const queryParams: any[] = []
+    let query = sql`SELECT * FROM analytics_events`;
+    const whereClauses: string[] = [];
+    const queryParams: any[] = [];
 
     if (fromParam && toParam) {
-      whereClauses.push(`timestamp >= $${queryParams.length + 1}`)
-      queryParams.push(new Date(fromParam))
-      whereClauses.push(`timestamp <= $${queryParams.length + 1}`)
-      queryParams.push(new Date(toParam))
+      whereClauses.push(`timestamp >= $${queryParams.length + 1}`);
+      queryParams.push(new Date(fromParam));
+      whereClauses.push(`timestamp <= $${queryParams.length + 1}`);
+      queryParams.push(new Date(toParam));
     }
 
     if (whereClauses.length > 0) {
@@ -72,45 +72,45 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
     }
 
     // @ts-ignore - ignorujeme typové problémy s SQL
-    const events = await query as unknown as AnalyticsEvent[]
+    const events = await query as unknown as AnalyticsEvent[];
 
-    const dateRanges = getDateRanges()
+    const dateRanges = getDateRanges();
 
     // Filter events by date range if provided
-    let filteredEvents = events
+    let filteredEvents = events;
     if (fromParam && toParam) {
-      const fromDate = new Date(fromParam)
-      const toDate = new Date(toParam)
+      const fromDate = new Date(fromParam);
+      const toDate = new Date(toParam);
       filteredEvents = events.filter((event) => {
-        const eventDate = new Date(event.timestamp)
-        return eventDate >= fromDate && eventDate <= toDate
-      })
+        const eventDate = new Date(event.timestamp);
+        return eventDate >= fromDate && eventDate <= toDate;
+      });
     }
 
     // Calculate page views
-    const pageViewEvents = filteredEvents.filter((event) => event.type === "pageview")
-    const totalPageViews = pageViewEvents.length
+    const pageViewEvents = filteredEvents.filter((event) => event.type === "pageview");
+    const totalPageViews = pageViewEvents.length;
 
-    const thisMonthViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisMonth).length
+    const thisMonthViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisMonth).length;
 
-    const thisWeekViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisWeek).length
+    const thisWeekViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.thisWeek).length;
 
-    const todayViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.today).length
+    const todayViews = pageViewEvents.filter((event) => new Date(event.timestamp) >= dateRanges.today).length;
 
     // Calculate last month views for trend
     const lastMonthViews = pageViewEvents.filter((event) => {
-      const eventDate = new Date(event.timestamp)
-      return eventDate >= dateRanges.lastMonth && eventDate <= dateRanges.lastMonthEnd
-    }).length
+      const eventDate = new Date(event.timestamp);
+      return eventDate >= dateRanges.lastMonth && eventDate <= dateRanges.lastMonthEnd;
+    }).length;
 
-    const trend = lastMonthViews > 0 ? ((thisMonthViews - lastMonthViews) / lastMonthViews) * 100 : 0
+    const trend = lastMonthViews > 0 ? ((thisMonthViews - lastMonthViews) / lastMonthViews) * 100 : 0;
 
     // Calculate unique visitors
-    const uniqueSessions = new Set(pageViewEvents.map((event) => event.session_id))
-    const uniqueVisitors = uniqueSessions.size
+    const uniqueSessions = new Set(pageViewEvents.map((event) => event.session_id));
+    const uniqueVisitors = uniqueSessions.size;
 
     // Calculate top pages
-    const pageStats: Record<string, { views: number; uniqueViews: Set<string>; title?: string }> = {}
+    const pageStats: Record<string, { views: number; uniqueViews: Set<string>; title?: string }> = {};
 
     pageViewEvents.forEach((event) => {
       if (!pageStats[event.path]) {
@@ -118,11 +118,11 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
           views: 0,
           uniqueViews: new Set(),
           title: event.title || undefined,
-        }
+        };
       }
-      pageStats[event.path].views++
-      pageStats[event.path].uniqueViews.add(event.session_id)
-    })
+      pageStats[event.path].views++;
+      pageStats[event.path].uniqueViews.add(event.session_id);
+    });
 
     const topPages = Object.entries(pageStats)
       .map(([path, stats]) => ({
@@ -132,16 +132,16 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
         uniqueViews: stats.uniqueViews.size,
       }))
       .sort((a, b) => b.views - a.views)
-      .slice(0, 10)
+      .slice(0, 10);
 
     // Calculate referrers
-    const referrerStats: Record<string, number> = {}
+    const referrerStats: Record<string, number> = {};
     pageViewEvents.forEach((event) => {
-      const domain = getReferrerDomain(event.referrer || "")
-      referrerStats[domain] = (referrerStats[domain] || 0) + 1
-    })
+      const domain = getReferrerDomain(event.referrer || "");
+      referrerStats[domain] = (referrerStats[domain] || 0) + 1;
+    });
 
-    const totalReferrerVisits = Object.values(referrerStats).reduce((sum, count) => sum + count, 0)
+    const totalReferrerVisits = Object.values(referrerStats).reduce((sum, count) => sum + count, 0);
     const referrers = Object.entries(referrerStats)
       .map(([source, visits]) => ({
         source,
@@ -149,14 +149,14 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
         percentage: totalReferrerVisits > 0 ? (visits / totalReferrerVisits) * 100 : 0,
       }))
       .sort((a, b) => b.visits - a.visits)
-      .slice(0, 10)
+      .slice(0, 10);
 
     // Calculate device types
-    const deviceStats = { desktop: 0, mobile: 0, tablet: 0 }
+    const deviceStats = { desktop: 0, mobile: 0, tablet: 0 };
     pageViewEvents.forEach((event) => {
-      const deviceType = getDeviceType(event.user_agent)
-      deviceStats[deviceType]++
-    })
+      const deviceType = getDeviceType(event.user_agent);
+      deviceStats[deviceType]++;
+    });
 
     // Mock location data (would need IP geolocation service in real implementation)
     const locations = [
@@ -165,7 +165,7 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
       { country: "Slovakia", city: "Bratislava", visits: Math.floor(uniqueVisitors * 0.1) },
       { country: "Germany", city: "Berlin", visits: Math.floor(uniqueVisitors * 0.05) },
       { country: "Austria", city: "Vienna", visits: Math.floor(uniqueVisitors * 0.05) },
-    ]
+    ];
 
     const analyticsData = {
       pageViews: {
@@ -189,32 +189,32 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
         from: fromParam || dateRanges.thisMonth.toISOString(),
         to: toParam || new Date().toISOString(),
       },
-    }
+    };
 
-    return NextResponse.json(analyticsData)
+    return NextResponse.json(analyticsData);
   } catch (error) {
-    console.error("Error fetching analytics:", error)
+    console.error("Error fetching analytics:", error);
     return NextResponse.json(
       {
         message: "Chyba při načítání analytických dat",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
 });
 
 // POST - Track analytics event
 export const POST = async (request: NextRequest) => {
   try {
-    const eventData = await request.json()
-    const { type, path, title, userId, sessionId, referrer, metadata } = eventData
+    const eventData = await request.json();
+    const { type, path, title, userId, sessionId, referrer, metadata } = eventData;
 
     if (!type || !path || !sessionId) {
-      return NextResponse.json({ message: "Chybí povinné údaje (type, path, sessionId)" }, { status: 400 })
+      return NextResponse.json({ message: "Chybí povinné údaje (type, path, sessionId)" }, { status: 400 });
     }
 
-    const userAgent = request.headers.get("user-agent") || ""
+    const userAgent = request.headers.get("user-agent") || "";
 
     const newEvent: Omit<AnalyticsEvent, "id" | "timestamp"> = {
       type,
@@ -225,7 +225,7 @@ export const POST = async (request: NextRequest) => {
       user_agent: userAgent,
       referrer: referrer || null,
       metadata: metadata || null,
-    }
+    };
 
     await sql`
       INSERT INTO analytics_events (type, path, title, user_id, session_id, user_agent, referrer, metadata)
@@ -239,17 +239,17 @@ export const POST = async (request: NextRequest) => {
         ${newEvent.referrer},
         ${newEvent.metadata ? JSON.stringify(newEvent.metadata) : null}
       )
-    `
+    `;
 
-    return NextResponse.json({ message: "Událost byla zaznamenána" }, { status: 201 })
+    return NextResponse.json({ message: "Událost byla zaznamenána" }, { status: 201 });
   } catch (error) {
-    console.error("Error tracking analytics event:", error)
+    console.error("Error tracking analytics event:", error);
     return NextResponse.json(
       {
         message: "Chyba při zaznamenávání události",
         error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
-    )
+    );
   }
-}
+};

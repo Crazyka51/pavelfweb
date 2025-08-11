@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { Calendar, Tag, ArrowLeft, Share2, Facebook, Twitter as X } from 'lucide-react'
-import Link from 'next/link'
+import { Calendar, Tag, ArrowLeft, Share2, Facebook, Twitter as X } from 'lucide-react';
+import Link from 'next/link';
 
 interface Article {
   id: string
@@ -28,8 +28,8 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
@@ -39,12 +39,12 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
       'Životní prostředí': 'bg-emerald-100 text-emerald-800',
       'Kultura': 'bg-pink-100 text-pink-800',
       'Sport': 'bg-orange-100 text-orange-800'
-    }
-    return colors[category] || 'bg-gray-100 text-gray-800'
-  }
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const shareText = `${article.title} - ${article.excerpt}`
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `${article.title} - ${article.excerpt}`;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -53,26 +53,26 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
           title: article.title,
           text: article.excerpt,
           url: shareUrl
-        })
+        });
       } catch {
-        console.log('Sharing cancelled')
+        console.log('Sharing cancelled');
       }
     } else {
       // Fallback - copy to clipboard
-      navigator.clipboard.writeText(shareUrl)
-      alert('Odkaz byl zkopírován do schránky')
+      navigator.clipboard.writeText(shareUrl);
+      alert('Odkaz byl zkopírován do schránky');
     }
-  }
+  };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-    window.open(url, '_blank', 'width=600,height=400')
-  }
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
 
   const shareOnX = () => {
-    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
-    window.open(url, '_blank', 'width=600,height=400')
-  }
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,5 +207,5 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 const testimonials = [
   {
     quote:
@@ -20,7 +20,7 @@ const testimonials = [
     author: "Martina Dvořáková",
     position: "Podnikatelka, Praha 4",
   },
-]
+];
 
 export default function Testimonials() {
 	return (
@@ -59,5 +59,5 @@ export default function Testimonials() {
 				</div>
 			</div>
 		</section>
-	)
+	);
 }

@@ -1,14 +1,20 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
+import dynamic from 'next/dynamic';
+
+const TiptapEditor = dynamic(() => import('./TiptapEditor_improved'), { 
+  ssr: false,
+  loading: () => <p>Načítání editoru...</p> 
+});
 
 // Local type definitions to avoid issues with Prisma client type generation
 enum ArticleStatus {
@@ -38,16 +44,6 @@ type ArticleForEditor = {
   metaDescription: string | null;
 };
 
-// A simple placeholder for a rich text editor
-const SimpleEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
-  <Textarea
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    rows={15}
-    className="prose dark:prose-invert"
-  />
-)
-
 interface ArticleEditorProps {
   articleId?: string
   onSave?: () => void
@@ -55,25 +51,25 @@ interface ArticleEditorProps {
 }
 
 export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEditorProps) {
-  const router = useRouter()
-  const { toast } = useToast()
+  const router = useRouter();
+  const { toast } = useToast();
 
   // Form state
-  const [title, setTitle] = useState("")
-  const [slug, setSlug] = useState("")
-  const [content, setContent] = useState("")
-  const [excerpt, setExcerpt] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
-  const [categoryId, setCategoryId] = useState("")
-  const [status, setStatus] = useState<ArticleStatus>(ArticleStatus.DRAFT)
-  const [isFeatured, setIsFeatured] = useState(false)
-  const [metaTitle, setMetaTitle] = useState("")
-  const [metaDescription, setMetaDescription] = useState("")
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [content, setContent] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [status, setStatus] = useState<ArticleStatus>(ArticleStatus.DRAFT);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
 
   // Data state
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const generateSlug = useCallback((title: string) => {
     return title
@@ -81,37 +77,37 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
       .trim()
       .replace(/&/g, '-and-')
       .replace(/[\s\W-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }, [])
+      .replace(/^-+|-+$/g, '');
+  }, []);
 
   useEffect(() => {
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const token = localStorage.getItem("adminToken")
+        const token = localStorage.getItem("adminToken");
         const response = await fetch("/api/admin/categories", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        const result = await response.json()
+        });
+        const result = await response.json();
         if (result.success) {
-          setCategories(result.data)
+          setCategories(result.data);
         } else {
-          toast({ title: "Chyba při načítání kategorií", description: result.error, variant: "destructive" })
+          toast({ title: "Chyba při načítání kategorií", description: result.error, variant: "destructive" });
         }
       } catch (error) {
-        toast({ title: "Chyba při načítání kategorií", variant: "destructive" })
+        toast({ title: "Chyba při načítání kategorií", variant: "destructive" });
       }
-    }
-    fetchCategories()
-  }, [toast])
+    };
+    fetchCategories();
+  }, [toast]);
 
   useEffect(() => {
     // Fetch article data if editing
     if (articleId) {
-      setIsLoading(true)
-      const token = localStorage.getItem("adminToken")
+      setIsLoading(true);
+      const token = localStorage.getItem("adminToken");
       fetch(`/api/admin/articles/${articleId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -120,37 +116,37 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
         .then((res) => res.json())
         .then((result) => {
           if (result.success) {
-            const data = result.data as ArticleForEditor
-            setTitle(data.title)
-            setSlug(data.slug)
-            setContent(data.content)
-            setExcerpt(data.excerpt || "")
-            setImageUrl(data.imageUrl || "")
-            setCategoryId(data.categoryId)
-            setStatus(data.status)
-            setIsFeatured(data.isFeatured)
-            setMetaTitle(data.metaTitle || "")
-            setMetaDescription(data.metaDescription || "")
+            const data = result.data as ArticleForEditor;
+            setTitle(data.title);
+            setSlug(data.slug);
+            setContent(data.content);
+            setExcerpt(data.excerpt || "");
+            setImageUrl(data.imageUrl || "");
+            setCategoryId(data.categoryId);
+            setStatus(data.status);
+            setIsFeatured(data.isFeatured);
+            setMetaTitle(data.metaTitle || "");
+            setMetaDescription(data.metaDescription || "");
           } else {
-            toast({ title: "Chyba při načítání článku", description: result.error, variant: "destructive" })
+            toast({ title: "Chyba při načítání článku", description: result.error, variant: "destructive" });
           }
         })
         .catch(() => toast({ title: "Chyba při načítání článku", variant: "destructive" }))
-        .finally(() => setIsLoading(false))
+        .finally(() => setIsLoading(false));
     }
-  }, [articleId, toast])
+  }, [articleId, toast]);
 
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value)
+    setTitle(e.target.value);
     if (!articleId) { // Only auto-generate slug for new articles
-      setSlug(generateSlug(e.target.value))
+      setSlug(generateSlug(e.target.value));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+    e.preventDefault();
+    setIsSaving(true);
 
     const articleData = {
       title,
@@ -164,12 +160,12 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
       metaTitle,
       metaDescription,
       tags: [], // Tags not implemented in this version
-    }
+    };
 
     try {
-      const token = localStorage.getItem("adminToken")
-      const url = articleId ? `/api/admin/articles/${articleId}` : "/api/admin/articles"
-      const method = articleId ? "PUT" : "POST"
+      const token = localStorage.getItem("adminToken");
+      const url = articleId ? `/api/admin/articles/${articleId}` : "/api/admin/articles";
+      const method = articleId ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
@@ -178,33 +174,33 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(articleData),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        toast({ title: articleId ? "Článek úspěšně aktualizován" : "Článek úspěšně vytvořen" })
-        if (onSave) onSave()
-        router.refresh()
+        toast({ title: articleId ? "Článek úspěšně aktualizován" : "Článek úspěšně vytvořen" });
+        if (onSave) onSave();
+        router.refresh();
       } else {
         toast({
           title: "Došlo k chybě",
           description: result.error || "Nepodařilo se uložit článek.",
           variant: "destructive",
-        })
+        });
       }
     } catch (error: any) {
       toast({
         title: "Došlo k chybě",
         description: error.message || "Nepodařilo se uložit článek.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
-  if (isLoading) return <div>Načítání...</div>
+  if (isLoading) return <div>Načítání...</div>;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -220,7 +216,11 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
 
       <div className="space-y-2">
         <Label htmlFor="content">Obsah</Label>
-        <SimpleEditor value={content} onChange={setContent} />
+        <TiptapEditor
+          content={content}
+          onChange={setContent}
+          placeholder="Zde napište obsah článku..."
+        />
       </div>
       
       <div className="space-y-2">
@@ -288,5 +288,5 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
         </Button>
       </div>
     </form>
-  )
+  );
 }

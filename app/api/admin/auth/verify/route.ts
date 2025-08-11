@@ -1,15 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getAuthUser } from "@/lib/auth-utils-new"
+import { type NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from "@/lib/auth-utils-new";
 
 // Tato API route je vždy dynamická, protože pracuje s cookies
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthUser()
+    const user = await getAuthUser(request);
+
 
     if (!user) {
-      return NextResponse.json({ error: "Uživatel není přihlášen" }, { status: 401 })
+      return NextResponse.json({ error: "Uživatel není přihlášen" }, { status: 401 });
     }
 
     return NextResponse.json({
@@ -20,9 +21,9 @@ export async function GET(request: NextRequest) {
         role: user.role,
         displayName: user.username === "Pavel" ? "Pavel Fišer" : "Administrátor",
       },
-    })
+    });
   } catch (error) {
-    console.error("Error verifying user:", error)
-    return NextResponse.json({ error: "Chyba při ověřování uživatele" }, { status: 500 })
+    console.error("Error verifying user:", error);
+    return NextResponse.json({ error: "Chyba při ověřování uživatele" }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, boolean, uuid, varchar } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
+import { pgTable, text, timestamp, boolean, uuid, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // Typy pro databázové entity
 export interface NewsletterSubscriber {
@@ -58,7 +58,7 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   unsubscribeToken: varchar("unsubscribe_token", { length: 255 }).unique(),
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).notNull().defaultNow(),
   unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
-})
+});
 
 /**
  * Postgres table definition for "newsletter_campaigns".
@@ -84,7 +84,7 @@ export const newsletterCampaigns = pgTable("newsletter_campaigns", {
   createdBy: varchar("created_by", { length: 128 }).notNull(),
   tags: text("tags").array(),
   segmentId: uuid("segment_id"), // For targeting specific subscriber segments
-})
+});
 
 /**
  * Postgres table definition for "newsletter_templates".
@@ -99,11 +99,11 @@ export const newsletterTemplates = pgTable("newsletter_templates", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdBy: varchar("created_by", { length: 128 }).notNull(),
-})
+});
 
 // Export schema
 export const newsletterSchema = {
   newsletterSubscribers,
   newsletterCampaigns,
   newsletterTemplates,
-}
+};
