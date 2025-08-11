@@ -31,11 +31,12 @@ export async function POST(req: NextRequest) {
     const userId = user[0].id;
     const role = user[0].role || "admin";
     
-    await createSession(userId, username, role);
+    const token = await createSession(userId, username, role);
 
     return NextResponse.json({ 
       success: true,
       message: "Login successful",
+      token: token, // Přidán token do odpovědi
       user: {
         userId: userId,
         username: username,

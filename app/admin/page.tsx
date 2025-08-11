@@ -170,7 +170,8 @@ export default function AdminPage() {
           displayName: data.user?.displayName || 'Pavel Fišer' 
         });
       } else {
-        throw new Error(data.message || 'Přihlášení selhalo');
+        // Detailnější chybová zpráva
+        throw new Error(data.message || 'Přihlášení selhalo: Server nevrátil platný token');
       }
     } catch (error) {
       console.error('Login failed:', error);

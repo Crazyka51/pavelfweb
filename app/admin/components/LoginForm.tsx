@@ -37,9 +37,15 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       router.push("/admin"); // Přesměrování na základní URL administrace
     } catch (error: any) {
       console.error("Login error:", error);
+      // Upravená chybová zpráva, která je více uživatelsky přívětivá
+      let errorMessage = "Nesprávné uživatelské jméno nebo heslo.";
+      if (error.message && !error.message.includes("Login successful")) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Chyba přihlášení",
-        description: error.message || "Nesprávné uživatelské jméno nebo heslo.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
