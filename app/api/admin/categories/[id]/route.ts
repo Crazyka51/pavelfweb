@@ -40,19 +40,7 @@ export const PUT = requireAuth(
     try {
       const { id } = await context.params;
       const updateData = await request.json();
-      // Ensure that the `order` property is mapped to `display_order` for the service
-      if (updateData.order !== undefined) {
-        updateData.display_order = updateData.order;
-        delete updateData.order;
-      }
-      if (updateData.parentId !== undefined) {
-        updateData.parent_id = updateData.parentId;
-        delete updateData.parentId;
-      }
-      if (updateData.isActive !== undefined) {
-        updateData.is_active = updateData.isActive;
-        delete updateData.isActive;
-      }
+      // Mapování už není potřeba, názvy polí jsou nyní konzistentní
 
       const updatedCategory = await categoryService.updateCategory(id, updateData);
 

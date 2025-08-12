@@ -122,14 +122,7 @@ export default function PrivacyPolicyPage() {
                 </ul>
               </div>
               
-              <div className="border-l-4 border-green-500 pl-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Newsletter</h3>
-                <ul className="text-gray-700 space-y-1">
-                  <li>• E-mailová adresa</li>
-                  <li>• Jméno (pokud jej uvedete)</li>
-                  <li>• Preference komunikace</li>
-                </ul>
-              </div>
+
 
               <div className="border-l-4 border-orange-500 pl-4">
                 <h3 className="font-semibold text-gray-900 mb-2">Automaticky sbírané údaje</h3>
@@ -157,13 +150,7 @@ export default function PrivacyPolicyPage() {
                   výkonu mandátu zastupitele.
                 </p>
               </div>
-              <div className="bg-green-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-3">Informování občanů</h3>
-                <p className="text-gray-700">
-                  Zasílání newsletteru s informacemi o aktivitách a 
-                  rozhodnutích zastupitelstva.
-                </p>
-              </div>
+
               <div className="bg-yellow-50 p-6 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-3">Zlepšování služeb</h3>
                 <p className="text-gray-700">
@@ -191,7 +178,7 @@ export default function PrivacyPolicyPage() {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  <span><strong>Souhlas:</strong> Pro newsletter a marketingovou komunikaci</span>
+                  <span><strong>Souhlas:</strong> Pro marketingovou komunikaci</span>
                 </li>
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -227,11 +214,7 @@ export default function PrivacyPolicyPage() {
                     <td className="border border-gray-300 p-3 text-gray-900">5 let</td>
                     <td className="border border-gray-300 p-3 text-gray-900">Archivace korespondence</td>
                   </tr>
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-300 p-3 text-gray-900">Newsletter</td>
-                    <td className="border border-gray-300 p-3 text-gray-900">Do odvolání souhlasu</td>
-                    <td className="border border-gray-300 p-3 text-gray-900">Aktivní souhlas</td>
-                  </tr>
+
                   <tr>
                     <td className="border border-gray-300 p-3 text-gray-900">Analytická data</td>
                     <td className="border border-gray-300 p-3 text-gray-900">26 měsíců</td>
@@ -310,8 +293,8 @@ export default function PrivacyPolicyPage() {
 
               <div className="mt-4 p-4 bg-yellow-100 rounded-lg border border-yellow-300">
                 <p className="text-sm text-gray-800">
-                  <strong>Upozornění:</strong> Po smazání údajů už nebudete dostávat newsletter 
-                  ani další komunikaci. Některé údaje mohou být zachovány po zákonně stanovenou 
+                  <strong>Upozornění:</strong> Po smazání údajů už nebudete dostávat 
+                  další komunikaci. Některé údaje mohou být zachovány po zákonně stanovenou 
                   dobu pro archivní účely (např. oficiální korespondence).
                 </p>
               </div>

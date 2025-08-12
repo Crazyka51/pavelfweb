@@ -18,14 +18,6 @@ interface Article {
   publishedAt?: string
 }
 
-interface Subscriber {
-  id: string
-  email: string
-  subscribedAt: string
-  isActive: boolean
-  source: string
-}
-
 interface AdminFilters {
   articles: {
     searchTerm: string
@@ -35,13 +27,6 @@ interface AdminFilters {
     sortOrder: "asc" | "desc"
     selectedArticles: string[]
     currentPage: number
-  }
-  newsletter: {
-    searchTerm: string
-    selectedSource: string
-    selectedStatus: string
-    selectedEmails: string[]
-    currentTab: "subscribers" | "campaigns" | "create"
   }
   analytics: {
     selectedPeriod: string
@@ -55,7 +40,6 @@ interface AdminState {
 
   // Data cache
   articles: Article[]
-  subscribers: Subscriber[]
 
   // UI state
   currentSection: string
@@ -65,11 +49,9 @@ interface AdminState {
 
   // Actions
   setArticleFilters: (filters: Partial<AdminFilters["articles"]>) => void
-  setNewsletterFilters: (filters: Partial<AdminFilters["newsletter"]>) => void
   setAnalyticsFilters: (filters: Partial<AdminFilters["analytics"]>) => void
 
   setArticles: (articles: Article[]) => void
-  setSubscribers: (subscribers: Subscriber[]) => void
 
   setCurrentSection: (section: string) => void
   setEditingArticleId: (id: string | null) => void
@@ -79,7 +61,6 @@ interface AdminState {
 
   // Reset functions
   resetArticleFilters: () => void
-  resetNewsletterFilters: () => void
   clearCache: () => void
 }
 
@@ -93,13 +74,6 @@ const defaultFilters: AdminFilters = {
     selectedArticles: [],
     currentPage: 1,
   },
-  newsletter: {
-    searchTerm: "",
-    selectedSource: "all",
-    selectedStatus: "all",
-    selectedEmails: [],
-    currentTab: "subscribers",
-  },
   analytics: {
     selectedPeriod: "30d",
     selectedMetric: "pageviews",
@@ -112,7 +86,6 @@ export const useAdminStore = create<AdminState>()(
       // Initial state
       filters: defaultFilters,
       articles: [],
-      subscribers: [],
       currentSection: "dashboard",
       editingArticleId: null,
       isLoading: false,
@@ -127,14 +100,6 @@ export const useAdminStore = create<AdminState>()(
           },
         })),
 
-      setNewsletterFilters: (newFilters) =>
-        set((state) => ({
-          filters: {
-            ...state.filters,
-            newsletter: { ...state.filters.newsletter, ...newFilters },
-          },
-        })),
-
       setAnalyticsFilters: (newFilters) =>
         set((state) => ({
           filters: {
@@ -145,7 +110,6 @@ export const useAdminStore = create<AdminState>()(
 
       // Data actions
       setArticles: (articles) => set({ articles }),
-      setSubscribers: (subscribers) => set({ subscribers }),
 
       // UI actions
       setCurrentSection: (section) => set({ currentSection: section }),
@@ -169,18 +133,9 @@ export const useAdminStore = create<AdminState>()(
           },
         })),
 
-      resetNewsletterFilters: () =>
-        set((state) => ({
-          filters: {
-            ...state.filters,
-            newsletter: defaultFilters.newsletter,
-          },
-        })),
-
       clearCache: () =>
         set({
           articles: [],
-          subscribers: [],
           lastUpdated: {},
         }),
     }),

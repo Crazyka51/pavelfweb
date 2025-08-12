@@ -60,10 +60,29 @@ export async function PUT(
       return NextResponse.json({ message: 'Název je povinný' }, { status: 400 });
     }
 
+    // Generovat slug, pokud nebyl zadán
+    let slug = categoryData.slug;
+    if (!slug && categoryData.name) {
+      slug = categoryData.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Odstranění diakritiky
+        .replace(/[^a-z0-9\s-]/g, "") // Odstranění speciálních znaků
+        .replace(/\s+/g, "-") // Nahrazení mezer pomlčkami
+        .replace(/-+/g, "-") // Nahrazení vícenásobných pomlček jednou
+        .trim();
+    }
+
     const updatedCategory = await prisma.category.update({
       where: { id: params.id },
       data: {
         name: categoryData.name,
+        slug: slug,
+        description: categoryData.description,
+        color: categoryData.color || '#3B82F6',
+        display_order: categoryData.display_order || 0,
+        is_active: categoryData.is_active !== undefined ? categoryData.is_active : true,
+        parent_id: categoryData.parent_id || null,
       },
     });
     

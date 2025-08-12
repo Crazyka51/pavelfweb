@@ -9,13 +9,21 @@ export interface CategoryListOptions {
   includeArticleCount?: boolean;
 }
 
+/**
+ * Tato funkce by generovala slug z názvu kategorie, ale momentálně není použita,
+ * protože pole slug neexistuje v aktuálním schématu databáze.
+ * @param name Název kategorie
+ * @returns Vygenerovaný slug
+ */
+// Funkce pro generování slugu byla odstraněna, protože v aktuálním schématu databáze pole slug neexistuje
+
 export class CategoryService {
   /**
    * Získá seznam kategorií s možností filtrování a stránkování.
    */
   async getCategories(options: CategoryListOptions = {}) {
     try {
-      const { limit, offset, search } = options;
+      const { limit, offset, search, includeArticleCount } = options;
       
       const whereClause: any = {};
       
@@ -29,7 +37,7 @@ export class CategoryService {
       const queryOptions: any = {
         where: whereClause,
         orderBy: {
-          createdAt: 'desc',
+          createdAt: 'desc' // Použijeme pouze dostupné pole pro řazení
         },
       };
       
@@ -39,6 +47,28 @@ export class CategoryService {
       
       if (offset) {
         queryOptions.skip = offset;
+      }
+      
+      if (includeArticleCount) {
+        queryOptions.include = {
+          articles: {
+            select: {
+              id: true
+            }
+          }
+        };
+        
+        // Získáme kategorie s články
+        const categoriesWithArticles = await prisma.category.findMany(queryOptions);
+        
+        // Transformujeme výsledky a přidáme počet článků
+        return categoriesWithArticles.map((category: any) => {
+          const { articles, ...rest } = category;
+          return {
+            ...rest,
+            articleCount: articles ? articles.length : 0
+          };
+        });
       }
       
       return await prisma.category.findMany(queryOptions);
@@ -70,11 +100,20 @@ export class CategoryService {
   /**
    * Vytvoří novou kategorii.
    */
-  async createCategory(data: { name: string }) {
+  async createCategory(data: { 
+    name: string, 
+    description?: string,
+    color?: string,
+    display_order?: number,
+    is_active?: boolean,
+    parent_id?: string
+  }) {
     try {
+      // V aktuálním schématu databáze máme pouze pole name
       return await prisma.category.create({
         data: {
           name: data.name,
+          // Další pole nejsou v databázi k dispozici, takže je nepoužíváme
         },
       });
       
@@ -87,11 +126,27 @@ export class CategoryService {
   /**
    * Aktualizuje existující kategorii.
    */
-  async updateCategory(id: string, data: { name?: string }) {
+  async updateCategory(id: string, data: { 
+    name?: string,
+    description?: string,
+    color?: string,
+    display_order?: number,
+    is_active?: boolean,
+    parent_id?: string
+  }) {
     try {
+      const updateData: any = {};
+      
+      // V aktuálním schématu databáze máme pouze pole name
+      if (data.name !== undefined) {
+        updateData.name = data.name;
+      }
+      
+      // Ostatní pole nejsou v databázi k dispozici
+      
       return await prisma.category.update({
         where: { id },
-        data: { name: data.name },
+        data: updateData,
       });
       
     } catch (error) {

@@ -8,59 +8,82 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  name      String?
-  articles  Article[]
-  createdCampaigns NewsletterCampaign[] @relation("CreatedCampaigns")
-  createdTemplates NewsletterTemplate[] @relation("CreatedTemplates")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  password           String
+  name               String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  articles           Article[]
+  NewsletterCampaign NewsletterCampaign[]
+  NewsletterTemplate NewsletterTemplate[]
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  articles  Article[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-enum ArticleStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  id            String    @id @default(cuid())
+  name          String    @unique
+  slug          String    @unique
+  description   String?
+  color         String?   @default("#3B82F6") // Výchozí modrá barva
+  display_order Int       @default(0)
+  is_active     Boolean   @default(true)
+  parent_id     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  articles      Article[]
 }
 
 model Article {
-  id              String    @id @default(cuid())
-  title           String    @unique        // DOPLNĚNO: @unique podle SQL
-  slug            String    @unique
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
   content         String
   excerpt         String?
   imageUrl        String?
   status          ArticleStatus @default(DRAFT)
   publishedAt     DateTime?
-  isFeatured      Boolean   @default(false)
-
+  isFeatured      Boolean       @default(false)
   authorId        String
-  author          User      @relation(fields: [authorId], references: [id])
-
   categoryId      String
-  category        Category  @relation(fields: [categoryId], references: [id])
-
   tags            String[]
-
   metaTitle       String?
   metaDescription String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  author          User          @relation(fields: [authorId], references: [id])
+  category        Category      @relation(fields: [categoryId], references: [id])
+}
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+model NewsletterCampaign {
+  id                 String              @id
+  name               String
+  subject            String
+  content            String?
+  htmlContent        String
+  textContent        String?
+  status             CampaignStatus      @default(DRAFT)
+  scheduledAt        DateTime?
+  sentAt             DateTime?
+  recipientCount     Int                 @default(0)
+  openCount          Int                 @default(0)
+  clickCount         Int                 @default(0)
+  bounceCount        Int                 @default(0)
+  unsubscribeCount   Int                 @default(0)
+  createdById        String?
+  templateId         String?
+  tags               String[]
+  segmentId          String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime
+  User               User?               @relation(fields: [createdById], references: [id])
+  NewsletterTemplate NewsletterTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([createdById])
+  @@index([templateId])
 }
 
 model NewsletterSubscriber {
-  id               String    @id @default(cuid())
+  id               String    @id
   email            String    @unique
   isActive         Boolean   @default(true)
   source           String?
@@ -69,57 +92,133 @@ model NewsletterSubscriber {
   unsubscribedAt   DateTime?
 }
 
+model NewsletterTemplate {
+  id                 String               @id
+  name               String
+  subject            String
+  content            String
+  htmlContent        String
+  isActive           Boolean              @default(true)
+  createdById        String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  NewsletterCampaign NewsletterCampaign[]
+  User               User?                @relation(fields: [createdById], references: [id])
+
+  @@index([createdById])
+}
+
+model activity_log {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String?      @db.Uuid
+  action      String       @db.VarChar(100)
+  entity_type String       @db.VarChar(50)
+  entity_id   String?      @db.Uuid
+  details     Json?
+  ip_address  String?      @db.Inet
+  user_agent  String?
+  created_at  DateTime?    @default(now()) @db.Timestamptz(6)
+  admin_users admin_users? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_activity_log_created_at")
+  @@index([user_id], map: "idx_activity_log_user_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model admin_users {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username      String         @unique @db.VarChar(50)
+  password_hash String         @db.VarChar(255)
+  email         String?        @db.VarChar(255)
+  role          String?        @default("admin") @db.VarChar(20)
+  is_active     Boolean?       @default(true)
+  last_login    DateTime?      @db.Timestamptz(6)
+  created_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  activity_log  activity_log[]
+}
+
+model articles {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String    @unique @db.VarChar(255)
+  content      String
+  excerpt      String?
+  category     String    @db.VarChar(100)
+  tags         Json?     @default("[]")
+  published    Boolean?  @default(false)
+  image_url    String?
+  published_at DateTime? @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+  created_by   String?   @default("admin") @db.VarChar(100)
+
+  @@index([category], map: "idx_articles_category")
+  @@index([created_at(sort: Desc)], map: "idx_articles_created_at")
+  @@index([published, created_at(sort: Desc)], map: "idx_articles_published")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model newsletter_campaigns {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String    @db.VarChar(255)
+  subject           String    @db.VarChar(255)
+  content           String
+  html_content      String
+  text_content      String?
+  template_id       String?   @db.Uuid
+  status            String?   @default("draft") @db.VarChar(20)
+  scheduled_at      DateTime? @db.Timestamptz(6)
+  sent_at           DateTime? @db.Timestamptz(6)
+  recipient_count   Int?      @default(0)
+  open_count        Int?      @default(0)
+  click_count       Int?      @default(0)
+  bounce_count      Int?      @default(0)
+  unsubscribe_count Int?      @default(0)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  created_by        String?   @default("admin") @db.VarChar(100)
+  tags              Json?     @default("[]")
+  segment_id        String?   @db.Uuid
+
+  @@index([created_at(sort: Desc)], map: "idx_newsletter_campaigns_created_at")
+  @@index([status], map: "idx_newsletter_campaigns_status")
+}
+
+model newsletter_subscribers {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String    @unique @db.VarChar(255)
+  is_active         Boolean?  @default(true)
+  source            String?   @default("web") @db.VarChar(50)
+  unsubscribe_token String?
+  subscribed_at     DateTime? @default(now()) @db.Timestamptz(6)
+  unsubscribed_at   DateTime? @db.Timestamptz(6)
+
+  @@index([is_active], map: "idx_newsletter_subscribers_active")
+  @@index([email], map: "idx_newsletter_subscribers_email")
+}
+
+model newsletter_templates {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String    @unique @db.VarChar(255)
+  subject      String    @db.VarChar(255)
+  content      String
+  html_content String
+  is_active    Boolean?  @default(true)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+  created_by   String?   @default("admin") @db.VarChar(100)
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum CampaignStatus {
   DRAFT
   SCHEDULED
   SENDING
   SENT
   FAILED
-}
-
-model NewsletterCampaign {
-  id               String         @id @default(cuid())
-  name             String
-  subject          String
-  content          String?        @db.Text
-  htmlContent      String         @db.Text
-  textContent      String?        @db.Text
-  status           CampaignStatus @default(DRAFT)
-  scheduledAt      DateTime?
-  sentAt           DateTime?
-  recipientCount   Int            @default(0)
-  openCount        Int            @default(0)
-  clickCount       Int            @default(0)
-  bounceCount      Int            @default(0)
-  unsubscribeCount Int            @default(0)
-  createdById      String?
-  templateId       String?
-  tags             String[]
-  segmentId        String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-
-  createdBy User?                @relation("CreatedCampaigns", fields: [createdById], references: [id])
-  template  NewsletterTemplate?  @relation(fields: [templateId], references: [id])
-
-  @@index([createdById])
-  @@index([templateId])
-}
-
-model NewsletterTemplate {
-  id          String   @id @default(cuid())
-  name        String   @unique      // DOPLNĚNO: @unique podle SQL
-  subject     String
-  content     String   @db.Text
-  htmlContent String   @db.Text
-  isActive    Boolean  @default(true)
-  createdById String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  createdBy User? @relation("CreatedTemplates", fields: [createdById], references: [id])
-
-  campaigns NewsletterCampaign[]
-
-  @@index([createdById])
 }

@@ -7,18 +7,19 @@ import { useToast } from "@/hooks/use-toast";
 import "../styles/dynamic-colors.css";
 import { Plus, Edit, Trash2, Tag } from "lucide-react";
 
+// Upravené rozhraní podle aktuálního schématu databáze
 interface Category {
   id: string
   name: string
   slug: string
   description?: string
-  color: string
-  articleCount?: number // Optional, added by API if requested
-  parentId?: string
-  display_order: number // Matches DB column name
+  color?: string
+  display_order: number
   is_active: boolean
-  created_at: string
-  updated_at: string
+  parent_id?: string
+  articleCount?: number // Optional, added by API if requested
+  createdAt: Date
+  updatedAt: Date
 }
 
 export default function CategoryManager() {
@@ -28,16 +29,15 @@ export default function CategoryManager() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    slug: "",
     description: "",
     color: "#3B82F6",
-    parentId: "",
-    displayOrder: 0,
-    isActive: true,
+    display_order: 0,
+    is_active: true,
+    parent_id: ""
   });
 
   const { toast } = useToast();
-
-  const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#84CC16"];
 
   useEffect(() => {
     loadCategories();
@@ -77,20 +77,25 @@ export default function CategoryManager() {
           },
           body: JSON.stringify({
             name: formData.name,
+            slug: formData.slug,
             description: formData.description,
             color: formData.color,
-            parentId: formData.parentId || null,
-            order: formData.displayOrder, // Map to 'order' for API route
-            isActive: formData.isActive,
+            display_order: formData.display_order,
+            is_active: formData.is_active,
+            parent_id: formData.parent_id || null,
           }),
         });
 
         if (response.ok) {
           await loadCategories();
-          alert("Kategorie byla úspěšně aktualizována");
+          toast({ title: "Kategorie byla úspěšně aktualizována" });
         } else {
           const errorData = await response.json();
-          alert(`Chyba při aktualizaci kategorie: ${errorData.message || response.statusText}`);
+          toast({
+            title: "Chyba při aktualizaci kategorie",
+            description: errorData.message || response.statusText,
+            variant: "destructive",
+          });
         }
       } else {
         // Create new category
@@ -101,11 +106,12 @@ export default function CategoryManager() {
           },
           body: JSON.stringify({
             name: formData.name,
+            slug: formData.slug,
             description: formData.description,
             color: formData.color,
-            parentId: formData.parentId || null,
-            displayOrder: formData.displayOrder,
-            isActive: formData.isActive,
+            display_order: formData.display_order,
+            is_active: formData.is_active,
+            parent_id: formData.parent_id || null,
           }),
         });
 
@@ -125,10 +131,22 @@ export default function CategoryManager() {
 
       setIsDialogOpen(false);
       setEditingCategory(null);
-      setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true });
+      setFormData({
+        name: "",
+        slug: "",
+        description: "",
+        color: "#3B82F6",
+        display_order: 0,
+        is_active: true,
+        parent_id: ""
+      });
     } catch (error) {
       console.error("Error saving category:", error);
-      alert("Chyba při ukládání kategorie");
+      toast({
+        title: "Chyba při ukládání kategorie",
+        description: "Došlo k neočekávané chybě při ukládání kategorie",
+        variant: "destructive",
+      });
     }
   };
 
@@ -136,11 +154,12 @@ export default function CategoryManager() {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      description: category.description || "",
-      color: category.color || "#3B82F6",
-      parentId: category.parentId || "",
-      displayOrder: category.display_order,
-      isActive: category.is_active,
+      slug: category.slug || '',
+      description: category.description || '',
+      color: category.color || '#3B82F6',
+      display_order: category.display_order || 0,
+      is_active: category.is_active ?? true,
+      parent_id: category.parent_id || ''
     });
     setIsDialogOpen(true);
   };
@@ -154,21 +173,37 @@ export default function CategoryManager() {
 
         if (response.ok) {
           await loadCategories();
-          alert("Kategorie byla úspěšně smazána");
+          toast({ title: "Kategorie byla úspěšně smazána" });
         } else {
           const errorData = await response.json();
-          alert(`Chyba při mazání kategorie: ${errorData.message || response.statusText}`);
+          toast({
+            title: "Chyba při mazání kategorie",
+            description: errorData.message || response.statusText,
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error deleting category:", error);
-        alert("Chyba při mazání kategorie");
+        toast({
+          title: "Chyba při mazání kategorie",
+          description: "Došlo k neočekávané chybě při mazání kategorie",
+          variant: "destructive",
+        });
       }
     }
   };
 
   const handleNewCategory = () => {
     setEditingCategory(null);
-    setFormData({ name: "", description: "", color: "#3B82F6", parentId: "", displayOrder: 0, isActive: true });
+    setFormData({
+      name: "",
+      slug: "",
+      description: "",
+      color: "#3B82F6",
+      display_order: 0,
+      is_active: true,
+      parent_id: ""
+    });
     setIsDialogOpen(true);
   };
 
@@ -192,7 +227,7 @@ export default function CategoryManager() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Kategorie</h1>
-          <p className="text-gray-600 mt-1">Správa kategorií a štítků pro články</p>
+          <p className="text-gray-600 mt-1">Správa kategorií pro články</p>
         </div>
         <button
           onClick={handleNewCategory}
@@ -209,12 +244,11 @@ export default function CategoryManager() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <div 
-                    className="color-dot" 
-                    data-color={category.color || "#ccc"}
-                    aria-hidden="true"
-                  />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color || '#3B82F6' }}></div>
                   <h3 className="text-lg font-semibold">{category.name}</h3>
+                  {!category.is_active && (
+                    <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded-full">Neaktivní</span>
+                  )}
                 </div>
                 <div className="flex space-x-1">
                   <button
@@ -234,17 +268,24 @@ export default function CategoryManager() {
                 </div>
               </div>
 
-              {category.description && <p className="text-gray-600 text-sm mb-3">{category.description}</p>}
+              {category.description && (
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{category.description}</p>
+              )}
 
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">#{category.slug}</span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
                   {category.articleCount || 0} článků
+                </span>
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                  Slug: {category.slug || '-'}
+                </span>
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                  Pořadí: {category.display_order}
                 </span>
               </div>
 
               <div className="text-xs text-gray-400 mt-2">
-                Vytvořeno: {new Date(category.created_at).toLocaleDateString("cs-CZ")}
+                Vytvořeno: {new Date(category.createdAt).toLocaleDateString("cs-CZ")}
               </div>
             </div>
           </div>
@@ -284,61 +325,70 @@ export default function CategoryManager() {
                   required
                 />
               </div>
-
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="url-slug-kategorie"
+                />
+                <p className="text-xs text-gray-500 mt-1">Bude použito v URL. Pokud necháte prázdné, vytvoří se automaticky.</p>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Popis</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Popis kategorie (volitelné)"
-                  rows={3}
+                  placeholder="Krátký popis kategorie"
+                  rows={2}
                 />
               </div>
-
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Barva</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={formData.color}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))}
+                    className="w-10 h-10 p-1 rounded border border-gray-300"
+                  />
+                  <input
+                    type="text"
+                    value={formData.color}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="#3B82F6"
+                  />
+                </div>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Pořadí zobrazení</label>
                 <input
                   type="number"
-                  value={formData.displayOrder}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, displayOrder: Number.parseInt(e.target.value) || 0 }))
-                  }
+                  value={formData.display_order}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Pořadí"
+                  placeholder="0"
                 />
+                <p className="text-xs text-gray-500 mt-1">Nižší čísla se zobrazují jako první.</p>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Barva</label>
-                <div className="flex space-x-2">
-                  {colors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, color }))}
-                      className={`color-button ${
-                        formData.color === color ? "border-gray-900" : "border-gray-300"
-                      }`}
-                      data-color={color}
-                      title={`Vybrat barvu ${color}`}
-                      aria-label={`Vybrat barvu ${color}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center">
+              
+              <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, is_active: e.target.checked }))}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
                 />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-                  Aktivní
-                </label>
+                <label htmlFor="is_active" className="text-sm font-medium text-gray-700">Aktivní kategorie</label>
               </div>
 
               <div className="flex space-x-3 pt-4">

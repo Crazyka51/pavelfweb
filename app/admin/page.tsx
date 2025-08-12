@@ -6,7 +6,6 @@ import Dashboard from "./components/Dashboard";
 import ArticleManager from "./components/ArticleManager";
 import ArticleEditor from "./components/ArticleEditor";
 import CategoryManager from "./components/CategoryManager";
-import NewsletterManager from "./components/NewsletterManager";
 import SettingsManager from "./components/SettingsManager";
 import AnalyticsManager from "./components/AnalyticsManager";
 import { Article, ArticleStatus } from "@/types/cms";
@@ -18,7 +17,6 @@ type AdminSection =
   | "new-article"
   | "media"
   | "categories"
-  | "newsletter"
   | "analytics"
   | "backup"
   | "settings"
@@ -183,8 +181,6 @@ export default function AdminPage() {
         );
       case "categories":
         return <CategoryManager />;
-      case "newsletter":
-        return <NewsletterManager />;
       case "analytics":
         return <AnalyticsManager />;
       case "backup":

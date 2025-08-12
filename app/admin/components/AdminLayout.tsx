@@ -42,7 +42,6 @@ export default function AdminLayout({
     { id: "new-article", label: "Nový článek", icon: PlusCircle, description: "Vytvořit nový článek" },
     { id: "media", label: "Média", icon: Image, description: "Správa obrázků a souborů" },
     { id: "categories", label: "Kategorie", icon: Tag, description: "Správa kategorií a štítků" },
-    { id: "newsletter", label: "Newsletter", icon: Mail, description: "Odběratelé a e-mailové kampaně" },
     { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },
     { id: "backup", label: "Zálohy", icon: Archive, description: "Export a import dat" },
     { id: "settings", label: "Nastavení", icon: Settings, description: "Konfigurace systému" },
