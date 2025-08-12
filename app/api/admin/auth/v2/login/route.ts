@@ -20,10 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Vyhledání uživatele v databázi podle emailu (jako username)
-    const user = await prisma.user.findUnique({
-      where: { email: username }
-    });
+    // Vyhledání uživatele v tabulce admin_users podle username
+    const users = await prisma.$queryRaw`
+      SELECT id, username, email, role, password_hash as password
+      FROM admin_users
+      WHERE username = ${username} AND is_active = true
+    `;
+    
+    // Výsledek SQL dotazu je pole, vezmeme první záznam
+    const user = Array.isArray(users) && users.length > 0 ? users[0] : null;
     
     if (!user) {
       return NextResponse.json(
@@ -42,11 +47,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Vytvoření tokenů - používáme email jako username a výchozí roli "admin"
+    // Vytvoření tokenů - používáme username pro identifikaci
     const { accessToken } = await createSession(
       user.id,
-      user.email, // Používáme email jako username
-      "admin" // Výchozí role, protože v modelu User není role
+      user.username, // Používáme username jako identifikátor
+      user.role // Používáme roli z databáze
     );
     
     // Navrácení access tokenu a základních informací o uživateli
@@ -56,10 +61,10 @@ export async function POST(request: NextRequest) {
       token: accessToken,
       user: {
         id: user.id,
-        username: user.email, // Používáme email jako username
-        displayName: user.name || user.email, // Používáme name jako displayName, fallback na email
-        email: user.email, // Přidáme i email pro úplnost
-        role: "admin" // Výchozí role
+        username: user.username, // Používáme uživatelské jméno
+        displayName: user.username, // Používáme username jako displayName
+        email: user.email, // Přidáme email pro úplnost
+        role: user.role // Používáme roli z databáze
       }
     });
     
