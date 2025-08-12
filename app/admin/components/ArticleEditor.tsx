@@ -10,8 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from 'next/dynamic';
+import MediaPickerDialog from './MediaPickerDialog';
+import { Image } from 'lucide-react';
 
-const TiptapEditor = dynamic(() => import('./TiptapEditor_improved'), { 
+const MediaEnabledTiptapEditor = dynamic(() => import('./MediaEnabledTiptapEditor'), { 
   ssr: false,
   loading: () => <p>Načítání editoru...</p> 
 });
@@ -216,7 +218,7 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
 
       <div className="space-y-2">
         <Label htmlFor="content">Obsah</Label>
-        <TiptapEditor
+        <MediaEnabledTiptapEditor
           content={content}
           onChange={setContent}
           placeholder="Zde napište obsah článku..."
@@ -230,7 +232,17 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
 
       <div className="space-y-2">
         <Label htmlFor="imageUrl">URL obrázku</Label>
-        <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+        <div className="flex gap-2">
+          <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+          <MediaPickerDialog 
+            onSelectMedia={(url) => setImageUrl(url)} 
+            trigger={
+              <Button type="button" variant="outline" size="icon">
+                <Image className="h-4 w-4" />
+              </Button>
+            }
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

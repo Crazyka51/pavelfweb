@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   User,
+  Image,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -39,6 +40,7 @@ export default function AdminLayout({
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Přehled a statistiky" },
     { id: "articles", label: "Správa článků", icon: FileText, description: "Všechny publikované a koncepty" },
     { id: "new-article", label: "Nový článek", icon: PlusCircle, description: "Vytvořit nový článek" },
+    { id: "media", label: "Média", icon: Image, description: "Správa obrázků a souborů" },
     { id: "categories", label: "Kategorie", icon: Tag, description: "Správa kategorií a štítků" },
     { id: "newsletter", label: "Newsletter", icon: Mail, description: "Odběratelé a e-mailové kampaně" },
     { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },

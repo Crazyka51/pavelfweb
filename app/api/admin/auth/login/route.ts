@@ -5,33 +5,31 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
-  const { username, password } = await req.json();
+  const { email, password } = await req.json();
 
   try {
-    // Vyhledání uživatele podle username v tabulce admin_users (která neodpovídá přímo Prisma modelu)
-    const user = await prisma.$queryRaw`
-      SELECT id, username, password_hash as password, role 
-      FROM admin_users 
-      WHERE username = ${username} AND is_active = true
-    `;
+    // Vyhledání uživatele podle emailu v modelu User
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
 
     // Ověření, že uživatel existuje
-    if (!user || !Array.isArray(user) || user.length === 0) {
-      return NextResponse.json({ message: "Nesprávné uživatelské jméno nebo heslo." }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ message: "Nesprávný email nebo heslo." }, { status: 401 });
     }
 
     // Porovnání hesla s hashem uloženým v databázi
-    const isPasswordValid = await comparePasswords(password, user[0].password);
+    const isPasswordValid = await comparePasswords(password, user.password);
     
     if (!isPasswordValid) {
-      return NextResponse.json({ message: "Nesprávné uživatelské jméno nebo heslo." }, { status: 401 });
+      return NextResponse.json({ message: "Nesprávný email nebo heslo." }, { status: 401 });
     }
 
     // Vytvoření session, které interně nastaví cookie
-    const userId = user[0].id;
-    const role = user[0].role || "admin";
+    const userId = user.id;
+    const role = "admin"; // V Prisma schématu role není, proto používáme výchozí "admin"
     
-    const token = await createSession(userId, username, role);
+    const token = await createSession(userId, email, role);
 
     return NextResponse.json({ 
       success: true,
@@ -39,9 +37,9 @@ export async function POST(req: NextRequest) {
       token: token, // Přidán token do odpovědi
       user: {
         userId: userId,
-        username: username,
+        email: email,
         role: role,
-        displayName: username === "pavel" ? "Pavel Fišer" : "Administrátor"
+        displayName: email === "pavel@example.com" ? "Pavel Fišer" : "Administrátor"
       }
     }, { status: 200 });
   } catch (error) {

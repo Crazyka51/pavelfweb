@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LoginForm from "./components/LoginForm";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./components/Dashboard";
 import ArticleManager from "./components/ArticleManager";
@@ -11,11 +10,13 @@ import NewsletterManager from "./components/NewsletterManager";
 import SettingsManager from "./components/SettingsManager";
 import AnalyticsManager from "./components/AnalyticsManager";
 import { Article, ArticleStatus } from "@/types/cms";
+import { useAuth } from '@/lib/auth-context';
 
 type AdminSection =
   | "dashboard"
   | "articles"
   | "new-article"
+  | "media"
   | "categories"
   | "newsletter"
   | "analytics"
@@ -23,42 +24,36 @@ type AdminSection =
   | "settings"
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, logout } = useAuth();
   const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard");
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    checkAuthentication();
+    // Při první inicializaci načíst články
+    loadArticles();
   }, []);
   
-  useEffect(() => {
-    // Jen když jsme přihlášení a není aktivní načítání
-    if (isAuthenticated && !isLoading) {
-      // Použijeme setTimeout pro zajištění, že se UI stihne aktualizovat
-      const timer = setTimeout(() => {
-        loadArticles();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated]);
-  
   // Centralizovaná funkce pro načítání článků
+  // API chyba handler
+  const handleApiError = (error: any, defaultMessage: string) => {
+    console.error(defaultMessage, error);
+    
+    // Zajištění, že se zobrazí jen textová zpráva, nikoliv kód
+    let errorMessage = defaultMessage;
+    if (error && typeof error === 'object' && error.message) {
+      errorMessage = `${defaultMessage}: ${error.message}`;
+    }
+    
+    alert(errorMessage);
+  };
+
   const loadArticles = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("adminToken");
-      if (!token) {
-        handleApiError(null, "Nejste přihlášeni. Přihlaste se prosím znovu.");
-        return;
-      }
-      
       const response = await fetch("/api/admin/articles", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -73,7 +68,6 @@ export default function AdminPage() {
       }
       
       if (result && result.success) {
-        console.log("Centrálně načtené články:", result.data);
         // Validace a formátování dat
         const articles = result.data && result.data.articles ? result.data.articles : [];
         const validatedArticles = articles.map((article: any) => {
@@ -109,92 +103,6 @@ export default function AdminPage() {
     }
   };
 
-  const checkAuthentication = async () => {
-    try {
-      const token = localStorage.getItem("adminToken");
-      if (!token) {
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        return;
-      }
-      
-      const response = await fetch('/api/admin/auth/verify', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setIsAuthenticated(true);
-        setCurrentUser({ 
-          username: data.user?.username || 'admin', 
-          displayName: data.user?.displayName || 'Pavel Fišer' 
-        });
-      } else {
-        // Tichá chyba - bez alert okna
-        console.error('Autentizace selhala:', response.status);
-        localStorage.removeItem("adminToken"); // Odstranění neplatného tokenu
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogin = async (credentials: { username: string; password: string }) => {
-    try {
-      const response = await fetch('/api/admin/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Důležité pro cookies
-        body: JSON.stringify(credentials),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.token) {
-        // Uložení tokenu do localStorage
-        localStorage.setItem('adminToken', data.token);
-        
-        setIsAuthenticated(true);
-        setCurrentUser({ 
-          username: data.user?.username || credentials.username, 
-          displayName: data.user?.displayName || 'Pavel Fišer' 
-        });
-      } else {
-        // Detailnější chybová zpráva
-        throw new Error(data.message || 'Přihlášení selhalo: Server nevrátil platný token');
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert(`Přihlášení selhalo: ${error instanceof Error ? error.message : 'Neznámá chyba'}`);
-      throw error;
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/admin/auth/logout', {
-        method: 'POST',
-        credentials: 'include', // Důležité pro cookies
-      });
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      setIsAuthenticated(false);
-      setCurrentSection("dashboard");
-      setCurrentUser(null);
-    }
-  };
-
   const handleSectionChange = (section: string) => {
     setCurrentSection(section as AdminSection);
     setEditingArticleId(null);
@@ -206,7 +114,6 @@ export default function AdminPage() {
   };
 
   const handleEditArticle = (article: any) => {
-    // Předej jen ID článku místo celého objektu, který může mít cyklické reference
     setEditingArticleId(article.id);
     setCurrentSection("new-article");
   };
@@ -242,31 +149,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleApiError = (error: any, defaultMessage: string) => {
-    console.error(defaultMessage, error);
-    
-    // Zajištění, že se zobrazí jen textová zpráva, nikoliv kód
-    let errorMessage = defaultMessage;
-    if (error && typeof error === 'object' && error.message) {
-      errorMessage = `${defaultMessage}: ${error.message}`;
-    }
-    
-    alert(errorMessage);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  // Nyní je autentizace aktivní
-  if (!isAuthenticated) {
-    return <LoginForm onLogin={handleLogin} />;
-  }
-
   const renderContent = () => {
     switch (currentSection) {
       case "dashboard":
@@ -284,6 +166,19 @@ export default function AdminPage() {
               onSave={handleBackToArticles}
               onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
             />
+          </div>
+        );
+      case "media":
+        return (
+          <div className="p-8">
+            <h2 className="text-2xl font-bold mb-6">Správa médií</h2>
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <iframe 
+                src="/admin/media"
+                className="w-full min-h-[70vh] border-none"
+                title="Správa médií"
+              />
+            </div>
           </div>
         );
       case "categories":
@@ -312,6 +207,17 @@ export default function AdminPage() {
       default:
         return <Dashboard />;
     }
+  };
+
+  // Příprava aktuálního uživatele pro AdminLayout
+  const currentUser = user ? {
+    username: user.username,
+    displayName: user.displayName || user.username
+  } : null;
+  
+  // Funkce pro odhlášení
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (

@@ -99,3 +99,41 @@ export function requireAuth(handler: Function, roles?: string[]) {
     return handler(request, authResult, ...args);
   };
 }
+
+/**
+ * Autentizuje požadavek, kontroluje jestli je uživatel admin
+ * @param request NextRequest objekt
+ * @returns Null pokud autentizace selže, nebo UserPayload objekt pokud je úspěšná
+ */
+export async function authenticateAdmin(request: NextRequest): Promise<UserPayload | null> {
+  // Nejdříve zkusíme získat session cookie
+  const session = request.cookies.get("session")?.value;
+  
+  if (session) {
+    const decrypted = await decrypt(session);
+    if (decrypted && decrypted.role === 'admin') {
+      return {
+        userId: decrypted.userId as string,
+        username: decrypted.username as string,
+        role: decrypted.role as string,
+      };
+    }
+  }
+  
+  // Pokud cookie není nebo je neplatná, zkusíme Authorization header
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7); // Odstranit 'Bearer ' prefix
+    const decrypted = await decrypt(token);
+    
+    if (decrypted && decrypted.role === 'admin') {
+      return {
+        userId: decrypted.userId as string,
+        username: decrypted.username as string,
+        role: decrypted.role as string,
+      };
+    }
+  }
+  
+  return null;
+}

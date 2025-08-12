@@ -24,13 +24,27 @@ import {
   AlignRight,
   AlignJustify,
   Highlighter,
+  Youtube,
+  Loader2,
 } from 'lucide-react'
 
 type Props = {
-  editor: Editor | null
+  editor: Editor | null;
+  addImage?: () => void;
+  addImageFromUrl?: () => void;
+  addYoutubeEmbed?: () => void;
+  insertTable?: () => void;
+  uploadingImage?: boolean;
 }
 
-const TiptapToolbar = ({ editor }: Props) => {
+const TiptapToolbar = ({ 
+  editor, 
+  addImage: customAddImage, 
+  addImageFromUrl: customAddImageFromUrl, 
+  addYoutubeEmbed,
+  insertTable: customInsertTable,
+  uploadingImage = false
+}: Props) => {
   if (!editor) {
     return null
   }
@@ -52,10 +66,32 @@ const TiptapToolbar = ({ editor }: Props) => {
   }
 
   const addImage = () => {
-    const url = window.prompt('URL obrázku')
-
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+    if (customAddImage) {
+      customAddImage()
+    } else {
+      const url = window.prompt('URL obrázku')
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run()
+      }
+    }
+  }
+  
+  const addImageFromUrl = () => {
+    if (customAddImageFromUrl) {
+      customAddImageFromUrl()
+    } else {
+      const url = window.prompt('URL obrázku')
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run()
+      }
+    }
+  }
+  
+  const insertTable = () => {
+    if (customInsertTable) {
+      customInsertTable()
+    } else {
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
     }
   }
 
@@ -116,11 +152,38 @@ const TiptapToolbar = ({ editor }: Props) => {
       <button onClick={setLink} className={editor.isActive('link') ? 'is-active' : ''}>
         <Link className="w-5 h-5" />
       </button>
-      <button onClick={addImage}>
-        <ImageIcon className="w-5 h-5" />
+      <button 
+        onClick={addImage}
+        disabled={uploadingImage}
+        className="relative"
+      >
+        {uploadingImage ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <ImageIcon className="w-5 h-5" />
+        )}
       </button>
+      {addImageFromUrl && (
+        <button onClick={addImageFromUrl} disabled={uploadingImage}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-down">
+            <circle cx="9" cy="9" r="2" />
+            <path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10.8" />
+            <path d="m21 15-3.1-3.1a2 2 0 0 0-2.814.014L6 21" />
+            <path d="M14 19.5h7" />
+            <path d="M17.5 16v7" />
+          </svg>
+        </button>
+      )}
+      {addYoutubeEmbed && (
+        <button onClick={addYoutubeEmbed}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-youtube">
+            <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
+            <path d="m10 15 5-3-5-3z"/>
+          </svg>
+        </button>
+      )}
       <button
-        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        onClick={insertTable}
       >
         <Table className="w-5 h-5" />
       </button>
