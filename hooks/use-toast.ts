@@ -3,16 +3,10 @@
 // Inspired by react-hot-toast library
 import * as React from "react"
 
-// Definice vlastních typů pro toast
-type ToastActionElement = React.ReactNode;
-type ToastProps = {
-  variant?: "default" | "destructive";
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  action?: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
+import type {
+  ToastActionElement,
+  ToastProps,
+} from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000

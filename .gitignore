@@ -25,12 +25,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.vercel
-.env*.local
-
-/lib/generated/prisma
-
-# credentials
-/credentials/
-
-.vercel

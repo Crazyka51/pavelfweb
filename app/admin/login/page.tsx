@@ -1,123 +1,132 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useAuth } from '@/lib/auth-context'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { AlertCircle } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import LoadingScreen from '../components/LoadingScreen'
+import type React from "react"
 
-export default function LoginPage() {
-  const { isLoading, isAuthenticated, login } = useAuth()
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2, Lock, User } from "lucide-react"
+
+export default function AdminLoginPage() {
+  const [emailOrUsername, setEmailOrUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { login } = useAuth()
   const router = useRouter()
-  
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Pokud jsme již přihlášeni, přesměrujeme na dashboard
-  if (isAuthenticated && !isLoading) {
-    router.push('/admin')
-    return null
-  }
-
-  // Pokud stále načítáme autentizační stav, zobrazíme načítací obrazovku
-  if (isLoading) {
-    return <LoadingScreen />
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!username || !password) {
-      setError('Zadejte prosím uživatelské jméno a heslo')
-      return
-    }
+    setError("")
+    setIsLoading(true)
 
     try {
-      setError(null)
-      setIsSubmitting(true)
-      
-      const result = await login(username, password)
-      
-      if (!result.success) {
-        setError(result.message || 'Neplatné přihlašovací údaje')
+      const result = await login({ emailOrUsername, password })
+
+      if (result.success) {
+        router.push("/admin")
       } else {
-        // Přesměrování na dashboard po úspěšném přihlášení zajistí komponenta AdminAuthLayout
+        setError(result.error || "Přihlášení se nezdařilo")
       }
-    } catch (err: any) {
-      setError(`Chyba přihlášení: ${err.message}`)
+    } catch (error) {
+      setError("Došlo k neočekávané chybě")
     } finally {
-      setIsSubmitting(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Přihlášení do administrace</CardTitle>
-          <CardDescription className="text-center">
-            Zadejte své přihlašovací údaje pro přístup do administračního rozhraní
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Uživatelské jméno</Label>
-                <Input
-                  id="username"
-                  placeholder="admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Heslo</Label>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="w-full max-w-md">
+        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-4 text-center pb-8">
+            <div className="mx-auto w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
+              <Lock className="w-6 h-6 text-white" />
             </div>
-            
-            <Button
-              type="submit"
-              className="w-full mt-6"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Přihlašování...' : 'Přihlásit se'}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col">
-          <p className="text-xs text-center text-gray-500 mt-4">
-            Administrační rozhraní je určeno pouze pro oprávněné osoby.
-          </p>
-        </CardFooter>
-      </Card>
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold text-slate-900">Administrace</CardTitle>
+              <CardDescription className="text-slate-600">Přihlaste se do administračního rozhraní</CardDescription>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="emailOrUsername" className="text-sm font-medium text-slate-700">
+                  Email nebo uživatelské jméno
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="emailOrUsername"
+                    type="text"
+                    placeholder="admin@example.com"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    className="pl-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+                  Heslo
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-700">{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Přihlašuji...
+                  </>
+                ) : (
+                  "Přihlásit se"
+                )}
+              </Button>
+            </form>
+
+            <div className="text-center">
+              <p className="text-xs text-slate-500">Zabezpečené přihlášení pro administrátory</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-slate-600">Pavel Fišer - Zastupitel Praha 4</p>
+        </div>
+      </div>
     </div>
   )
 }

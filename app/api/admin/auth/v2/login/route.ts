@@ -1,78 +1,97 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createSession, verifyAccessToken } from "@/lib/auth-utils-v2";
-import { compare } from "bcryptjs";
-// Použijeme relativní cestu místo alias
-import prisma from '../../../../../../lib/prisma-client';
+import { type NextRequest, NextResponse } from "next/server"
+import { authenticateUser, createSession } from "@/lib/auth-utils"
 
-/**
- * API endpoint pro přihlášení uživatele
- * 
- * POST /api/admin/auth/v2/login
- */
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
-    
-    if (!username || !password) {
+    let body
+    try {
+      body = await request.json()
+    } catch (error) {
+      console.error("JSON parse error:", error)
       return NextResponse.json(
-        { success: false, message: "Uživatelské jméno a heslo jsou povinné" }, 
-        { status: 400 }
-      );
+        {
+          success: false,
+          error: "Invalid JSON in request body",
+        },
+        { status: 400 },
+      )
     }
-    
-    // Vyhledání uživatele v tabulce admin_users podle username
-    const users = await prisma.$queryRaw`
-      SELECT id, username, email, role, password_hash as password
-      FROM admin_users
-      WHERE username = ${username} AND is_active = true
-    `;
-    
-    // Výsledek SQL dotazu je pole, vezmeme první záznam
-    const user = Array.isArray(users) && users.length > 0 ? users[0] : null;
-    
+
+    const { emailOrUsername, password } = body
+
+    if (!emailOrUsername || !password) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Email/username and password are required",
+        },
+        { status: 400 },
+      )
+    }
+
+    let user
+    try {
+      user = await authenticateUser(emailOrUsername, password)
+    } catch (dbError) {
+      console.error("Database authentication error:", dbError)
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Database connection error",
+        },
+        { status: 500 },
+      )
+    }
+
     if (!user) {
       return NextResponse.json(
-        { success: false, message: "Nesprávné uživatelské jméno nebo heslo" }, 
-        { status: 401 }
-      );
+        {
+          success: false,
+          error: "Invalid credentials",
+        },
+        { status: 401 },
+      )
     }
-    
-    // Porovnání hesla
-    const isValid = await compare(password, user.password);
-    
-    if (!isValid) {
+
+    let session
+    try {
+      session = await createSession(user)
+    } catch (sessionError) {
+      console.error("Session creation error:", sessionError)
       return NextResponse.json(
-        { success: false, message: "Nesprávné uživatelské jméno nebo heslo" }, 
-        { status: 401 }
-      );
+        {
+          success: false,
+          error: "Failed to create session",
+        },
+        { status: 500 },
+      )
     }
-    
-    // Vytvoření tokenů - používáme username pro identifikaci
-    const { accessToken } = await createSession(
-      user.id,
-      user.username, // Používáme username jako identifikátor
-      user.role // Používáme roli z databáze
-    );
-    
-    // Navrácení access tokenu a základních informací o uživateli
-    return NextResponse.json({
+
+    // Vytvoření response s access tokenem
+    const response = NextResponse.json({
       success: true,
-      message: "Přihlášení proběhlo úspěšně",
-      token: accessToken,
-      user: {
-        id: user.id,
-        username: user.username, // Používáme uživatelské jméno
-        displayName: user.username, // Používáme username jako displayName
-        email: user.email, // Přidáme email pro úplnost
-        role: user.role // Používáme roli z databáze
-      }
-    });
-    
-  } catch (error: any) {
-    console.error("Login error:", error);
+      accessToken: session.accessToken,
+      user: session.user,
+    })
+
+    // Nastavení refresh tokenu jako HTTP-only cookie
+    response.cookies.set("refreshToken", session.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60, // 30 dní
+      path: "/",
+    })
+
+    return response
+  } catch (error) {
+    console.error("Login API error:", error)
     return NextResponse.json(
-      { success: false, message: "Chyba serveru: " + error.message }, 
-      { status: 500 }
-    );
+      {
+        success: false,
+        error: "Internal server error",
+      },
+      { status: 500 },
+    )
   }
 }

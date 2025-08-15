@@ -1,54 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyAccessToken, refreshSession } from "@/lib/auth-utils-v2";
+import { type NextRequest, NextResponse } from "next/server"
+import { verifyAccessToken, getUserById } from "@/lib/auth-utils"
 
-/**
- * API endpoint pro ověření platnosti tokenu
- * 
- * GET /api/admin/auth/v2/verify
- */
 export async function GET(request: NextRequest) {
   try {
-    // Získání access tokenu z hlavičky
-    const authHeader = request.headers.get("Authorization");
-    const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-    
-    if (accessToken) {
-      const payload = await verifyAccessToken(accessToken);
-      if (payload) {
-        // Token je platný
-        return NextResponse.json({
-          success: true,
-          user: {
-            userId: payload.userId,
-            username: payload.username,
-            role: payload.role
-          }
-        });
-      }
+    const authHeader = request.headers.get("authorization")
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Missing or invalid authorization header" }, { status: 401 })
     }
-    
-    // Pokud access token není nebo je neplatný, zkusíme refresh token
-    const refreshResult = await refreshSession();
-    if (refreshResult) {
-      return NextResponse.json({
-        success: true,
-        message: "Access token byl obnoven",
-        token: refreshResult.accessToken,
-        user: refreshResult.user
-      });
+
+    const token = authHeader.substring(7)
+    const payload = verifyAccessToken(token)
+
+    if (!payload) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
     }
-    
-    // Žádný validní token nebyl nalezen
-    return NextResponse.json(
-      { success: false, message: "Neplatný token" }, 
-      { status: 401 }
-    );
-    
-  } catch (error: any) {
-    console.error("Token verification error:", error);
-    return NextResponse.json(
-      { success: false, message: "Chyba serveru: " + error.message }, 
-      { status: 500 }
-    );
+
+    // Ověření, že uživatel stále existuje a je aktivní
+    const user = await getUserById(payload.userId)
+    if (!user) {
+      return NextResponse.json({ error: "User not found or inactive" }, { status: 401 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      user,
+      valid: true,
+    })
+  } catch (error) {
+    console.error("Verify error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -1,196 +1,299 @@
-import { jwtVerify, SignJWT } from "jose";
-import { cookies } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcryptjs"
+import { prisma } from "./prisma"
+import { type NextRequest, NextResponse } from "next/server"
 
-// Zjistí JWT_SECRET z .env souboru
-const SECRET_KEY = process.env.JWT_SECRET;
-if (!SECRET_KEY) {
-  throw new Error("JWT_SECRET environment variable is required");
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "your-refresh-secret-key"
+
+export interface AuthUser {
+  id: string
+  username?: string  // Nepovinné pro User model
+  email: string
+  role: string
+  source?: string    // Indikace zdroje (admin_users/User)
 }
 
-// Připraví klíč pro JWT operace
-const KEY = new TextEncoder().encode(SECRET_KEY);
-
-// Typ pro data uživatele z JWT tokenu
-export type UserPayload = {
-  userId: string;
-  username: string;
-  role: string;
-};
-
-/**
- * Zašifruje data pomocí JWT
- * @param payload Data k zašifrování
- * @returns JWT token
- */
-export async function encrypt(payload: any) {
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("2h") // Token vyprší za 2 hodiny
-    .sign(KEY);
+export interface JWTPayload {
+  userId: string
+  username?: string
+  email: string
+  role: string
+  source?: string
+  type: "access" | "refresh"
 }
 
-/**
- * Dešifruje JWT token
- * @param session JWT token
- * @returns Dešifrovaná data nebo null při chybě
- */
-export async function decrypt(session: string | undefined = "") {
+// Vytvoření access tokenu (15 minut)
+export function createAccessToken(user: AuthUser): string {
+  return jwt.sign(
+    {
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      source: user.source,
+      type: "access",
+    } as JWTPayload,
+    JWT_SECRET,
+    { expiresIn: "15m" },
+  )
+}
+
+// Vytvoření refresh tokenu (30 dní)
+export function createRefreshToken(user: AuthUser): string {
+  return jwt.sign(
+    {
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      source: user.source,
+      type: "refresh",
+    } as JWTPayload,
+    JWT_REFRESH_SECRET,
+    { expiresIn: "30d" },
+  )
+}
+
+// Ověření access tokenu
+export function verifyAccessToken(token: string): JWTPayload | null {
   try {
-    const { payload } = await jwtVerify(session, KEY, {
-      algorithms: ["HS256"],
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
+    if (decoded.type !== "access") {
+      return null
+    }
+    return decoded
+  } catch (error) {
+    return null
+  }
+}
+
+// Ověření refresh tokenu
+export function verifyRefreshToken(token: string): JWTPayload | null {
+  try {
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as JWTPayload
+    if (decoded.type !== "refresh") {
+      return null
+    }
+    return decoded
+  } catch (error) {
+    return null
+  }
+}
+
+// Hashování hesla
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12)
+}
+
+// Ověření hesla
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword)
+}
+
+// Autentizace uživatele podle emailu/username a hesla
+export async function authenticateUser(emailOrUsername: string, password: string): Promise<AuthUser | null> {
+  try {
+    // Nejprve zkusíme najít uživatele v tabulce admin_users
+    try {
+      const result = await prisma.$queryRaw`
+        SELECT id, username, email, password_hash, role, is_active 
+        FROM admin_users 
+        WHERE username = ${emailOrUsername} OR email = ${emailOrUsername} 
+        LIMIT 1
+      `;
+      
+      const users = result as any[];
+      if (users && users.length > 0) {
+        const user = users[0];
+        
+        // Kontrola, zda je uživatel aktivní
+        if (!user.is_active) {
+          console.warn("Attempt to login with inactive admin account:", emailOrUsername);
+          return null;
+        }
+        
+        // V tabulce admin_users je heslo uloženo jako password_hash
+        const isValidPassword = await verifyPassword(password, user.password_hash);
+        if (!isValidPassword) {
+          return null;
+        }
+
+        // Aktualizace updated_at a last_login pomocí raw SQL
+        await prisma.$executeRaw`
+          UPDATE admin_users 
+          SET updated_at = NOW(), last_login = NOW() 
+          WHERE id = ${user.id}
+        `;
+
+        return {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role || "admin",
+          source: "admin_users"
+        }
+      }
+    } catch (error) {
+      console.warn("Error querying admin_users table:", error);
+      // Pokračujeme k dalšímu pokusu s User modelem
+    }
+    
+    // Zkusíme najít uživatele v tabulce User (podle Prisma modelu)
+    const user = await prisma.user.findFirst({
+      where: {
+        email: emailOrUsername,
+      },
     });
-    return payload;
-  } catch (error) {
-    console.error("Failed to decrypt session:", error);
-    return null;
-  }
-}
 
-/**
- * Vytvoří novou session (přihlášení)
- * @param userId ID uživatele
- * @param username Uživatelské jméno
- * @param role Role uživatele (např. admin, editor)
- */
-export async function createSession(userId: string, username: string, role: string) {
-  // Vytvoří data pro token včetně expirace
-  const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hodiny
-  const session = await encrypt({ userId, username, role, expiresAt: expiresAt.toISOString() });
-
-  // Nastaví cookie s tokenem - použití Next.js 15 async cookies API
-  const cookieJar = await cookies();
-  cookieJar.set({
-    name: "session",
-    value: session,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
-    sameSite: "lax",
-    path: "/",
-  });
-
-  return session; // Vrací token pro případné další použití
-}
-
-/**
- * Odstraní session (odhlášení)
- */
-export async function deleteSession() {
-  const cookieJar = await cookies();
-  cookieJar.delete("session");
-}
-
-/**
- * Získá informace o přihlášeném uživateli z cookies
- * Pro použití ve server komponentách a server akcích
- * @returns Informace o uživateli nebo null pokud není přihlášen
- */
-export async function getAuthUser(): Promise<UserPayload | null> {
-  const cookieJar = await cookies();
-  const sessionCookie = cookieJar.get("session");
-  const session = sessionCookie?.value;
-  
-  if (!session) return null;
-  
-  const decrypted = await decrypt(session);
-  if (!decrypted) return null;
-  
-  // Kontrola expirace
-  if (decrypted.expiresAt && new Date(decrypted.expiresAt as string) < new Date()) {
-    return null;
-  }
-  
-  return {
-    userId: decrypted.userId as string,
-    username: decrypted.username as string,
-    role: decrypted.role as string,
-  };
-}
-
-/**
- * Ověří autentizaci z requestu
- * @param request NextRequest objekt
- * @returns Objekt s daty uživatele nebo NextResponse s chybou
- */
-export async function verifyAuth(request: NextRequest) {
-  const session = request.cookies.get("session")?.value;
-  if (!session) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const decrypted = await decrypt(session);
-  if (!decrypted) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  // Kontrola expirace
-  if (decrypted.expiresAt && new Date(decrypted.expiresAt as string) < new Date()) {
-    return NextResponse.json({ message: "Session expired" }, { status: 401 });
-  }
-
-  return decrypted;
-}
-
-/**
- * Higher-order function pro ochranu API routy pomocí autentizace.
- * 
- * @param handler Funkce handleru, která bude volána, když je uživatel autorizován
- * @param roles Nepovinné pole rolí, které jsou oprávněné přistupovat k resourci
- * @returns Funkci, která nejprve ověří autentizaci a pak volá handler
- */
-export function requireAuth(handler: Function, roles?: string[]) {
-  // The wrapper now explicitly accepts the `context` object, which contains route params.
-  return async (request: NextRequest, context: { params: any }) => {
-    const authResult = await verifyAuth(request);
-
-    if (authResult instanceof NextResponse) {
-      return authResult; // Unauthorized response from verifyAuth
-    }
-
-    if (roles && !roles.includes(authResult.role as string)) {
-      return NextResponse.json({ message: "Forbidden: Insufficient role" }, { status: 403 });
-    }
-
-    // Pass the request, authResult, and the context to the original handler.
-    return handler(request, authResult, context);
-  };
-}
-
-
-/**
- * Pro server komponenty/akce - získání informací o uživateli
- * @returns Informace o uživateli nebo null pokud není přihlášen
- */
-export async function verifySession(): Promise<UserPayload | null> {
-  const cookieJar = await cookies();
-  const sessionCookie = cookieJar.get("session");
-  const token = sessionCookie?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  try {
-    const payload = await decrypt(token);
-    
-    if (!payload || typeof payload.username !== "string") {
+    if (!user) {
       return null;
     }
-    
-    // Kontrola expirace
-    if (payload.expiresAt && new Date(payload.expiresAt as string) < new Date()) {
+
+    // Ověříme heslo
+    const isValidPassword = await verifyPassword(password, user.password);
+    if (!isValidPassword) {
       return null;
     }
-    
+
+    // Aktualizace času poslední aktivity
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { updatedAt: new Date() },
+    });
+
     return {
-      userId: payload.userId as string,
-      username: payload.username as string, 
-      role: payload.role as string
-    };
+      id: user.id,
+      email: user.email,
+      role: "user", // Výchozí role pro uživatele z User modelu
+      source: "User"
+    }
   } catch (error) {
-    console.error("Session verification failed:", error);
+    console.error("Authentication error:", error);
     return null;
+  }
+}
+
+// Získání uživatele podle ID
+export async function getUserById(userId: string): Promise<AuthUser | null> {
+  try {
+    // Nejprve zkusíme najít uživatele v tabulce admin_users
+    try {
+      const result = await prisma.$queryRaw`
+        SELECT id, username, email, role, is_active 
+        FROM admin_users 
+        WHERE id = ${userId}
+        LIMIT 1
+      `;
+      
+      const users = result as any[];
+      if (users && users.length > 0) {
+        const user = users[0];
+        
+        // Kontrola, zda je uživatel aktivní
+        if (!user.is_active) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role || "admin",
+          source: "admin_users"
+        }
+      }
+    } catch (error) {
+      console.warn("Error querying admin_users table by ID:", error);
+      // Pokračujeme k dalšímu pokusu s User modelem
+    }
+    
+    // Zkusíme najít uživatele v tabulce User (podle Prisma modelu)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: "user", // Výchozí role pro uživatele z User modelu
+      source: "User"
+    }
+  } catch (error) {
+    console.error("Get user error:", error);
+    return null;
+  }
+}
+
+// Middleware pro ochranu API routes
+export function requireAuth(handler: (request: NextRequest, auth: AuthUser) => Promise<NextResponse>) {
+  return async (request: NextRequest): Promise<NextResponse> => {
+    try {
+      const authHeader = request.headers.get("authorization")
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return NextResponse.json({ error: "Missing or invalid authorization header" }, { status: 401 })
+      }
+
+      const token = authHeader.substring(7)
+      const payload = verifyAccessToken(token)
+
+      if (!payload) {
+        return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+      }
+
+      const user = await getUserById(payload.userId)
+      if (!user) {
+        return NextResponse.json({ error: "User not found or inactive" }, { status: 401 })
+      }
+
+      return handler(request, user)
+    } catch (error) {
+      console.error("Auth middleware error:", error)
+      return NextResponse.json({ error: "Authentication failed" }, { status: 401 })
+    }
+  }
+}
+
+// Vytvoření kompletní session (oba tokeny)
+export async function createSession(user: AuthUser) {
+  const accessToken = createAccessToken(user)
+  const refreshToken = createRefreshToken(user)
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      source: user.source,
+    },
+  }
+}
+
+// Obnovení session pomocí refresh tokenu
+export async function refreshSession(refreshToken: string) {
+  const payload = verifyRefreshToken(refreshToken)
+  if (!payload) {
+    return null
+  }
+
+  const user = await getUserById(payload.userId)
+  if (!user) {
+    return null
+  }
+
+  const newAccessToken = createAccessToken(user)
+
+  return {
+    accessToken: newAccessToken,
+    user,
   }
 }

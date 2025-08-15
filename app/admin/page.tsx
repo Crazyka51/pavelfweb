@@ -1,229 +1,159 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import AdminLayout from "./components/AdminLayout";
-import Dashboard from "./components/Dashboard";
-import ArticleManager from "./components/ArticleManager";
-import ArticleEditor from "./components/ArticleEditor";
-import CategoryManager from "./components/CategoryManager";
-import SettingsManager from "./components/SettingsManager";
-import AnalyticsManager from "./components/AnalyticsManager";
-import { Article, ArticleStatus } from "@/types/cms";
-import { useAuth } from '@/lib/auth-context';
+import { AdminAuthLayout } from "@/components/auth/admin-auth-layout"
+import { useAuth } from "@/lib/auth-context"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { LogOut, Settings, FileText, Mail, BarChart3 } from "lucide-react"
 
-type AdminSection =
-  | "dashboard"
-  | "articles"
-  | "new-article"
-  | "media"
-  | "categories"
-  | "analytics"
-  | "backup"
-  | "settings"
+export default function AdminDashboard() {
+  const { user, logout } = useAuth()
 
-export default function AdminPage() {
-  const { user, logout } = useAuth();
-  const [currentSection, setCurrentSection] = useState<AdminSection>("dashboard");
-  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    // Při první inicializaci načíst články
-    loadArticles();
-  }, []);
-  
-  // Centralizovaná funkce pro načítání článků
-  // API chyba handler
-  const handleApiError = (error: any, defaultMessage: string) => {
-    console.error(defaultMessage, error);
-    
-    // Zajištění, že se zobrazí jen textová zpráva, nikoliv kód
-    let errorMessage = defaultMessage;
-    if (error && typeof error === 'object' && error.message) {
-      errorMessage = `${defaultMessage}: ${error.message}`;
-    }
-    
-    alert(errorMessage);
-  };
-
-  const loadArticles = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/admin/articles", {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
-      }
-      
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonError) {
-        throw new Error("Nelze zpracovat odpověď serveru");
-      }
-      
-      if (result && result.success) {
-        // Validace a formátování dat
-        const articles = result.data && result.data.articles ? result.data.articles : [];
-        const validatedArticles = articles.map((article: any) => {
-          if (!article) return null;
-          
-          return {
-            id: article.id || `article-${Math.random().toString(36).substr(2, 9)}`,
-            title: article.title || "Bez názvu",
-            content: article.content || "",
-            excerpt: article.excerpt || null,
-            category: article.category || { id: "default", name: "Nezařazeno" },
-            categoryId: article.categoryId || "default",
-            tags: Array.isArray(article.tags) ? article.tags : [],
-            status: article.status || ArticleStatus.DRAFT,
-            published: article.status === ArticleStatus.PUBLISHED,
-            createdAt: article.createdAt || new Date().toISOString(),
-            updatedAt: article.updatedAt || new Date().toISOString(),
-            author: article.author || { id: "system", name: "Systém" },
-            authorId: article.authorId || "system",
-            imageUrl: article.imageUrl || null,
-            publishedAt: article.publishedAt || null
-          };
-        }).filter(Boolean); // Odstraní null hodnoty
-        
-        setArticles(validatedArticles);
-      } else {
-        handleApiError(null, `Chyba při načítání článků: ${result.error || "Neznámá chyba"}`);
-      }
-    } catch (error) {
-      handleApiError(error, "Chyba při načítání článků");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSectionChange = (section: string) => {
-    setCurrentSection(section as AdminSection);
-    setEditingArticleId(null);
-  };
-
-  const handleCreateNew = () => {
-    setEditingArticleId(null);
-    setCurrentSection("new-article");
-  };
-
-  const handleEditArticle = (article: any) => {
-    setEditingArticleId(article.id);
-    setCurrentSection("new-article");
-  };
-
-  const handleBackToDashboard = () => {
-    setCurrentSection("dashboard");
-    setEditingArticleId(null);
-  };
-
-  const handleBackToArticles = () => {
-    // Po uložení článku znovu načíst data před přepnutím na seznam článků
-    loadArticles().then(() => {
-      setCurrentSection("articles");
-      setEditingArticleId(null);
-    });
-  };
-
-  const handleBackup = async () => {
-    try {
-      const response = await fetch('/api/admin/backup', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        alert('Záloha byla úspěšně vytvořena.');
-      } else {
-        alert('Nepodařilo se vytvořit zálohu.');
-      }
-    } catch (error) {
-      console.error('Chyba při vytváření zálohy:', error);
-      alert('Došlo k chybě při vytváření zálohy.');
-    }
-  };
-
-  const renderContent = () => {
-    switch (currentSection) {
-      case "dashboard":
-        return <Dashboard articles={articles} onCreateNew={handleCreateNew} onRefresh={loadArticles} />;
-      case "articles":
-        return <ArticleManager articles={articles} onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} onRefresh={loadArticles} />;
-      case "new-article":
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">
-              {editingArticleId ? "Upravit článek" : "Nový článek"}
-            </h2>
-            <ArticleEditor
-              articleId={editingArticleId || undefined}
-              onSave={handleBackToArticles}
-              onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            />
-          </div>
-        );
-      case "media":
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Správa médií</h2>
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <iframe 
-                src="/admin/media"
-                className="w-full min-h-[70vh] border-none"
-                title="Správa médií"
-              />
-            </div>
-          </div>
-        );
-      case "categories":
-        return <CategoryManager />;
-      case "analytics":
-        return <AnalyticsManager />;
-      case "backup":
-        return (
-          <div className="p-8">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-2xl font-bold mb-4">Zálohy</h2>
-              <p className="text-gray-600">Export a import dat systému</p>
-              <button
-                onClick={handleBackup}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Vytvořit zálohu
-              </button>
-            </div>
-          </div>
-        );
-      case "settings":
-        return <SettingsManager />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
-  // Příprava aktuálního uživatele pro AdminLayout
-  const currentUser = user ? {
-    username: user.username,
-    displayName: user.displayName || user.username
-  } : null;
-  
-  // Funkce pro odhlášení
   const handleLogout = async () => {
-    await logout();
-  };
+    await logout()
+  }
 
   return (
-    <AdminLayout
-      currentSection={currentSection}
-      onSectionChange={handleSectionChange}
-      onLogout={handleLogout}
-      currentUser={currentUser}
-    >
-      {renderContent()}
-    </AdminLayout>
-  );
+    <AdminAuthLayout>
+      <div className="min-h-screen bg-slate-50">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-xl font-semibold text-slate-900">Administrace</h1>
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  Online
+                </Badge>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-slate-600">
+                  Přihlášen jako: <span className="font-medium">{user?.username}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 bg-transparent"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Odhlásit</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Vítejte v administraci</h2>
+            <p className="text-slate-600">Spravujte obsah webu, články a newsletter</p>
+          </div>
+
+          {/* Dashboard Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Články</CardTitle>
+                <FileText className="h-4 w-4 text-slate-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">12</div>
+                <p className="text-xs text-slate-600">+2 tento měsíc</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Newsletter</CardTitle>
+                <Mail className="h-4 w-4 text-slate-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">248</div>
+                <p className="text-xs text-slate-600">odběratelů</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Návštěvy</CardTitle>
+                <BarChart3 className="h-4 w-4 text-slate-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">1,234</div>
+                <p className="text-xs text-slate-600">tento měsíc</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Systém</CardTitle>
+                <Settings className="h-4 w-4 text-slate-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">OK</div>
+                <p className="text-xs text-slate-600">Vše funguje</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Rychlé akce</CardTitle>
+                <CardDescription>Nejčastěji používané funkce</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Nový článek
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Newsletter kampaň
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Nastavení
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Poslední aktivita</CardTitle>
+                <CardDescription>Nedávné změny v systému</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="text-sm">
+                      <span className="font-medium">Článek publikován:</span> "Nová iniciativa pro Praha 4"
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="text-sm">
+                      <span className="font-medium">Newsletter odeslán:</span> 248 příjemců
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <div className="text-sm">
+                      <span className="font-medium">Systém aktualizován:</span> Verze 2.1.0
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    </AdminAuthLayout>
+  )
 }
