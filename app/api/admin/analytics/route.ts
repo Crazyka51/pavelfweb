@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "../../../../lib/auth-utils";
+import { requireAuth } from "@/lib/auth-utils-v2";
 import { sql, type AnalyticsEvent } from "../../../../lib/database";
 
 // Helper function to get date ranges

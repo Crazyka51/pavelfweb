@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-utils";
+import { requireAuth } from "@/lib/auth-utils-v2";
 import { articleService } from "@/lib/article-service";
 
 export const PUT = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }, authResult: any) => {
