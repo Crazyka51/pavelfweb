@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://pavelfiser.cz/sitemap.xml
+Sitemap: https://fiserpavel.cz/sitemap.xml
 
 # Disallow specifické admin cesty
 Disallow: /admin/
