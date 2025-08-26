@@ -1,0 +1,27 @@
+{
+  "articles": [
+    {
+      "title": "Stavba zastávky a oprava vodovodu omezí dopravu na Dvorcích",
+      "slug": "stavba-zastavky-a-oprava-vodovodu-omezi-dopravu-na-dvorcich",
+      "content": "Dopravní omezení na Podolském nábřeží ve směru od budovaného Dvoreckého mostu k Jeremenkově ulici potrvají i přes léto. Nejprve začnou silničáři budovat ve směru z centra novou zastávku autobusů MHD, a poté vodohospodáři opraví potrubí.",
+      "excerpt": "Dopravní omezení na Podolském nábřeží ve směru od budovaného Dvoreckého mostu k Jeremenkově ulici potrvají i přes léto. Nejprve začnou silničáři budov...",
+      "imageUrl": "https://www.praha4.cz/image/_x700/MfG61/dvorcezast.jpg",
+      "tags": ["praha4", "doprava", "udržitelnost", "2025"]
+    },
+    {
+      "title": "Rekonstrukce dětského hřiště U Kublova",
+      "slug": "rekonstrukce-detskeho-hriste-u-kublova",
+      "content": "<p>Dětské hřiště U Kublova v městské části Podolí prošlo v roce 2024 rozsáhlou rekonstrukcí. Dnes, v létě 2025, už slouží jako oblíbený cíl rodin s dětmi z okolí i širšího sousedství. Výsledkem úprav je hravý a bezpečný prostor, který reflektuje současné potřeby dětí všech věkových kategorií.</p><p>V rámci rekonstrukce byly instalovány nové herní prvky včetně trampolín, balančních překážek, lezeckých sestav i klidové zóny pro nejmenší. Design hřiště podporuje pohyb, kreativitu a sociální interakci mezi dětmi. Celkové uspořádání respektuje přirozené členění prostoru a kombinuje aktivní i odpočinkové zóny.</p><p>Obnova hřiště byla součástí širší snahy o zlepšení veřejných prostranství v městské části. Společně s úpravami v okolních parcích a sportovištích tak přispěla ke zvýšení kvality života v této části Prahy.</p><p>Hřiště U Kublova dnes představuje moderní komunitní prostor, kde se potkávají sousedé, děti a jejich rodiče – místo, které opět žije.</p>",
+      "excerpt": "Hřiště U Kublova je po rekonstrukci hotové a čeká na vás! Trampolíny, lezecké sestavy a odpočinkové zóny v bezpečném, inspirativním prostředí. Přijďte si hrát!",
+      "imageUrl": "https://www.praha4.cz/image/x700_y400_o0_x700_y400/W9r51/IS0753CZ-03-RGB-color-0006.jpg",
+      "tags": ["dětské hřiště", "rekonstrukce", "park kublova", "děti", "investice"]
+    },
+    {
+      "title": "Zelené střechy - nová iniciativa pro udržitelnost",
+      "slug": "zelene-strechy-nova-iniciativa-pro-udrzitelnost",
+      "content": "<h2>Praha 4 podporuje zelené střechy</h2><p>Spouštíme novou iniciativu na podporu zelených střech v naší městské části. Jde o projekt, který má přinést nejen estetické, ale především ekologické a klimatické benefity.</p><h3>Proč zelené střechy?</h3><p>Zelené střechy přinášejí řadu výhod:</p><ul><li><strong>Zlepšení kvality ovzduší</strong> - rostliny filtrují prach a škodliviny</li><li><strong>Regulace teploty</strong> - snížení efektu tepelného ostrova města</li><li><strong>Zadržování dešťové vody</strong> - prevence proti povodním</li><li><strong>Energetické úspory</strong> - lepší izolace budov</li><li><strong>Podpora biodiverzity</strong> - nové prostory pro rostliny a živočichy</li></ul><h3>Jak se zapojit?</h3><p>Městská část Praha 4 nabízí:</p><ol><li>Bezplatné poradenství při návrhu zelené střechy</li><li>Finanční příspěvky až do výše 50 % nákladů</li><li>Pomoc při vyřízení potřebných povolení</li><li>Technickou podporu při realizaci</li></ol><p>Zájemci se mohou hlásit na našem webu nebo osobně na úřadě městské části. První konzultace jsou již naplánované na únor 2025.</p><blockquote><p>\"Každá zelená střecha je krokem k udržitelnější budoucnosti našeho města. Jsem rád, že Praha 4 jde v této oblasti příkladem.\"</p></blockquote>",
+      "excerpt": "Praha 4 spouští iniciativu na podporu zelených střech. Nabízíme poradenství, finanční příspěvky a technickou podporu pro všechny zájemce.",
+      "tags": ["zelené střechy", "udržitelnost", "ekologie", "klimatické změny", "dotace"]
+    }
+  ]
+}
