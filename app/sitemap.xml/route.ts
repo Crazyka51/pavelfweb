@@ -1,3 +1,15 @@
+/**
+ * Dynamic sitemap.xml generator for Pavel Fišer's website
+ * 
+ * This route generates a dynamic sitemap that includes:
+ * - Static pages (home, privacy policy, terms of service, data deletion)
+ * - Dynamic article pages from the database (aktuality)
+ * - Proper XML formatting with lastModified, changefreq, and priority
+ * - Proper headers for search engine crawlers
+ * 
+ * The sitemap is accessible at: https://fiserpavel.cz/sitemap.xml
+ */
+
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
@@ -47,7 +59,8 @@ function generateSitemapXml(urls: Array<{
   priority: number;
 }>) {
   const xmlUrls = urls.map(({ url, lastModified, changeFrequency, priority }) => {
-    const fullUrl = `${baseUrl}${url}`;
+    // Ensure URL is properly escaped for XML
+    const fullUrl = `${baseUrl}${url}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const isoDate = lastModified.toISOString();
     
     return `  <url>
