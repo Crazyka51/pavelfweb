@@ -66,7 +66,12 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchYears = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/media/list')
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch('/api/admin/media/list', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       const data = await response.json()
       
       if (data.success && data.years) {
@@ -91,7 +96,12 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMonths = async (year: string) => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/media/list?year=${year}`)
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch(`/api/admin/media/list?year=${year}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       const data = await response.json()
       
       if (data.success && data.months) {
@@ -116,7 +126,12 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMediaFiles = async (year: string, month: string) => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/media/list?year=${year}&month=${month}`)
+      const token = localStorage.getItem('adminToken')
+      const response = await fetch(`/api/admin/media/list?year=${year}&month=${month}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       const data = await response.json()
       
       if (data.success && data.media) {

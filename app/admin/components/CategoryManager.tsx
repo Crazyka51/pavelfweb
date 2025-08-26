@@ -45,7 +45,12 @@ export default function CategoryManager() {
 
   const loadCategories = async () => {
     try {
-      const response = await fetch("/api/admin/categories?includeArticleCount=true");
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch("/api/admin/categories?includeArticleCount=true", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -70,10 +75,12 @@ export default function CategoryManager() {
     try {
       if (editingCategory) {
         // Update existing category
+        const token = localStorage.getItem("adminToken");
         const response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             name: formData.name,
@@ -99,10 +106,12 @@ export default function CategoryManager() {
         }
       } else {
         // Create new category
+        const token = localStorage.getItem("adminToken");
         const response = await fetch("/api/admin/categories", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             name: formData.name,
@@ -167,8 +176,12 @@ export default function CategoryManager() {
   const handleDelete = async (categoryId: string) => {
     if (confirm("Opravdu chcete smazat tuto kategorii?")) {
       try {
+        const token = localStorage.getItem("adminToken");
         const response = await fetch(`/api/admin/categories/${categoryId}`, {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (response.ok) {
