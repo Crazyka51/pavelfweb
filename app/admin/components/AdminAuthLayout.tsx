@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 // Pokud usePathname není dostupný v next/navigation, můžeme použít vlastní implementaci
 // a vytvořit náhradu za tuto funkci
 
 function useOurPathname(): string {
   // Pokud jsme v prohlížeči, můžeme použít window.location.pathname
   if (typeof window !== 'undefined') {
-    return window.location.pathname
+    return window.location.pathname;
   }
   // Fallback pro SSR
-  return ''
+  return '';
 }
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context';
 
 // Jednoduchá LoadingScreen komponenta přímo v souboru, abychom nemuseli řešit import
 function LoadingScreen() {
@@ -24,41 +24,41 @@ function LoadingScreen() {
         <p className="text-xl font-medium text-gray-700">Načítání...</p>
       </div>
     </div>
-  )
+  );
 }
 
 interface AdminAuthLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function AdminAuthLayout({ children }: AdminAuthLayoutProps) {
-  const { isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
-  const pathname = useOurPathname()
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+  const pathname = useOurPathname();
 
   useEffect(() => {
     // Zjištění, zda jsme na přihlašovací stránce
-    const isLoginPage = pathname === '/admin/login'
+    const isLoginPage = pathname === '/admin/login';
 
     // Pokud stránka stále načítá, nic neděláme
-    if (isLoading) return
+    if (isLoading) return;
 
     // Pokud nejsme přihlášeni a nejsme na přihlašovací stránce, přesměrujeme na přihlášení
     if (!isAuthenticated && !isLoginPage) {
-      router.push('/admin/login')
+      router.push('/admin/login');
     }
 
     // Pokud jsme přihlášeni a jsme na přihlašovací stránce, přesměrujeme na dashboard
     if (isAuthenticated && isLoginPage) {
-      router.push('/admin')
+      router.push('/admin');
     }
-  }, [isAuthenticated, isLoading, router, pathname])
+  }, [isAuthenticated, isLoading, router, pathname]);
 
   // Pokud stránka stále načítá autentizaci, zobrazíme načítací obrazovku
   if (isLoading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
   // Na přihlašovací stránce nebo když jsme přihlášeni, zobrazíme obsah
-  return <>{children}</>
+  return <>{children}</>;
 }

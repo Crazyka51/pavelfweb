@@ -1,4 +1,5 @@
-import { PrismaClient, Category } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { Category, CreateCategoryInput } from '../../types/database';
 
 const prisma = new PrismaClient();
 

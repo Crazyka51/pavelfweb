@@ -1,8 +1,9 @@
-import { PrismaClient, Article, ArticleStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { Article, ArticleStatus, CreateArticleInput, UpdateArticleInput } from '../../types/database';
 
 const prisma = new PrismaClient();
 
-export { type Article };
+export { type Article, type ArticleStatus };
 
 export async function getArticleById(id: string) {
   return await prisma.article.findUnique({
