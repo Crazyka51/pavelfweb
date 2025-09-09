@@ -1,5 +1,24 @@
 import { PrismaClient } from '@prisma/client';
-import { Article, ArticleStatus, CreateArticleInput, UpdateArticleInput } from '../../types/database';
+import { Article, ArticleStatus } from '../../types/database';
+
+// Local types for this service
+interface ServiceCreateArticleInput {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  imageUrl?: string;
+  status?: ArticleStatus;
+  publishedAt?: string;
+  isFeatured?: boolean;
+  authorId: string;
+  categoryId: string;
+  tags?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+interface ServiceUpdateArticleInput extends Partial<Omit<ServiceCreateArticleInput, 'authorId'>> {}
 
 const prisma = new PrismaClient();
 
@@ -15,24 +34,7 @@ export async function getArticleById(id: string) {
   });
 }
 
-// The data structure for creating a new article
-type CreateArticleInput = {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt?: string;
-  imageUrl?: string;
-  status?: ArticleStatus;
-  publishedAt?: string;
-  isFeatured?: boolean;
-  authorId: string;
-  categoryId: string;
-  tags?: string[];
-  metaTitle?: string;
-  metaDescription?: string;
-};
-
-export async function createArticle(data: CreateArticleInput) {
+export async function createArticle(data: ServiceCreateArticleInput) {
   return await prisma.article.create({
     data: {
       ...data,
@@ -41,11 +43,7 @@ export async function createArticle(data: CreateArticleInput) {
   });
 }
 
-// The data structure for updating an article
-type UpdateArticleInput = Partial<Omit<CreateArticleInput, 'authorId'>>;
-
-
-export async function updateArticle(id: string, data: UpdateArticleInput) {
+export async function updateArticle(id: string, data: ServiceUpdateArticleInput) {
   return await prisma.article.update({
     where: { id },
     data: {

@@ -245,7 +245,7 @@ export const useSubscribersData = () => {
 
         if (response.ok) {
           const updatedSubscriber = await response.json()
-          setSubscribers(subscribers.map((sub) => (sub.id === id ? updatedSubscriber : sub)))
+          setSubscribers(subscribers.map((sub: any) => (sub.id === id ? updatedSubscriber : sub)))
           updateCache("subscribers")
           return updatedSubscriber
         } else {
@@ -271,7 +271,7 @@ export const useSubscribersData = () => {
         })
 
         if (response.ok) {
-          setSubscribers(subscribers.filter((sub) => sub.id !== id))
+          setSubscribers(subscribers.filter((sub: any) => sub.id !== id))
           updateCache("subscribers")
           return true
         } else {
@@ -305,7 +305,7 @@ export const useSubscribersData = () => {
         if (response.ok) {
           const result = await response.json()
           setSubscribers(
-            subscribers.map((sub) => {
+            subscribers.map((sub: any) => {
               if (emails.includes(sub.email)) {
                 return { ...sub, ...updates }
               }

@@ -4,6 +4,7 @@ import { articleService } from "@/lib/article-service";
 import { db } from "@/lib/database";
 import { adminUsers } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { ArticleStatus } from "@/types/database";
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
 
@@ -25,7 +26,7 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
     }
 
     if (published !== null && published !== undefined) {
-      filters.status = published === "true" ? "PUBLISHED" : "DRAFT";
+      filters.status = published === "true" ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT;
     }
 
     if (search) {
@@ -106,9 +107,9 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
       categoryId: articleData.categoryId,
       tags: articleData.tags || [],
-      status: (articleData.status || (articleData.published ? "PUBLISHED" : "DRAFT")) as "DRAFT" | "PUBLISHED" | "ARCHIVED",
+      status: (articleData.status || (articleData.published ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT)),
       imageUrl: articleData.imageUrl,
-      publishedAt: articleData.status === "PUBLISHED" || articleData.published ? new Date() : null,
+      publishedAt: articleData.status === ArticleStatus.PUBLISHED || articleData.published ? new Date() : null,
       isFeatured: articleData.isFeatured || false,
       authorId: authResult.userId,
       metaTitle: articleData.metaTitle,

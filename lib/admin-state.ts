@@ -40,6 +40,7 @@ interface AdminState {
 
   // Data cache
   articles: Article[]
+  subscribers: any[] // Newsletter subscribers
 
   // UI state
   currentSection: string
@@ -52,6 +53,7 @@ interface AdminState {
   setAnalyticsFilters: (filters: Partial<AdminFilters["analytics"]>) => void
 
   setArticles: (articles: Article[]) => void
+  setSubscribers: (subscribers: any[]) => void
 
   setCurrentSection: (section: string) => void
   setEditingArticleId: (id: string | null) => void
@@ -86,6 +88,7 @@ export const useAdminStore = create<AdminState>()(
       // Initial state
       filters: defaultFilters,
       articles: [],
+      subscribers: [],
       currentSection: "dashboard",
       editingArticleId: null,
       isLoading: false,
@@ -110,6 +113,7 @@ export const useAdminStore = create<AdminState>()(
 
       // Data actions
       setArticles: (articles) => set({ articles }),
+      setSubscribers: (subscribers) => set({ subscribers }),
 
       // UI actions
       setCurrentSection: (section) => set({ currentSection: section }),

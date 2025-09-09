@@ -67,7 +67,7 @@ async function migrateArticles() {
             slug: legacyArticle.title.toLowerCase().replace(/[^\w]+/g, '-'), // Vytvoření slugu z názvu
             authorId: author.id,
             categoryId: category.id,
-            tags: Array.isArray(legacyArticle.tags) ? legacyArticle.tags.map(tag => String(tag)) : [],
+            tags: Array.isArray(legacyArticle.tags) ? legacyArticle.tags.map((tag: any) => String(tag)) : [],
             imageUrl: legacyArticle.image_url,
             publishedAt: legacyArticle.published_at,
             createdAt: legacyArticle.created_at || new Date(),
@@ -253,7 +253,7 @@ async function migrateNewsletterCampaigns() {
             unsubscribeCount: legacyCampaign.unsubscribe_count || 0,
             createdById: user.id,
             templateId: templateId,
-            tags: Array.isArray(legacyCampaign.tags) ? legacyCampaign.tags.map(tag => String(tag)) : [],
+            tags: Array.isArray(legacyCampaign.tags) ? legacyCampaign.tags.map((tag: any) => String(tag)) : [],
             segmentId: legacyCampaign.segment_id || null,
             createdAt: legacyCampaign.created_at || new Date(),
             updatedAt: legacyCampaign.updated_at || new Date(),

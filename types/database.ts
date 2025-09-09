@@ -2,11 +2,25 @@
  * Database type definitions to ensure consistency between Prisma models and application code
  */
 
-// Article Status Enum
-export type ArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+// Article Status Enum - use const assertion for literal types
+export const ArticleStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED', 
+  ARCHIVED: 'ARCHIVED'
+} as const;
 
-// Campaign Status Enum  
-export type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'FAILED';
+export type ArticleStatus = typeof ArticleStatus[keyof typeof ArticleStatus];
+
+// Campaign Status Enum
+export const CampaignStatus = {
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  SENDING: 'SENDING', 
+  SENT: 'SENT',
+  FAILED: 'FAILED'
+} as const;
+
+export type CampaignStatus = typeof CampaignStatus[keyof typeof CampaignStatus];
 
 // Base interfaces for database entities
 export interface BaseEntity {
