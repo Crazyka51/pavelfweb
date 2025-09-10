@@ -4,9 +4,11 @@ import { articleService } from "@/lib/article-service";
 import { db } from "@/lib/database";
 import { adminUsers } from "@/lib/schema";
 import { eq } from "drizzle-orm";
-import { ArticleStatus } from "@/types/database";
+import { ArticleStatus } from "@/types/cms"; // Změněn import z database.ts na cms.ts
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
+  // Logování autentizace pro ladění
+  console.log("Auth result in GET /api/admin/articles:", authResult);
 
   try {
     const { searchParams } = new URL(request.url);
@@ -107,7 +109,10 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       excerpt: articleData.excerpt || articleData.content.replace(/<[^>]*>/g, "").substring(0, 150) + "...",
       categoryId: articleData.categoryId,
       tags: articleData.tags || [],
-      status: (articleData.status || (articleData.published ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT)),
+      // Použijeme typ jako řetězec pro kompatibilitu s CreateArticleInput
+      status: (articleData.status === ArticleStatus.PUBLISHED || articleData.published === true)
+        ? ArticleStatus.PUBLISHED
+        : ArticleStatus.DRAFT,
       imageUrl: articleData.imageUrl,
       publishedAt: articleData.status === ArticleStatus.PUBLISHED || articleData.published ? new Date() : null,
       isFeatured: articleData.isFeatured || false,

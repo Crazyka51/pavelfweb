@@ -86,11 +86,8 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
         const response = await fetch("/api/admin/categories", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: 'include', // Přidáno pro použití HTTP-only cookies
         });
         const result = await response.json();
         if (result.success) {
@@ -109,11 +106,8 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     // Fetch article data if editing
     if (articleId) {
       setIsLoading(true);
-      const token = localStorage.getItem("adminToken");
       fetch(`/api/admin/articles/${articleId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include', // Přidáno pro použití HTTP-only cookies
       })
         .then((res) => res.json())
         .then((result) => {
@@ -148,6 +142,23 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Přidaná validace
+    if (!title.trim()) {
+      toast({ title: "Chyba", description: "Název článku je povinný", variant: "destructive" });
+      return;
+    }
+    
+    if (!categoryId) {
+      toast({ title: "Chyba", description: "Vyberte kategorii pro článek", variant: "destructive" });
+      return;
+    }
+    
+    if (!content.trim()) {
+      toast({ title: "Chyba", description: "Obsah článku je povinný", variant: "destructive" });
+      return;
+    }
+    
     setIsSaving(true);
 
     const articleData = {
@@ -165,7 +176,6 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
     };
 
     try {
-      const token = localStorage.getItem("adminToken");
       const url = articleId ? `/api/admin/articles/${articleId}` : "/api/admin/articles";
       const method = articleId ? "PUT" : "POST";
 
@@ -173,8 +183,8 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include', // Přidáno pro použití HTTP-only cookies
         body: JSON.stringify(articleData),
       });
 

@@ -58,18 +58,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
   // Ponecháme původní funkci pro případ, že by props nebyly dostupné
   const loadArticles = useCallback(async () => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      setIsLoading(false);
-      alert("Nejste přihlášeni. Přihlaste se prosím znovu.");
-      return;
-    }
     try {
       setIsLoading(true);
       const response = await fetch("/api/admin/articles", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
       });
 
       if (!response.ok) {
@@ -204,16 +196,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
     }
 
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return alert("Chyba autorizace");
-
       try {
         for (const articleId of selectedArticles) {
           const response = await fetch(`/api/admin/articles/${articleId}`, {
             method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
           });
 
           const result = await response.json();
@@ -233,17 +220,14 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
   const handleBulkPublish = async () => {
     if (selectedArticles.length === 0) return;
-    const token = localStorage.getItem("adminToken");
-    if (!token) return alert("Chyba autorizace");
-
     try {
       for (const articleId of selectedArticles) {
         const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
+          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
           body: JSON.stringify({ status: "PUBLISHED" }),
         });
         const result = await response.json();
@@ -262,17 +246,14 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
   const handleBulkUnpublish = async () => {
     if (selectedArticles.length === 0) return;
-    const token = localStorage.getItem("adminToken");
-    if (!token) return alert("Chyba autorizace");
-
     try {
       for (const articleId of selectedArticles) {
         const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
+          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
           body: JSON.stringify({ status: "DRAFT" }),
         });
         const result = await response.json();
@@ -291,14 +272,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm("Opravdu chcete smazat tento článek?")) {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return alert("Chyba autorizace");
       try {
         const response = await fetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
         });
 
         const result = await response.json();
@@ -316,8 +293,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   };
 
   const handleDuplicateArticle = async (article: any) => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) return alert("Chyba autorizace");
     try {
       // Přidáno logování pro lepší diagnostiku
       console.log("Duplicating article:", article);
@@ -337,8 +312,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
         body: JSON.stringify(newArticleData),
       });
 
