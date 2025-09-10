@@ -126,6 +126,12 @@ export class AuthService {
     }
   }> {
     try {
+      // Kontrola parametru v URL - pokud obsahuje force=true, přeskočíme automatické přihlášení
+      if (typeof window !== 'undefined' && window.location.href.includes('force=true')) {
+        console.log('Forced logout due to force=true parameter');
+        return { isAuthenticated: false };
+      }
+
       // Nejdříve zkontrolujeme localStorage
       const token = localStorage.getItem(AuthService.ACCESS_TOKEN_KEY);
       
@@ -162,14 +168,29 @@ export class AuthService {
         };
       }
       
+      // Pokud server vrátil 200, ale success: false, token je neplatný - vyčistíme
+      if (response.ok && !data.success) {
+        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+        return { isAuthenticated: false };
+      }
+      
       // Pokud ověření selhalo, zkusíme obnovit token
       if (!response.ok) {
-        return await this.refreshToken();
+        const refreshResult = await this.refreshToken();
+        
+        // Pokud se nepodařilo obnovit token, vyčistíme localStorage
+        if (!refreshResult.isAuthenticated) {
+          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+        }
+        
+        return refreshResult;
       }
       
       return { isAuthenticated: false };
     } catch (error) {
       console.error('Auth check error:', error);
+      // Při chybě odstraníme token z localStorage
+      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
       return { isAuthenticated: false };
     }
   }
@@ -205,9 +226,17 @@ export class AuthService {
         };
       }
       
+      // Když je response.ok ale nemáme token, tak je pravděpodobně token neplatný
+      // Provedeme čištění, aby uživatel musel zadat přihlášení znovu
+      if (response.ok && !data.success) {
+        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+      }
+      
       return { isAuthenticated: false };
     } catch (error) {
       console.error('Token refresh error:', error);
+      // Při chybě také odstraníme token, aby nedocházelo k opakovaným pokusům
+      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
       return { isAuthenticated: false };
     }
   }

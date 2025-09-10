@@ -49,7 +49,8 @@ export default function AdminAuthLayout({ children }: AdminAuthLayoutProps) {
     }
 
     // Pokud jsme přihlášeni a jsme na přihlašovací stránce, přesměrujeme na dashboard
-    if (isAuthenticated && isLoginPage) {
+    // Přidáme parametr force, který umožní návštěvu přihlašovací stránky i když jsme přihlášeni
+    if (isAuthenticated && isLoginPage && !pathname.includes('?force=true')) {
       router.push('/admin');
     }
   }, [isAuthenticated, isLoading, router, pathname]);

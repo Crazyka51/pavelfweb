@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
@@ -12,16 +12,34 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function LoginPage() {
-  const { isLoading, isAuthenticated, login } = useAuth()
+  const { isLoading, isAuthenticated, login, logout } = useAuth()
   const router = useRouter()
   
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Detekce force parametru v URL
+  const [forceLogin, setForceLogin] = useState(false)
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceParam = urlParams.get('force');
+      setForceLogin(forceParam === 'true');
+      
+      if (forceParam === 'true') {
+        // Vyčistit localStorage, aby se uživatel musel přihlásit znovu
+        localStorage.removeItem('adminToken');
+        // Odhlásit uživatele
+        logout();
+      }
+    }
+  }, [logout]);
 
-  // Pokud jsme již přihlášeni, přesměrujeme na dashboard
-  if (isAuthenticated && !isLoading) {
+  // Pokud jsme již přihlášeni, přesměrujeme na dashboard (pokud není force=true)
+  if (isAuthenticated && !isLoading && !forceLogin) {
     router.push('/admin')
     return null
   }
@@ -115,6 +133,17 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col">
           <p className="text-xs text-center text-gray-500 mt-4">
             Administrační rozhraní je určeno pouze pro oprávněné osoby.
+          </p>
+          <p className="text-xs text-center text-gray-500 mt-2">
+            <button 
+              onClick={() => {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin/login?force=true';
+              }}
+              className="text-blue-500 hover:text-blue-700 underline"
+            >
+              Vynutit nové přihlášení
+            </button>
           </p>
         </CardFooter>
       </Card>

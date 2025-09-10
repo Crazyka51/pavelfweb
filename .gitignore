@@ -34,3 +34,7 @@ next-env.d.ts
 /credentials/
 
 .vercel
+
+# Záložní adresáře z čištění projektu
+_cleanup_backup_*/
+_cleanup_scripts_*/

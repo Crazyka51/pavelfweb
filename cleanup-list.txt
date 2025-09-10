@@ -1,0 +1,36 @@
+Seznam souborů ke smazání:
+----------------------------------------
+# Archivní a dočasné soubory
+pavelfweb2.rar
+pavelfweb2.zip
+
+# Testovací soubory
+test-api.mjs
+test-auth.mjs
+test-db.mjs
+test-newsletter.sh
+test-unsubscribe.sh
+testLogin.mjs
+
+# Dočasné soubory nebo záznamy
+cookies.txt
+login_response.json
+historiechatu.txt
+debug-db.mjs
+
+# Prázdné nebo nepotřebné konfigurační soubory
+v0-user-next.config.mjs
+
+# Zálohy komponent
+/workspaces/pavelfweb/components/backups
+
+# Archivní soubory v adresáři app
+/workspaces/pavelfweb/app/app.zip
+
+# Duplicitní dokumentace
+/workspaces/pavelfweb/dokumentace/DATABASE_STANDARDIZACE.md
+/workspaces/pavelfweb/dokumentace/DATABASE_STANDARDIZATION.md
+/workspaces/pavelfweb/dokumentace/NEON_DB_STANDARDIZACE.md
+/workspaces/pavelfweb/dokumentace/DB_STANDARDIZACE_ZPRAVA.md
+/workspaces/pavelfweb/dokumentace/PROVEDENE_ZMENY_DB_STANDARDIZACE.md
+/workspaces/pavelfweb/dokumentace/README_DB_STANDARDIZACE.md
