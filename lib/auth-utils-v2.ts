@@ -106,8 +106,13 @@ export async function createSession(userId: string, username: string, role: stri
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     expires: refreshExpires,
-    sameSite: "strict",
+    sameSite: "lax", // Změna ze "strict" na "lax" pro lepší kompatibilitu mezi doménami
     path: "/",
+    // Nastavit doménu pouze v produkčním prostředí na hlavní doménu
+    // pro zajištění fungování na www i non-www subdoménách
+    ...(process.env.NODE_ENV === "production" ? { 
+      domain: ".fiserpavel.cz" // S tečkou na začátku pro povolení subdomén
+    } : {})
   });
   
   // Access token je vracen klientovi

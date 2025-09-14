@@ -85,6 +85,38 @@ const nextConfig = {
             value: 'cross-origin'
           }
         ]
+      },
+      // CORS hlavičky pro API auth endpointy
+      {
+        source: '/api/admin/auth/:path*',
+        headers: [
+          {
+            // V produkci dynamicky nastavíme hlavičku podle Origin, 
+            // Ve vývojovém prostředí povolíme localhost
+            key: 'Access-Control-Allow-Origin',
+            // Nemůžeme použít dynamickou hodnotu '*', protože pak by nefungovalo 'credentials: include'
+            // Řešení: middleware bude dynamicky upravovat tuto hodnotu podle Origin hlavičky
+            value: process.env.NODE_ENV === 'production'
+              ? 'https://www.fiserpavel.cz'
+              : 'http://localhost:3000'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization'
+          },
+          {
+            key: 'Vary',
+            value: 'Origin'
+          }
+        ]
       }
     ]
   }
