@@ -43,6 +43,8 @@ export default function MediaEnabledTiptapEditor({
   }, [])
 
   const editor = useEditor({
+    // Nastavíme immediatelyRender na false, aby se předešlo hydratačním chybám při SSR
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Link.configure({

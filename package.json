@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev:https": "HTTPS_PORT=3443 node ./scripts/https-server.mjs",
+    "gen-certs": "bash ./scripts/generate-local-ssl.sh",
     "build": "npx prisma generate && next build",
     "start": "next start",
+    "start:https": "NODE_ENV=production HTTPS_PORT=3443 node ./scripts/https-server.mjs",
     "lint": "next lint"
   },
   "prisma": {

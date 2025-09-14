@@ -127,9 +127,18 @@ export class AuthService {
   }> {
     try {
       // Kontrola parametru v URL - pokud obsahuje force=true, přeskočíme automatické přihlášení
-      if (typeof window !== 'undefined' && window.location.href.includes('force=true')) {
-        console.log('Forced logout due to force=true parameter');
-        return { isAuthenticated: false };
+      if (typeof window !== 'undefined') {
+        const urlPath = window.location.pathname;
+        const urlSearch = window.location.search;
+        
+        // Pokud jsme na přihlašovací stránce nebo máme force=true, zastavíme automatické přihlášení
+        if (urlPath === '/admin/login' || urlSearch.includes('force=true')) {
+          console.log('Vynucené odhlášení - přihlašovací stránka nebo force=true parametr');
+          
+          // Vždy vymažeme token, když jsme na přihlašovací stránce
+          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+          return { isAuthenticated: false };
+        }
       }
 
       // Nejdříve zkontrolujeme localStorage

@@ -5,7 +5,14 @@ try {
   // ignore error
 }
 
-/** @type {import('next').NextConfig} */
+/**
+ * @type {import('next').NextConfig & {
+ *   experimental?: {
+ *     newNextLinkBehavior?: boolean;
+ *     allowedDevOrigins?: string[];
+ *   };
+ * }}
+ */
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
@@ -24,6 +31,23 @@ const nextConfig = {
     FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
     FACEBOOK_PAGE_ID: process.env.FACEBOOK_PAGE_ID,
   },
+  // Konfigurace pro vývojové prostředí
+  experimental: {},
+  // Vynutit HTTPS v produkčním prostředí
+  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://fiserpavel.cz' : '',
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          }
+        ]
+      }
+    ]
+  }
 }
 
 mergeConfig(nextConfig, userConfig)

@@ -43,6 +43,8 @@ export default function TiptapEditor({ content, onChange, placeholder = 'Začně
   }, []);
 
   const editor = useEditor({
+    // Nastavíme immediatelyRender na false, aby se předešlo hydratačním chybám při SSR
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Link.configure({

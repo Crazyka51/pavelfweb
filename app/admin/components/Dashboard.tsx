@@ -97,13 +97,20 @@ export default function Dashboard({ onCreateNew = () => {}, articles = [], onRef
   // Ponecháme původní funkci pro případ, že by props nebyly dostupné
   const loadDashboardData = async () => {
     try {
+      // Použijeme authService pro získání tokenu
       const token = localStorage.getItem("adminToken");
+      if (!token) {
+        console.error("Chybí přihlašovací token");
+        return;
+      }
 
       // Load articles
       const articlesResponse = await fetch("/api/admin/articles", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
+        credentials: "include"  // Důležité pro přenos cookies
       });
 
       if (articlesResponse.ok) {

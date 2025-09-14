@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-utils-v2";
+import { requireAuth, authenticateAdmin } from "@/lib/auth-utils-v2";
 import { articleService } from "@/lib/article-service";
 
 export const PUT = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }, authResult: any) => {
@@ -15,7 +15,9 @@ export const PUT = requireAuth(async (request: NextRequest, { params }: { params
     }
 
     const articleData = await request.json();
-    const articleId = params.id;
+    // Nejprve počkáme na params
+    const resolvedParams = await params;
+    const articleId = resolvedParams.id;
 
     const updatedArticle = await articleService.updateArticle(articleId, articleData);
 
@@ -35,7 +37,7 @@ export const PUT = requireAuth(async (request: NextRequest, { params }: { params
       data: updatedArticle,
     });
   } catch (error) {
-    console.error(`Articles PUT error for ID ${params.id}:`, error);
+    console.error(`Articles PUT error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -49,29 +51,41 @@ export const PUT = requireAuth(async (request: NextRequest, { params }: { params
 
 export const GET = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }) => {
   try {
-    const article = await articleService.getArticleById(params.id);
+    // Nejprve počkáme na params
+    const resolvedParams = await params;
+    const article = await articleService.getArticleById(resolvedParams.id);
     if (!article) {
       return NextResponse.json({ success: false, error: "Article not found" }, { status: 404 });
     }
     return NextResponse.json({ success: true, data: article });
   } catch (error) {
-    console.error(`Error fetching article ${params.id}:`, error);
+    console.error(`Error fetching article:`, error);
     return NextResponse.json({ success: false, error: "Failed to fetch article" }, { status: 500 });
   }
 });
 
-export const DELETE = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }, authResult: any) => {
+export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
+    const authHeader = request.headers.get("Authorization");
+    
     if (authResult.role !== "admin") {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
     }
-    const success = await articleService.deleteArticle(params.id);
+    
+    // Nejprve počkáme na params
+    const resolvedParams = await params;
+    const success = await articleService.deleteArticle(resolvedParams.id);
     if (!success) {
       return NextResponse.json({ success: false, error: "Article not found" }, { status: 404 });
     }
+    
     return NextResponse.json({ success: true, message: "Article deleted successfully" });
   } catch (error) {
-    console.error(`Error deleting article ${params.id}:`, error);
-    return NextResponse.json({ success: false, error: "Failed to delete article" }, { status: 500 });
+    console.error(`Error deleting article:`, error);
+    return NextResponse.json({ 
+      success: false, 
+      error: "Failed to delete article", 
+      details: error instanceof Error ? error.message : "Unknown error" 
+    }, { status: 500 });
   }
 });

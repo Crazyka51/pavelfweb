@@ -74,7 +74,9 @@ async function getArticle(id: string): Promise<Article | null> {
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const article = await getArticle(params.id);
+  // Nejprve počkáme na params
+  const resolvedParams = await params;
+  const article = await getArticle(resolvedParams.id);
 
   if (!article) {
     return {
@@ -117,7 +119,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function ArticlePage({ params }: { params: { id: string } }) {
-  const article = await getArticle(params.id);
+  // Nejprve počkáme na params
+  const resolvedParams = await params;
+  const article = await getArticle(resolvedParams.id);
 
   if (!article) {
     notFound();

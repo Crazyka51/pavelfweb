@@ -50,9 +50,14 @@ export default function AdminPage() {
   const loadArticles = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/admin/articles", {
-        credentials: 'include',
-      });
+      
+      // Použijeme pomocnou funkci pro autorizovaný fetch
+      const response = await import('@/lib/auth-fetch')
+        .then(module => module.authorizedFetch("/api/admin/articles", {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }));
       
       if (!response.ok) {
         throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);

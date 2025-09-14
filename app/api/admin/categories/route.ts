@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-utils-v2";
+import { requireAuth, authenticateAdmin } from "@/lib/auth-utils-v2";
 import { categoryService } from "@/lib/category-service";
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
@@ -53,6 +53,7 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       );
     }
 
+    console.log("Creating category with name:", categoryData.name);
     const newCategory = await categoryService.createCategory(categoryData);
 
     return NextResponse.json(

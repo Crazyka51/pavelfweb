@@ -23,26 +23,41 @@ export default function LoginPage() {
   // Detekce force parametru v URL
   const [forceLogin, setForceLogin] = useState(false)
   
+  // Při načtení stránky vždy zajistíme, že uživatel není přihlášený automaticky
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const forceParam = urlParams.get('force');
-      setForceLogin(forceParam === 'true');
-      
-      if (forceParam === 'true') {
-        // Vyčistit localStorage, aby se uživatel musel přihlásit znovu
+    const cleanup = async () => {
+      if (typeof window !== 'undefined') {
+        // Pokud URL neobsahuje force=true, přidáme ho
+        if (!window.location.search.includes('force=true')) {
+          console.log('Přesměrování na /admin/login?force=true pro vynucené odhlášení');
+          window.location.href = '/admin/login?force=true';
+          return;
+        }
+        
+        // Vyčistit lokální úložiště
         localStorage.removeItem('adminToken');
+        
         // Odhlásit uživatele
-        logout();
+        try {
+          await logout();
+          console.log('Uživatel byl odhlášen při načtení přihlašovací stránky');
+        } catch (e) {
+          console.error('Chyba při odhlašování:', e);
+        }
+        
+        setForceLogin(true);
       }
-    }
+    };
+    
+    cleanup();
   }, [logout]);
 
   // Pokud jsme již přihlášeni, přesměrujeme na dashboard (pokud není force=true)
-  if (isAuthenticated && !isLoading && !forceLogin) {
-    router.push('/admin')
-    return null
-  }
+  useEffect(() => {
+    if (isAuthenticated && !isLoading && !forceLogin) {
+      router.push('/admin')
+    }
+  }, [isAuthenticated, isLoading, forceLogin, router])
 
   // Pokud stále načítáme autentizační stav, zobrazíme načítací obrazovku
   if (isLoading) {
@@ -136,9 +151,27 @@ export default function LoginPage() {
           </p>
           <p className="text-xs text-center text-gray-500 mt-2">
             <button 
-              onClick={() => {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/admin/login?force=true';
+              onClick={async () => {
+                try {
+                  // Vyčistit localStorage a cookies
+                  localStorage.removeItem('adminToken');
+                  document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                  
+                  // Zavolat logout API
+                  await fetch('/api/admin/auth/v2/logout', {
+                    method: 'POST',
+                    credentials: 'include',
+                  });
+                  
+                  // Odhlásit v kontextu
+                  await logout();
+                  
+                  // Přesměrovat s force parametrem
+                  window.location.href = '/admin/login?force=true&t=' + new Date().getTime();
+                } catch (e) {
+                  console.error('Chyba při vynuceném odhlášení:', e);
+                  alert('Chyba při odhlašování. Zkuste obnovit stránku.');
+                }
               }}
               className="text-blue-500 hover:text-blue-700 underline"
             >

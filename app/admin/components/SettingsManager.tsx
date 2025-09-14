@@ -107,10 +107,29 @@ export default function SettingsManager() {
 
   const loadCategoriesForOptions = async () => {
     try {
-      const response = await fetch("/api/admin/categories?activeOnly=true");
+      // Přidáno ověření autorizace a token
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        console.error("Chybí přihlašovací token pro načtení kategorií");
+        return;
+      }
+
+      const response = await fetch("/api/admin/categories?activeOnly=true", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        credentials: "include"  // Důležité pro přenos cookies
+      });
+
       if (response.ok) {
         const data = await response.json();
-        setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })));
+        if (data && data.categories) {
+          setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })));
+        } else {
+          console.warn("Neplatná data kategorií:", data);
+          setCategoryOptions([]);
+        }
       } else {
         console.error("Failed to load categories for settings", response.status, await response.text());
       }

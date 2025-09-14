@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth-utils-v2";
+import { requireAuth, authenticateAdmin } from "@/lib/auth-utils-v2";
 import { articleService } from "@/lib/article-service";
 import { db } from "@/lib/database";
 import { adminUsers } from "@/lib/schema";
@@ -7,8 +7,10 @@ import { eq } from "drizzle-orm";
 import { ArticleStatus } from "@/types/cms"; // Změněn import z database.ts na cms.ts
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
-  // Logování autentizace pro ladění
-  console.log("Auth result in GET /api/admin/articles:", authResult);
+  // Logování pouze v development módu
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Auth result in GET /api/admin/articles:", authResult);
+  }
 
   try {
     const { searchParams } = new URL(request.url);
@@ -74,6 +76,10 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
         },
         { status: 403 },
       );
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Creating article with author:", authResult.username);
     }
 
     const articleData = await request.json();

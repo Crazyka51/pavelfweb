@@ -14,10 +14,12 @@ import {
   CheckSquare,
   Square,
   FileText,
+  AlertTriangle
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Article, ArticleStatus } from "@/types/cms";
+import { authorizedFetch, checkApiStatus } from "@/lib/auth-fetch";
 
 interface ArticleManagerProps {
   onEditArticle?: (article: Article) => void;
@@ -37,34 +39,65 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isLoading, setIsLoading] = useState(true);
   const [showActions, setShowActions] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<{status: 'unknown' | 'ok' | 'error', message: string}>({
+    status: 'unknown', 
+    message: 'API status není znám'
+  });
 
   const categories = ["Aktuality", "Městská politika", "Doprava", "Životní prostředí", "Kultura", "Sport"];
 
-  // Aktualizujeme články, když se změní props
-  useEffect(() => {
-    if (propArticles && propArticles.length > 0) {
-      console.log("ArticleManager: Použití článků z props", propArticles.length);
-      setArticles(propArticles);
-      setIsLoading(false);
-    } else if (onRefresh) {
-      // Pokud nejsou články v props, použijeme onRefresh pro jejich načtení
-      setIsLoading(true);
-      onRefresh().then(() => setIsLoading(false));
-    } else {
-      // Fallback na původní metodu načítání
-      loadArticles();
+  // Diagnostická funkce pro kontrolu přístupu k API
+  const checkApiAccess = useCallback(async () => {
+    try {
+      // Diagnostika autentizačního stavu
+      const adminToken = localStorage.getItem('adminToken');
+      console.log("Auth diagnostika - adminToken existuje:", !!adminToken);
+      
+      if (!adminToken) {
+        setApiStatus({status: 'error', message: 'Chybí autentizační token'});
+        return false;
+      }
+      
+      // Použijeme utility funkci z auth-fetch.ts
+      const isApiOk = await checkApiStatus('/api/admin/articles');
+      
+      if (isApiOk) {
+        setApiStatus({status: 'ok', message: 'API je dostupné'});
+        return true;
+      } else {
+        setApiStatus({
+          status: 'error', 
+          message: 'API není dostupné nebo token je neplatný'
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error("API diagnostika selhala:", error);
+      setApiStatus({
+        status: 'error', 
+        message: `API diagnostika selhala: ${error instanceof Error ? error.message : "Neznámá chyba"}`
+      });
+      return false;
     }
-  }, [propArticles, onRefresh]);
-
-  // Ponecháme původní funkci pro případ, že by props nebyly dostupné
+  }, []);
+  
+  // Funkce pro načítání článků
   const loadArticles = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/admin/articles", {
-        credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+      
+      // Použijeme authorizedFetch pro automatické přidání tokenu a lepší diagnostiku
+      const response = await authorizedFetch("/api/admin/articles", {
+        method: 'GET',
+        debug: true // Zapneme debug pro lepší diagnostiku v konzoli
       });
 
       if (!response.ok) {
+        console.error("API response not OK:", {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
         throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
       }
 
@@ -105,11 +138,52 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
       }
     } catch (error) {
       console.error("Chyba při načítání článků:", error);
-      alert(`Chyba při načítání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
+      
+      // Podrobnější diagnostika chyby
+      let errorMessage = "Neznámá chyba";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Detekce typických problémů
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = "Nepodařilo se kontaktovat server. Zkontrolujte síťové připojení nebo zda server běží.";
+          console.log("Server je pravděpodobně nedostupný nebo blokován CORS politikou");
+        } else if (error.message.includes('NetworkError')) {
+          errorMessage = "Síťová chyba. Zkontrolujte připojení k internetu.";
+        } else if (error.message.includes('401')) {
+          errorMessage = "Nemáte oprávnění k této akci. Zkuste se odhlásit a znovu přihlásit.";
+          console.log("Pravděpodobně vypršela platnost tokenu nebo chybí token");
+        } else if (error.message.includes('404')) {
+          errorMessage = "API endpoint nebyl nalezen. Zkontrolujte URL.";
+        } else if (error.message.includes('500')) {
+          errorMessage = "Interní chyba serveru. Zkuste to později nebo kontaktujte administrátora.";
+        }
+      }
+      
+      alert(`Chyba při načítání článků: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   }, []);
+  
+  // Aktualizujeme články, když se změní props
+  useEffect(() => {
+    // Zkontrolujeme stav API
+    checkApiAccess().catch(console.error);
+    
+    if (propArticles && propArticles.length > 0) {
+      console.log("ArticleManager: Použití článků z props", propArticles.length);
+      setArticles(propArticles);
+      setIsLoading(false);
+    } else if (onRefresh) {
+      // Pokud nejsou články v props, použijeme onRefresh pro jejich načtení
+      setIsLoading(true);
+      onRefresh().then(() => setIsLoading(false));
+    } else {
+      // Fallback na původní metodu načítání
+      loadArticles();
+    }
+  }, [propArticles, onRefresh, checkApiAccess, loadArticles]);
 
   const filterArticles = useCallback(() => {
     let filtered = [...articles];
@@ -197,10 +271,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
     if (confirm(`Opravdu chcete smazat ${selectedArticles.length} článků?`)) {
       try {
+        // Použijeme authorizedFetch pro automatické přidání tokenu
         for (const articleId of selectedArticles) {
-          const response = await fetch(`/api/admin/articles/${articleId}`, {
+          const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
             method: "DELETE",
-            credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+            debug: true
           });
 
           const result = await response.json();
@@ -221,15 +296,14 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   const handleBulkPublish = async () => {
     if (selectedArticles.length === 0) return;
     try {
+      // Použijeme authorizedFetch pro automatické přidání tokenu
       for (const articleId of selectedArticles) {
-        const response = await fetch(`/api/admin/articles/${articleId}`, {
+        const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "PUBLISHED" }),
         });
+        
         const result = await response.json();
         if (!result.success) {
           console.error(`Chyba při publikování článku ${articleId}: ${result.error}`);
@@ -247,15 +321,14 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   const handleBulkUnpublish = async () => {
     if (selectedArticles.length === 0) return;
     try {
+      // Použijeme authorizedFetch pro automatické přidání tokenu
       for (const articleId of selectedArticles) {
-        const response = await fetch(`/api/admin/articles/${articleId}`, {
+        const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "DRAFT" }),
         });
+        
         const result = await response.json();
         if (!result.success) {
           console.error(`Chyba při převádění na koncept ${articleId}: ${result.error}`);
@@ -273,9 +346,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   const handleDeleteArticle = async (articleId: string) => {
     if (confirm("Opravdu chcete smazat tento článek?")) {
       try {
-        const response = await fetch(`/api/admin/articles/${articleId}`, {
+        // Použijeme authorizedFetch pro automatické přidání tokenu
+        const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
-          credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+          debug: true
         });
 
         const result = await response.json();
@@ -308,13 +382,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         authorId: article.authorId, // přidáno authorId pro správnou funkčnost
       };
 
-      const response = await fetch("/api/admin/articles", {
+      // Použijeme authorizedFetch pro automatické přidání tokenu
+      const response = await authorizedFetch("/api/admin/articles", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: 'include', // Používáme HTTP-only cookies místo token z localStorage
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArticleData),
+        debug: true
       });
 
       const result = await response.json();
@@ -408,6 +481,25 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
+      {/* Stavové hlášky API */}
+      {apiStatus.status === 'error' && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
+            <span className="text-red-700 font-medium">API chyba: {apiStatus.message}</span>
+          </div>
+          <p className="mt-2 text-sm text-red-600">
+            Pokud problém přetrvává, zkuste se odhlásit a znovu přihlásit, nebo kontaktujte administrátora.
+          </p>
+          <button
+            onClick={() => checkApiAccess()}
+            className="mt-3 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Znovu zkontrolovat API
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -425,7 +517,16 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
             Export
           </button>
           <button
-            onClick={onCreateNew || (() => {})}
+            onClick={() => {
+              // Před vytvořením nového článku zkontrolujeme API
+              checkApiAccess().then(isOk => {
+                if (isOk && onCreateNew) {
+                  onCreateNew();
+                } else if (!isOk) {
+                  alert("API není dostupné nebo nemáte platný token. Zkuste se odhlásit a znovu přihlásit.");
+                }
+              });
+            }}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -542,7 +643,16 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
             </p>
             {!searchTerm && selectedCategory === "all" && selectedStatus === "all" && (
               <button
-                onClick={onCreateNew || (() => {})}
+                onClick={() => {
+                  // Před vytvořením nového článku zkontrolujeme API
+                  checkApiAccess().then(isOk => {
+                    if (isOk && onCreateNew) {
+                      onCreateNew();
+                    } else if (!isOk) {
+                      alert("API není dostupné nebo nemáte platný token. Zkuste se odhlásit a znovu přihlásit.");
+                    }
+                  });
+                }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Vytvořit první článek
