@@ -86,10 +86,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
     try {
       setIsLoading(true);
       
-      // Použijeme authorizedFetch pro automatické přidání tokenu a lepší diagnostiku
+      // Použijeme authorizedFetch pro automatické přidání tokenu
       const response = await authorizedFetch("/api/admin/articles", {
         method: 'GET',
-        debug: true // Zapneme debug pro lepší diagnostiku v konzoli
+        debug: false // Vypneme debug pro snížení množství logů
       });
 
       if (!response.ok) {
@@ -168,7 +168,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   
   // Aktualizujeme články, když se změní props
   useEffect(() => {
-    // Zkontrolujeme stav API
+    // Zkontrolujeme stav API jen při prvním načtení
     checkApiAccess().catch(console.error);
     
     if (propArticles && propArticles.length > 0) {
@@ -180,10 +180,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
       setIsLoading(true);
       onRefresh().then(() => setIsLoading(false));
     } else {
-      // Fallback na původní metodu načítání
-      loadArticles();
+      // Fallback na původní metodu načítání - pouze jednou
+      setIsLoading(true);
+      loadArticles().finally(() => setIsLoading(false));
     }
-  }, [propArticles, onRefresh, checkApiAccess, loadArticles]);
+  }, [propArticles]); // Odstraněny závislosti, které způsobovaly opakované volání
 
   const filterArticles = useCallback(() => {
     let filtered = [...articles];
@@ -509,6 +510,34 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
           </p>
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
+          <button
+            onClick={() => {
+              // Manuálně obnovit články
+              setIsLoading(true);
+              loadArticles()
+                .then(() => {
+                  console.log("Články byly úspěšně obnoveny");
+                })
+                .catch(error => {
+                  console.error("Chyba při obnovování článků:", error);
+                })
+                .finally(() => {
+                  setIsLoading(false);
+                });
+            }}
+            className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            disabled={isLoading}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" 
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
+                 className="w-4 h-4 mr-2">
+              <path d="M21 2v6h-6"></path>
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+              <path d="M3 12a9 9 0 0 0 6.7 15L13 24"></path>
+              <path d="M14 22h7v-7"></path>
+            </svg>
+            Obnovit
+          </button>
           <button
             onClick={exportArticles}
             className="flex items-center px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
