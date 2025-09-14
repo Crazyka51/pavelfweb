@@ -29,9 +29,11 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Při první inicializaci načíst články
-    loadArticles();
-  }, []);
+    // Načíst články pouze když je uživatel přihlášen
+    if (user) {
+      loadArticles();
+    }
+  }, [user]);
   
   // Centralizovaná funkce pro načítání článků
   // API chyba handler
@@ -56,10 +58,15 @@ export default function AdminPage() {
         .then(module => module.authorizedFetch("/api/admin/articles", {
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          debug: true // Zapneme debug pro lepší diagnostiku
         }));
       
       if (!response.ok) {
+        if (response.status === 401) {
+          // Specificky zpracujeme 401 chybu - problém s autentizací
+          throw new Error(`Chyba při načítání článků: HTTP chyba 401 - Neplatný nebo chybějící přístupový token. Zkuste se odhlásit a znovu přihlásit.`);
+        }
         throw new Error(`HTTP chyba ${response.status}: ${response.statusText}`);
       }
       
