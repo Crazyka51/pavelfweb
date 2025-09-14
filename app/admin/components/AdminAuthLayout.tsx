@@ -45,12 +45,13 @@ export default function AdminAuthLayout({ children }: AdminAuthLayoutProps) {
 
     // Pokud nejsme přihlášeni a nejsme na přihlašovací stránce, přesměrujeme na přihlášení
     if (!isAuthenticated && !isLoginPage) {
+      // Použijeme push místo redirect, abychom nezpůsobili nekonečnou smyčku
       router.push('/admin/login');
     }
 
     // Pokud jsme přihlášeni a jsme na přihlašovací stránce, přesměrujeme na dashboard
-    // Přidáme parametr force, který umožní návštěvu přihlašovací stránky i když jsme přihlášeni
-    if (isAuthenticated && isLoginPage && !pathname.includes('?force=true')) {
+    // POUZE pokud neobsahuje force parametr, který explicitně umožní zůstat na login stránce
+    if (isAuthenticated && isLoginPage && !window.location.search.includes('force')) {
       router.push('/admin');
     }
   }, [isAuthenticated, isLoading, router, pathname]);

@@ -23,33 +23,30 @@ export default function LoginPage() {
   // Detekce force parametru v URL
   const [forceLogin, setForceLogin] = useState(false)
   
-  // Při načtení stránky vždy zajistíme, že uživatel není přihlášený automaticky
+  // Kontrolujeme, zda jsme přesměrováni s force=true parametrem pro odhlášení
   useEffect(() => {
-    const cleanup = async () => {
+    const handleForceParam = async () => {
       if (typeof window !== 'undefined') {
-        // Pokud URL neobsahuje force=true, přidáme ho
-        if (!window.location.search.includes('force=true')) {
-          console.log('Přesměrování na /admin/login?force=true pro vynucené odhlášení');
-          window.location.href = '/admin/login?force=true';
-          return;
+        const searchParams = new URLSearchParams(window.location.search);
+        const hasForceParam = searchParams.has('force');
+        
+        // Pouze pokud existuje parametr force, provedeme odhlášení
+        if (hasForceParam) {
+          console.log('Detekován force parametr - provádím odhlášení');
+          
+          // Odhlásit uživatele pouze pokud máme force parametr
+          try {
+            await logout();
+            console.log('Uživatel byl odhlášen kvůli force parametru');
+            setForceLogin(true);
+          } catch (e) {
+            console.error('Chyba při odhlašování:', e);
+          }
         }
-        
-        // Vyčistit lokální úložiště
-        localStorage.removeItem('adminToken');
-        
-        // Odhlásit uživatele
-        try {
-          await logout();
-          console.log('Uživatel byl odhlášen při načtení přihlašovací stránky');
-        } catch (e) {
-          console.error('Chyba při odhlašování:', e);
-        }
-        
-        setForceLogin(true);
       }
     };
     
-    cleanup();
+    handleForceParam();
   }, [logout]);
 
   // Pokud jsme již přihlášeni, přesměrujeme na dashboard (pokud není force=true)
@@ -167,7 +164,7 @@ export default function LoginPage() {
                   await logout();
                   
                   // Přesměrovat s force parametrem
-                  window.location.href = '/admin/login?force=true&t=' + new Date().getTime();
+                  window.location.href = '/admin/login?force=1&t=' + new Date().getTime();
                 } catch (e) {
                   console.error('Chyba při vynuceném odhlášení:', e);
                   alert('Chyba při odhlašování. Zkuste obnovit stránku.');
