@@ -43,7 +43,12 @@ export default function AdminPage() {
     // Zajištění, že se zobrazí jen textová zpráva, nikoliv kód
     let errorMessage = defaultMessage;
     if (error && typeof error === 'object' && error.message) {
-      errorMessage = `${defaultMessage}: ${error.message}`;
+      errorMessage = `${error.message}`;
+    }
+    
+    // Pokud se jedná o autentizační chybu, přidáme nápovědu
+    if (errorMessage.includes('401') || errorMessage.includes('autentizač') || errorMessage.includes('přístupový token')) {
+      errorMessage += '\n\nNápověda: Zkuste se odhlásit a znovu přihlásit, nebo obnovte stránku.';
     }
     
     alert(errorMessage);
