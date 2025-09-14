@@ -1,27 +1,27 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/lib/auth-context'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { AlertCircle } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import LoadingScreen from '../components/LoadingScreen'
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import LoadingScreen from '../components/LoadingScreen';
 
 export default function LoginPage() {
-  const { isLoading, isAuthenticated, login, logout } = useAuth()
-  const router = useRouter()
+  const { isLoading, isAuthenticated, login, logout } = useAuth();
+  const router = useRouter();
   
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Detekce force parametru v URL
-  const [forceLogin, setForceLogin] = useState(false)
+  const [forceLogin, setForceLogin] = useState(false);
   
   // Při načtení stránky vždy zajistíme, že uživatel není přihlášený automaticky
   useEffect(() => {
@@ -55,40 +55,40 @@ export default function LoginPage() {
   // Pokud jsme již přihlášeni, přesměrujeme na dashboard (pokud není force=true)
   useEffect(() => {
     if (isAuthenticated && !isLoading && !forceLogin) {
-      router.push('/admin')
+      router.push('/admin');
     }
-  }, [isAuthenticated, isLoading, forceLogin, router])
+  }, [isAuthenticated, isLoading, forceLogin, router]);
 
   // Pokud stále načítáme autentizační stav, zobrazíme načítací obrazovku
   if (isLoading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     if (!username || !password) {
-      setError('Zadejte prosím uživatelské jméno a heslo')
-      return
+      setError('Zadejte prosím uživatelské jméno a heslo');
+      return;
     }
 
     try {
-      setError(null)
-      setIsSubmitting(true)
+      setError(null);
+      setIsSubmitting(true);
       
-      const result = await login(username, password)
+      const result = await login(username, password);
       
       if (!result.success) {
-        setError(result.message || 'Neplatné přihlašovací údaje')
+        setError(result.message || 'Neplatné přihlašovací údaje');
       } else {
         // Přesměrování na dashboard po úspěšném přihlášení zajistí komponenta AdminAuthLayout
       }
     } catch (err: any) {
-      setError(`Chyba přihlášení: ${err.message}`)
+      setError(`Chyba přihlášení: ${err.message}`);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
@@ -181,5 +181,5 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import React from 'react'
-import MediaManager from '../components/MediaManager'
-import { Button } from '@/components/ui/button'
+import React from 'react';
+import MediaManager from '../components/MediaManager';
+import { Button } from '@/components/ui/button';
 
 export default function MediaPage() {
   return (
@@ -12,5 +12,5 @@ export default function MediaPage() {
       </div>
       <MediaManager />
     </div>
-  )
+  );
 }

@@ -33,8 +33,6 @@ const nextConfig = {
   },
   // Konfigurace pro vývojové prostředí
   experimental: {},
-  // Vynutit HTTPS v produkčním prostředí
-  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://fiserpavel.cz' : '',
   async headers() {
     return [
       {
@@ -43,6 +41,23 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload'
+          }
+        ]
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
           }
         ]
       }

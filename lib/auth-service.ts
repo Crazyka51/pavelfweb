@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /**
  * Klientská služba pro práci s autentizací

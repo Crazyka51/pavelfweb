@@ -26,8 +26,8 @@ export default function StructuredData({
       "@type": type === 'person' ? 'Person' : type === 'article' ? 'Article' : 'WebSite',
       "name": title || "Bc. Pavel Fišer",
       "description": description || "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
-      "url": url || "https://fiserpavel.cz",
-      "image": image || "https://fiserpavel.cz/og-image.svg"
+      "url": url || "https://www.fiserpavel.cz",
+      "image": image || "https://www.fiserpavel.cz/og-image.svg"
     };
 
     if (type === 'person') {
@@ -64,7 +64,7 @@ export default function StructuredData({
           "name": "Pavel Fišer - Zastupitel MČ Praha 4",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://fiserpavel.cz/og-image.svg"
+            "url": "https://www.fiserpavel.cz/og-image.svg"
           }
         },
         "datePublished": datePublished || new Date().toISOString(),
@@ -82,7 +82,7 @@ export default function StructuredData({
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": "https://fiserpavel.cz/search?q={search_term_string}"
+          "urlTemplate": "https://www.fiserpavel.cz/search?q={search_term_string}"
         },
         "query-input": "required name=search_term_string"
       }

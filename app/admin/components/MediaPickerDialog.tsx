@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { 
   Dialog,
@@ -6,11 +6,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Image as ImageIcon } from 'lucide-react'
-import MediaManager from './MediaManager'
-import { useState } from 'react'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Image as ImageIcon } from 'lucide-react';
+import MediaManager from './MediaManager';
+import { useState } from 'react';
 
 interface MediaPickerDialogProps {
   onSelectMedia: (url: string) => void
@@ -21,12 +21,12 @@ export default function MediaPickerDialog({
   onSelectMedia,
   trigger
 }: MediaPickerDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   const handleSelectMedia = (url: string) => {
-    onSelectMedia(url)
-    setOpen(false)
-  }
+    onSelectMedia(url);
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -47,5 +47,5 @@ export default function MediaPickerDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

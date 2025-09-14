@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { testDatabaseConnection, getAdminUsers, setPavelPassword, testLogin } from "@/app/actions/auth-actions"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { testDatabaseConnection, getAdminUsers, setPavelPassword, testLogin } from "@/app/actions/auth-actions";
 
 export default function TestPage() {
-  const [results, setResults] = useState<any[]>([])
-  const [username, setUsername] = useState("pavel")
-  const [password, setPassword] = useState("admin123")
+  const [results, setResults] = useState<any[]>([]);
+  const [username, setUsername] = useState("pavel");
+  const [password, setPassword] = useState("admin123");
 
   const addResult = (result: any) => {
-    setResults((prev) => [...prev, { ...result, timestamp: new Date().toLocaleTimeString() }])
-  }
+    setResults((prev) => [...prev, { ...result, timestamp: new Date().toLocaleTimeString() }]);
+  };
 
   const handleTestConnection = async () => {
-    const result = await testDatabaseConnection()
-    addResult({ action: "Test připojení", ...result })
-  }
+    const result = await testDatabaseConnection();
+    addResult({ action: "Test připojení", ...result });
+  };
 
   const handleGetUsers = async () => {
-    const result = await getAdminUsers()
-    addResult({ action: "Načíst uživatele", ...result })
-  }
+    const result = await getAdminUsers();
+    addResult({ action: "Načíst uživatele", ...result });
+  };
 
   const handleSetPassword = async () => {
-    const result = await setPavelPassword()
-    addResult({ action: "Nastavit heslo", ...result })
-  }
+    const result = await setPavelPassword();
+    addResult({ action: "Nastavit heslo", ...result });
+  };
 
   const handleTestLogin = async () => {
-    const result = await testLogin(username, password)
-    addResult({ action: "Test přihlášení", ...result })
-  }
+    const result = await testLogin(username, password);
+    addResult({ action: "Test přihlášení", ...result });
+  };
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -106,5 +106,5 @@ export default function TestPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

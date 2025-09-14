@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import Image from 'next/image'
-import { cn } from '@/lib/utils'
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {
   src: string
@@ -43,5 +43,5 @@ export default function OptimizedImage({
         className={cn('object-cover', fill ? 'position-absolute' : '')}
       />
     </div>
-  )
+  );
 }

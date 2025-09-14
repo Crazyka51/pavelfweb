@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 /**
  * Komponenta pro diagnostiku administračního systému
  * Testuje všechny klíčové funkce včetně publikování článků
  */
 export default function DiagnosePage() {
-  const { isAuthenticated, user } = useAuth()
-  const [testResults, setTestResults] = useState<Record<string, any>>({})
-  const [isRunningTests, setIsRunningTests] = useState(false)
+  const { isAuthenticated, user } = useAuth();
+  const [testResults, setTestResults] = useState<Record<string, any>>({});
+  const [isRunningTests, setIsRunningTests] = useState(false);
 
   // Test přihlášení uživatele
   const testAuth = () => {
@@ -26,8 +26,8 @@ export default function DiagnosePage() {
           ? `Přihlášen jako ${user?.username} (${user?.role})`
           : 'Uživatel není přihlášen'
       }
-    }))
-  }
+    }));
+  };
 
   // Test API pro články
   const testArticlesAPI = async () => {
@@ -45,8 +45,8 @@ export default function DiagnosePage() {
       const res = await fetch('/api/admin/articles', {
         credentials: 'include',
         headers
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       
       setTestResults(prev => ({
         ...prev,
@@ -56,7 +56,7 @@ export default function DiagnosePage() {
             ? `API vrátilo ${data.length || 0} článků`
             : `Chyba při načítání článků: ${res.status}`
         }
-      }))
+      }));
     } catch (error) {
       setTestResults(prev => ({
         ...prev,
@@ -64,14 +64,14 @@ export default function DiagnosePage() {
           success: false,
           message: `Chyba při volání API: ${error instanceof Error ? error.message : String(error)}`
         }
-      }))
+      }));
     }
-  }
+  };
 
   // Test vytvoření a publikování článku
   const testCreateArticle = async () => {
     try {
-      const testTitle = `Test článku ${new Date().toISOString().slice(0, 19)}`
+      const testTitle = `Test článku ${new Date().toISOString().slice(0, 19)}`;
       
       // Vytvoření článku
       const token = localStorage.getItem('adminToken');
@@ -94,12 +94,12 @@ export default function DiagnosePage() {
           category: 'aktuality',
           published: true
         })
-      })
+      });
       
-      const createData = await createRes.json()
+      const createData = await createRes.json();
       
       if (!createRes.ok) {
-        throw new Error(`Chyba při vytváření článku: ${createRes.status}`)
+        throw new Error(`Chyba při vytváření článku: ${createRes.status}`);
       }
       
       // Získání článku zpět pro ověření
@@ -111,8 +111,8 @@ export default function DiagnosePage() {
       const getRes = await fetch(`/api/admin/articles/${createData.id}`, {
         credentials: 'include', // Přidáno pro použití HTTP-only cookies
         headers: getHeaders
-      })
-      const getArticle = await getRes.json()
+      });
+      const getArticle = await getRes.json();
       
       setTestResults(prev => ({
         ...prev,
@@ -122,7 +122,7 @@ export default function DiagnosePage() {
             ? `Článek byl úspěšně vytvořen a načten zpět (ID: ${createData.id})`
             : `Článek byl vytvořen, ale není správně načten zpět`
         }
-      }))
+      }));
       
       // Pokus o aktualizaci článku
       const updateHeaders: Record<string, string> = {
@@ -143,9 +143,9 @@ export default function DiagnosePage() {
           excerpt: 'Testovací článek byl aktualizován',
           published: true
         })
-      })
+      });
       
-      const updateData = await updateRes.json()
+      const updateData = await updateRes.json();
       
       setTestResults(prev => ({
         ...prev,
@@ -155,7 +155,7 @@ export default function DiagnosePage() {
             ? `Článek byl úspěšně aktualizován (ID: ${createData.id})`
             : `Chyba při aktualizaci článku: ${updateRes.status}`
         }
-      }))
+      }));
       
     } catch (error) {
       setTestResults(prev => ({
@@ -164,9 +164,9 @@ export default function DiagnosePage() {
           success: false,
           message: `Chyba při testování vytvoření článku: ${error instanceof Error ? error.message : String(error)}`
         }
-      }))
+      }));
     }
-  }
+  };
 
   // Test diagnostických API
   const testDiagnosticAPI = async () => {
@@ -181,8 +181,8 @@ export default function DiagnosePage() {
       const res = await fetch('/api/admin/auth/diagnostic', {
         credentials: 'include', // Přidáno pro použití HTTP-only cookies
         headers
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       
       setTestResults(prev => ({
         ...prev,
@@ -192,7 +192,7 @@ export default function DiagnosePage() {
             ? `Diagnostické API funguje`
             : `Diagnostické API není dostupné: ${res.status}`
         }
-      }))
+      }));
     } catch (error) {
       setTestResults(prev => ({
         ...prev,
@@ -200,22 +200,22 @@ export default function DiagnosePage() {
           success: false,
           message: `Chyba při volání diagnostického API: ${error instanceof Error ? error.message : String(error)}`
         }
-      }))
+      }));
     }
-  }
+  };
 
   // Spustit všechny testy
   const runAllTests = async () => {
-    setIsRunningTests(true)
-    setTestResults({})
+    setIsRunningTests(true);
+    setTestResults({});
     
-    testAuth()
-    await testArticlesAPI()
-    await testCreateArticle()
-    await testDiagnosticAPI()
+    testAuth();
+    await testArticlesAPI();
+    await testCreateArticle();
+    await testDiagnosticAPI();
     
-    setIsRunningTests(false)
-  }
+    setIsRunningTests(false);
+  };
 
   return (
     <div className="container py-8">
@@ -291,5 +291,5 @@ export default function DiagnosePage() {
         </div>
       )}
     </div>
-  )
+  );
 }

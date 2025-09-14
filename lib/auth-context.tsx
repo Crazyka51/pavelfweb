@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import React, { createContext, useState, useContext, useEffect } from 'react'
-import authService from './auth-service'
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import authService from './auth-service';
 
 export type AuthUser = {
   userId: string
@@ -18,60 +18,60 @@ interface AuthContextType {
   logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<AuthUser | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   // Kontrola přihlášení při načtení stránky
   useEffect(() => {
     const checkAuthentication = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const authState = await authService.checkAuth()
-        setIsAuthenticated(authState.isAuthenticated)
-        setUser(authState.user || null)
+        const authState = await authService.checkAuth();
+        setIsAuthenticated(authState.isAuthenticated);
+        setUser(authState.user || null);
       } catch (error) {
-        console.error('Auth check failed:', error)
-        setIsAuthenticated(false)
-        setUser(null)
+        console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    checkAuthentication()
+    checkAuthentication();
 
     // Nasloucháme na události přihlášení/odhlášení
     const loginHandler = (data: { user: AuthUser }) => {
-      setIsAuthenticated(true)
-      setUser(data.user)
-    }
+      setIsAuthenticated(true);
+      setUser(data.user);
+    };
 
     const logoutHandler = () => {
-      setIsAuthenticated(false)
-      setUser(null)
-    }
+      setIsAuthenticated(false);
+      setUser(null);
+    };
 
-    authService.addEventListener('login', loginHandler)
-    authService.addEventListener('logout', logoutHandler)
+    authService.addEventListener('login', loginHandler);
+    authService.addEventListener('logout', logoutHandler);
 
     return () => {
-      authService.removeEventListener('login', loginHandler)
-      authService.removeEventListener('logout', logoutHandler)
-    }
-  }, [])
+      authService.removeEventListener('login', loginHandler);
+      authService.removeEventListener('logout', logoutHandler);
+    };
+  }, []);
 
   const login = async (username: string, password: string) => {
-    const result = await authService.login(username, password)
-    return result
-  }
+    const result = await authService.login(username, password);
+    return result;
+  };
 
   const logout = async () => {
-    await authService.logout()
-  }
+    await authService.logout();
+  };
 
   return (
     <AuthContext.Provider
@@ -85,13 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }

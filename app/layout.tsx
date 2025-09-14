@@ -15,11 +15,11 @@ export const metadata = {
   title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
   description: "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
   generator: "v0.dev",
-  metadataBase: new URL("https://fiserpavel.cz"),
+  metadataBase: new URL("https://www.fiserpavel.cz"),
   openGraph: {
     title: "Bc. Pavel Fišer | Zastupitel MČ Praha 4",
     description: "Oficiální stránky Bc. Pavla Fišera, zastupitele MČ Praha 4 a manažera s vášní pro komunitní rozvoj",
-    url: "https://fiserpavel.cz",
+    url: "https://www.fiserpavel.cz",
     siteName: "Pavel Fišer - Zastupitel MČ Praha 4",
     images: [
       {

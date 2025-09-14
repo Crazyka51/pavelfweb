@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useToast } from '@/hooks/use-toast'
-import { Loader2, UploadIcon, Trash2, Search } from 'lucide-react'
-import Image from 'next/image'
-import { Input } from '@/components/ui/input'
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, UploadIcon, Trash2, Search } from 'lucide-react';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
 
 type MediaFile = {
   name: string
@@ -26,138 +26,138 @@ type MediaFile = {
 }
 
 export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: string) => void }) {
-  const [years, setYears] = useState<string[]>([])
-  const [months, setMonths] = useState<string[]>([])
-  const [selectedYear, setSelectedYear] = useState<string | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTab, setSelectedTab] = useState('browse')
+  const [years, setYears] = useState<string[]>([]);
+  const [months, setMonths] = useState<string[]>([]);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTab, setSelectedTab] = useState('browse');
   
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   // Načtení let při inicializaci
   useEffect(() => {
-    fetchYears()
-  }, [])
+    fetchYears();
+  }, []);
 
   // Načtení měsíců při změně roku
   useEffect(() => {
     if (selectedYear) {
-      fetchMonths(selectedYear)
+      fetchMonths(selectedYear);
     } else {
-      setMonths([])
-      setSelectedMonth(null)
-      setMediaFiles([])
+      setMonths([]);
+      setSelectedMonth(null);
+      setMediaFiles([]);
     }
-  }, [selectedYear])
+  }, [selectedYear]);
 
   // Načtení souborů při změně měsíce
   useEffect(() => {
     if (selectedYear && selectedMonth) {
-      fetchMediaFiles(selectedYear, selectedMonth)
+      fetchMediaFiles(selectedYear, selectedMonth);
     } else {
-      setMediaFiles([])
+      setMediaFiles([]);
     }
-  }, [selectedYear, selectedMonth])
+  }, [selectedYear, selectedMonth]);
 
   const fetchYears = async () => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('adminToken')
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
       const response = await fetch('/api/admin/media/list', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       
       if (data.success && data.years) {
-        setYears(data.years)
+        setYears(data.years);
         // Automaticky vybereme první rok
         if (data.years.length > 0) {
-          setSelectedYear(data.years[0])
+          setSelectedYear(data.years[0]);
         }
       }
     } catch (error) {
-      console.error('Error fetching years:', error)
+      console.error('Error fetching years:', error);
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst roky médií',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchMonths = async (year: string) => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('adminToken')
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/admin/media/list?year=${year}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       
       if (data.success && data.months) {
-        setMonths(data.months)
+        setMonths(data.months);
         // Automaticky vybereme první měsíc
         if (data.months.length > 0) {
-          setSelectedMonth(data.months[0])
+          setSelectedMonth(data.months[0]);
         }
       }
     } catch (error) {
-      console.error('Error fetching months:', error)
+      console.error('Error fetching months:', error);
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst měsíce médií',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchMediaFiles = async (year: string, month: string) => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('adminToken')
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/admin/media/list?year=${year}&month=${month}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       
       if (data.success && data.media) {
-        setMediaFiles(data.media)
+        setMediaFiles(data.media);
       }
     } catch (error) {
-      console.error('Error fetching media files:', error)
+      console.error('Error fetching media files:', error);
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst média',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
     
-    setUploading(true)
+    setUploading(true);
     
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i]
+        const file = files[i];
         
         // Kontrola typu souboru
         if (!file.type.startsWith('image/')) {
@@ -165,8 +165,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
             title: 'Nepodporovaný formát',
             description: `Soubor "${file.name}" není obrázek`,
             variant: 'destructive',
-          })
-          continue
+          });
+          continue;
         }
         
         // Kontrola velikosti souboru
@@ -175,12 +175,12 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
             title: 'Soubor je příliš velký',
             description: `Soubor "${file.name}" je větší než 5MB`,
             variant: 'destructive',
-          })
-          continue
+          });
+          continue;
         }
         
-        const formData = new FormData()
-        formData.append('file', file)
+        const formData = new FormData();
+        formData.append('file', file);
         
         const response = await fetch('/api/admin/media/upload', {
           method: 'POST',
@@ -188,52 +188,52 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           }
-        })
+        });
         
-        const data = await response.json()
+        const data = await response.json();
         
         if (data.success) {
           toast({
             title: 'Soubor nahrán',
             description: `Soubor "${file.name}" byl úspěšně nahrán`,
-          })
+          });
           
           // Aktualizace seznamu souborů
-          const currentDate = new Date()
-          const year = currentDate.getFullYear().toString()
-          const month = (currentDate.getMonth() + 1).toString().padStart(2, '0')
+          const currentDate = new Date();
+          const year = currentDate.getFullYear().toString();
+          const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
           
           if (selectedYear !== year || selectedMonth !== month) {
-            setSelectedYear(year)
-            setSelectedMonth(month)
+            setSelectedYear(year);
+            setSelectedMonth(month);
           } else {
-            fetchMediaFiles(year, month)
+            fetchMediaFiles(year, month);
           }
         } else {
           toast({
             title: 'Chyba',
             description: data.error || `Nepodařilo se nahrát soubor "${file.name}"`,
             variant: 'destructive',
-          })
+          });
         }
       }
     } catch (error) {
-      console.error('Error uploading files:', error)
+      console.error('Error uploading files:', error);
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se nahrát soubory',
         variant: 'destructive',
-      })
+      });
     } finally {
-      setUploading(false)
+      setUploading(false);
       // Reset input field
-      event.target.value = ''
+      event.target.value = '';
     }
-  }
+  };
 
   const deleteMedia = async (file: MediaFile) => {
     if (!confirm(`Opravdu chcete smazat soubor "${file.originalName}"?`)) {
-      return
+      return;
     }
     
     try {
@@ -242,45 +242,45 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
         }
-      })
+      });
       
-      const data = await response.json()
+      const data = await response.json();
       
       if (data.success) {
         toast({
           title: 'Soubor smazán',
           description: `Soubor "${file.originalName}" byl úspěšně smazán`,
-        })
+        });
         
         // Aktualizace seznamu souborů
-        setMediaFiles(mediaFiles.filter(m => m.url !== file.url))
+        setMediaFiles(mediaFiles.filter(m => m.url !== file.url));
       } else {
         toast({
           title: 'Chyba',
           description: data.error || `Nepodařilo se smazat soubor "${file.originalName}"`,
           variant: 'destructive',
-        })
+        });
       }
     } catch (error) {
-      console.error('Error deleting file:', error)
+      console.error('Error deleting file:', error);
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se smazat soubor',
         variant: 'destructive',
-      })
+      });
     }
-  }
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-  }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
 
   const filteredMediaFiles = searchTerm 
     ? mediaFiles.filter(file => 
         file.originalName.toLowerCase().includes(searchTerm.toLowerCase()))
-    : mediaFiles
+    : mediaFiles;
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -436,5 +436,5 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

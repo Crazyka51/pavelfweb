@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { type Editor } from '@tiptap/react'
-import Color from '@tiptap/extension-color'
+import React from 'react';
+import { type Editor } from '@tiptap/react';
+import Color from '@tiptap/extension-color';
 import {
   Bold,
   Strikethrough,
@@ -26,7 +26,7 @@ import {
   Highlighter,
   Youtube,
   Loader2,
-} from 'lucide-react'
+} from 'lucide-react';
 
 type Props = {
   editor: Editor | null;
@@ -46,54 +46,54 @@ const TiptapToolbar = ({
   uploadingImage = false
 }: Props) => {
   if (!editor) {
-    return null
+    return null;
   }
 
   const setLink = () => {
-    const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('URL', previousUrl)
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('URL', previousUrl);
 
     if (url === null) {
-      return
+      return;
     }
 
     if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
     }
 
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  };
 
   const addImage = () => {
     if (customAddImage) {
-      customAddImage()
+      customAddImage();
     } else {
-      const url = window.prompt('URL obrázku')
+      const url = window.prompt('URL obrázku');
       if (url) {
-        editor.chain().focus().setImage({ src: url }).run()
+        editor.chain().focus().setImage({ src: url }).run();
       }
     }
-  }
+  };
   
   const addImageFromUrl = () => {
     if (customAddImageFromUrl) {
-      customAddImageFromUrl()
+      customAddImageFromUrl();
     } else {
-      const url = window.prompt('URL obrázku')
+      const url = window.prompt('URL obrázku');
       if (url) {
-        editor.chain().focus().setImage({ src: url }).run()
+        editor.chain().focus().setImage({ src: url }).run();
       }
     }
-  }
+  };
   
   const insertTable = () => {
     if (customInsertTable) {
-      customInsertTable()
+      customInsertTable();
     } else {
-      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
     }
-  }
+  };
 
   return (
     <div className="border border-gray-300 rounded-t-lg p-2 flex flex-wrap items-center gap-2 bg-gray-50">
@@ -230,7 +230,7 @@ const TiptapToolbar = ({
         <Redo className="w-5 h-5" />
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default TiptapToolbar
+export default TiptapToolbar;

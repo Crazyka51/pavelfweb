@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 
 export default function LoadingScreen() {
   return (
@@ -10,5 +10,5 @@ export default function LoadingScreen() {
         <p className="text-xl font-medium text-gray-700">Načítání...</p>
       </div>
     </div>
-  )
+  );
 }
