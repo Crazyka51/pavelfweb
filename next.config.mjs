@@ -33,8 +33,8 @@ const nextConfig = {
   },
   // Konfigurace pro vývojové prostředí
   experimental: {},
-  // Vynutit HTTPS v produkčním prostředí
-  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://fiserpavel.cz' : '',
+  // Vynutit HTTPS v produkčním prostředí - bez assetPrefix pro předejití CORS problémům
+  // assetPrefix: process.env.NODE_ENV === 'production' ? 'https://fiserpavel.cz' : '',
   async headers() {
     return [
       {
@@ -43,6 +43,46 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload'
+          }
+        ]
+      },
+      // CORS hlavičky pro font soubory - umožňuje přístup mezi www a non-www doménami
+      {
+        source: '/_next/static/media/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, HEAD, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization'
+          },
+          {
+            key: 'Access-Control-Max-Age',
+            value: '86400'
+          }
+        ]
+      },
+      // CORS hlavičky pro všechny statické soubory Next.js
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, HEAD, OPTIONS'
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin'
           }
         ]
       }
