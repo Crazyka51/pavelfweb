@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { refreshSession } from "@/lib/auth-utils-v2";
+import { refreshSession } from "@/lib/auth-utils";
 
 /**
  * API endpoint pro obnovení přístupového tokenu

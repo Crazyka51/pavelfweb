@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { deleteSession } from "@/lib/auth-utils-v2";
+import { deleteSession } from "@/lib/auth-utils";
 
 /**
  * API endpoint pro odhlášení uživatele

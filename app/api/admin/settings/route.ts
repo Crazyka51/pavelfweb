@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { settingsService } from "@/lib/settings-service";
-import { requireAuth } from "@/lib/auth-utils-v2";
+import { requireAuth } from "@/lib/auth-utils";
 
 // GET /api/admin/settings
 export const GET = requireAuth(

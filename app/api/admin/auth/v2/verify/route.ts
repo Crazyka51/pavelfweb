@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAccessToken, refreshSession } from "@/lib/auth-utils-v2";
+import { verifyAccessToken, refreshSession } from "@/lib/auth-utils";
 
 /**
  * API endpoint pro ověření platnosti tokenu

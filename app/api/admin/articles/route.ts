@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireAuth, authenticateAdmin } from "@/lib/auth-utils-v2";
+import { requireAuth, authenticateAdmin } from "@/lib/auth-utils";
 import { articleService } from "@/lib/article-service";
 import { db } from "@/lib/database";
 import { adminUsers } from "@/lib/schema";

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateAdmin } from '@/lib/auth-utils-v2';
+import { authenticateAdmin } from '@/lib/auth-utils';
 import { writeFile } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';

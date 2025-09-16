@@ -91,13 +91,9 @@ const nextConfig = {
         source: '/api/admin/auth/:path*',
         headers: [
           {
-            // V produkci dynamicky nastavíme hlavičku podle Origin, 
-            // Ve vývojovém prostředí povolíme localhost
             key: 'Access-Control-Allow-Origin',
-            // Nemůžeme použít dynamickou hodnotu '*', protože pak by nefungovalo 'credentials: include'
-            // Řešení: middleware bude dynamicky upravovat tuto hodnotu podle Origin hlavičky
             value: process.env.NODE_ENV === 'production'
-              ? 'https://www.fiserpavel.cz'
+              ? 'https://fiserpavel.cz'
               : 'http://localhost:3000'
           },
           {
@@ -110,11 +106,11 @@ const nextConfig = {
           },
           {
             key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization'
+            value: 'Content-Type, Authorization, X-Requested-With'
           },
           {
             key: 'Vary',
-            value: 'Origin'
+            value: 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers'
           }
         ]
       }

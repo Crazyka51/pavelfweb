@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSession, verifyAccessToken } from "@/lib/auth-utils-v2";
+import { createSession, verifyAccessToken } from "@/lib/auth-utils";
 import { compare } from "bcryptjs";
 // Použijeme relativní cestu místo alias
 import prisma from '../../../../../../lib/prisma-client';
