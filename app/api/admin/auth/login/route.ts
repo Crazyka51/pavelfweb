@@ -1,5 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createSession, comparePasswords } from "@/lib/auth-utils-new";
+iiimport { createSession } from "@/lib/auth-utils";
+import { comparePasswords } from "@/lib/password-utils";port { createSession } from "@/lib/auth-utils";
+import { comparePasswords } from "@/lib/password-utils";port { type NextRequest, NextResponse } from "next/server";
+import { createSession, comparePasswords } from "@/lib/auth-utils-v2";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
