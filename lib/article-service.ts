@@ -124,7 +124,16 @@ export class ArticleService {
    */
   async createArticle(input: CreateArticleInput) {
     try {
-      return await prisma.article.create({
+      console.log("Creating article with input:", JSON.stringify(input, null, 2));
+      
+      // Validace vstupních dat
+      if (!input.title) throw new Error("Title is required");
+      if (!input.content) throw new Error("Content is required");
+      if (!input.categoryId) throw new Error("Category ID is required");
+      if (!input.authorId) throw new Error("Author ID is required");
+      
+      // Vytvoření článku
+      const result = await prisma.article.create({
         data: {
           title: input.title,
           slug: input.slug,
@@ -146,9 +155,23 @@ export class ArticleService {
         },
       });
       
+      console.log("Article created successfully:", result);
+      return result;
+      
     } catch (error) {
       console.error("Error creating article:", error);
-      throw new Error("Failed to create article");
+      console.error("Full error details:", JSON.stringify(error, null, 2));
+      
+      // Lepší chybové zprávy
+      if (error instanceof Error && 'code' in error) {
+        if (error.code === 'P2003') {
+          throw new Error("Referenced category or author does not exist");
+        } else if (error.code === 'P2002') {
+          throw new Error("Article with this slug already exists");
+        }
+      }
+      
+      throw error; // Throw original error for other cases
     }
   }
 

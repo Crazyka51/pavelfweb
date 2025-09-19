@@ -10,12 +10,19 @@ export interface CategoryListOptions {
 }
 
 /**
- * Tato funkce by generovala slug z názvu kategorie, ale momentálně není použita,
- * protože pole slug neexistuje v aktuálním schématu databáze.
+ * Generuje URL-friendly slug z názvu kategorie.
  * @param name Název kategorie
  * @returns Vygenerovaný slug
  */
-// Funkce pro generování slugu byla odstraněna, protože v aktuálním schématu databáze pole slug neexistuje
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD') // Normalizace diakritiky
+    .replace(/[\u0300-\u036f]/g, '') // Odstranění diakritiky
+    .replace(/[^a-z0-9]+/g, '-') // Nahrazení nealfanumerických znaků pomlčkou
+    .replace(/^-+|-+$/g, '') // Odstranění pomlček na začátku a konci
+    .trim();
+}
 
 export class CategoryService {
   /**
@@ -106,15 +113,23 @@ export class CategoryService {
     color?: string,
     display_order?: number,
     is_active?: boolean,
-    parent_id?: string
+    parent_id?: string,
+    slug?: string // Přidáno volitelné pole slug - pokud není zadáno, bude vygenerováno automaticky
   }) {
     try {
-      // V aktuálním schématu databáze máme pouze pole name
+      // Připravíme data pro vytvoření kategorie
+      const createData = {
+        name: data.name,
+        slug: data.slug || generateSlug(data.name), // Použijeme zadaný slug nebo vygenerujeme nový
+        description: data.description,
+        color: data.color,
+        display_order: data.display_order,
+        is_active: data.is_active,
+        parent_id: data.parent_id
+      };
+
       return await prisma.category.create({
-        data: {
-          name: data.name,
-          // Další pole nejsou v databázi k dispozici, takže je nepoužíváme
-        },
+        data: createData,
       });
       
     } catch (error) {
@@ -137,12 +152,31 @@ export class CategoryService {
     try {
       const updateData: any = {};
       
-      // V aktuálním schématu databáze máme pouze pole name
       if (data.name !== undefined) {
         updateData.name = data.name;
+        // Pokud se změní název, aktualizujeme i slug
+        updateData.slug = generateSlug(data.name);
       }
       
-      // Ostatní pole nejsou v databázi k dispozici
+      if (data.description !== undefined) {
+        updateData.description = data.description;
+      }
+      
+      if (data.color !== undefined) {
+        updateData.color = data.color;
+      }
+      
+      if (data.display_order !== undefined) {
+        updateData.display_order = data.display_order;
+      }
+      
+      if (data.is_active !== undefined) {
+        updateData.is_active = data.is_active;
+      }
+      
+      if (data.parent_id !== undefined) {
+        updateData.parent_id = data.parent_id;
+      }
       
       return await prisma.category.update({
         where: { id },

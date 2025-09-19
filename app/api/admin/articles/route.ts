@@ -5,6 +5,9 @@ import { db } from "@/lib/database";
 import { adminUsers } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { ArticleStatus } from "@/types/cms"; // Změněn import z database.ts na cms.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
   // Logování pouze v development módu
@@ -85,11 +88,11 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
     const articleData = await request.json();
 
     // Validace povinných polí
-    if (!articleData.title || !articleData.content) {
+    if (!articleData.title || !articleData.content || !articleData.categoryId) {
       return NextResponse.json(
         {
           success: false,
-          error: "Název a obsah jsou povinné",
+          error: "Název, obsah a kategorie jsou povinné",
         },
         { status: 400 },
       );
@@ -97,6 +100,29 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
 
     // Ověření existence autora
     const author = await db.select().from(adminUsers).where(eq(adminUsers.id, authResult.userId));
+    if (!author || author.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Autor nebyl nalezen",
+        },
+        { status: 404 },
+      );
+    }
+
+    // Ověření existence kategorie
+    const category = await prisma.category.findUnique({
+      where: { id: articleData.categoryId }
+    });
+    if (!category) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Kategorie nebyla nalezena",
+        },
+        { status: 404 },
+      );
+    }
     if (!author || author.length === 0) {
       return NextResponse.json(
         {
