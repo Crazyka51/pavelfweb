@@ -8,6 +8,7 @@ import { GoogleAnalytics } from "./components/GoogleAnalytics";
 import StructuredData from "./components/StructuredData";
 import type React from "react";
 import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -73,6 +74,7 @@ export default function RootLayout({
           <CookieBanner />
           <CookieManager />
         </Suspense>
+        <SpeedInsights />
       </body>
     </html>
   );
