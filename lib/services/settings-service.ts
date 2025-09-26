@@ -47,7 +47,7 @@ export class SettingsService {
   async updateSettings(data: Partial<Omit<CMSSettings, "id">>): Promise<CMSSettings | null> {
     try {
       // Assuming there's only one settings entry, or we update by a known ID
-      // @ts-ignore - ignorujeme typové chyby
+      // @ts-expect-error - ignorujeme typové chyby
       const [updatedSettings] = await db
         .update(cmsSettings)
         .set({
@@ -95,7 +95,7 @@ export class SettingsService {
         updated_at: new Date(),
       };
 
-      // @ts-ignore - ignorujeme typové chyby
+      // @ts-expect-error - ignorujeme typové chyby
       const [newSettings] = await db.insert(cmsSettings).values(defaultSettings).returning();
       console.log("Default settings initialized.");
       return mapDbSettingsToCMSSettings(newSettings);
