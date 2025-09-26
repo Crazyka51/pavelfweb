@@ -163,11 +163,6 @@ export async function deleteSession() {
  * @returns Dekódovaný payload nebo NextResponse s chybou
  */
 export async function verifyAuth(request: NextRequest) {
-  // Debug logy pro produkční prostředí
-  console.log('[Auth Debug] Auth header:', request.headers.get("Authorization"));
-  console.log('[Auth Debug] Request origin:', request.headers.get('origin'));
-  console.log('[Auth Debug] Cookie header:', request.headers.get('cookie'));
-  
   // Získání access tokenu z Authorization hlavičky
   const authHeader = request.headers.get("Authorization");
   const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;

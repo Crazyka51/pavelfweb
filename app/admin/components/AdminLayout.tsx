@@ -8,7 +8,6 @@ import {
   FileText,
   PlusCircle,
   Tag,
-  Mail,
   BarChart3,
   Archive,
   Settings,

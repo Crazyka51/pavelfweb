@@ -58,7 +58,7 @@ export async function saveArticlesToBlob(articles: Article[]): Promise<void> {
       access: 'public',
     });
     
-    console.log('Články uloženy do Blob storage:', blob.url);
+    // console.log('Články uloženy do Blob storage:', blob.url);
   } catch (error) {
     console.error('Chyba při ukládání článků do Blob storage:', error);
     throw error;
@@ -98,7 +98,7 @@ export async function saveNewsletterSubscribersToBlob(subscribers: NewsletterSub
       access: 'public',
     });
     
-    console.log('Newsletter subscribers uloženi do Blob storage:', blob.url);
+    // console.log('Newsletter subscribers uloženi do Blob storage:', blob.url);
   } catch (error) {
     console.error('Chyba při ukládání subscribers do Blob storage:', error);
     throw error;
@@ -123,7 +123,7 @@ export async function cleanupOldBlobs(prefix: string, keepLatest: number = 5): P
     
     for (const blob of blobsToDelete) {
       await del(blob.url);
-      console.log('Smazán starý blob:', blob.pathname);
+      // console.log('Smazán starý blob:', blob.pathname);
     }
   } catch (error) {
     console.error('Chyba při čištění starých blobů:', error);
