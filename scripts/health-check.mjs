@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Simple Project Health Check
- * Quick analysis of basic project status and issues
- */
-
 import { readFileSync, existsSync } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';

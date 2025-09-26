@@ -1,6 +1,3 @@
-// test-admin-login-v2.js
-
-// Otestování přihlášení do administrace - postup 1: fetch API
 async function testLoginWithFetch() {
   console.log('Testuji přihlášení do administrace pomocí Fetch API...');
   

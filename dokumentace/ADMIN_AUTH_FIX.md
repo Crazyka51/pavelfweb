@@ -10,7 +10,7 @@ V administračním rozhraní webu byly provedeny opravy související s autentiz
 
 Všechny API volání v této komponentě byly upraveny tak, aby používaly `credentials: 'include'` místo ukládání a čtení tokenu z localStorage. Toto zajišťuje, že HTTP-only cookies jsou automaticky odesílány s každým požadavkem.
 
-```typescript
+\`\`\`typescript
 // Původní kód
 const token = localStorage.getItem("adminToken");
 if (!token) return alert("Chyba autorizace");
@@ -38,17 +38,17 @@ try {
     body: JSON.stringify(newArticleData),
   });
 }
-```
+\`\`\`
 
 ### 2. Úprava diagnostické stránky
 
 Byla vytvořena diagnostická stránka (`/admin/diagnose`), která pomáhá identifikovat a testovat problémy s administračním rozhraním. Na této stránce byly všechny API volání upraveny tak, aby používaly HTTP-only cookies:
 
-```typescript
+\`\`\`typescript
 const res = await fetch('/api/admin/articles', {
   credentials: 'include', // Přidáno pro použití HTTP-only cookies
 });
-```
+\`\`\`
 
 ### 3. Vytvoření konzistentního přístupu k autentizaci
 

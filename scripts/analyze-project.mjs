@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Comprehensive Project Analysis Script
- * Analyzes code consistency, database connectivity, and overall project health
- */
-
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';

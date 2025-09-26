@@ -93,7 +93,7 @@ Systém používá dva typy tokenů:
 
 ### Ochrana API endpointů
 
-```typescript
+\`\`\`typescript
 import { requireAuth } from "@/lib/auth-utils-v2";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -105,11 +105,11 @@ export const GET = requireAuth(async (request: NextRequest, auth) => {
   
   return NextResponse.json({ success: true, data: {...} });
 });
-```
+\`\`\`
 
 ### Použití autentizace na frontendu
 
-```tsx
+\`\`\`tsx
 'use client';
 
 import { useAuth } from "@/lib/auth-context";
@@ -132,7 +132,7 @@ export default function SecuredComponent() {
     </div>
   );
 }
-```
+\`\`\`
 
 ## Shrnutí
 

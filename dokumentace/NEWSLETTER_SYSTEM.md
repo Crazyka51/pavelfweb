@@ -42,73 +42,73 @@ Newsletter Management System je plně funkční řešení pro správu odběratel
 ### 📁 SOUBORY A KOMPONENTY
 
 #### **Admin Komponenty**
-```
+\`\`\`
 app/admin/components/
 ├── NewsletterManager.tsx     # Hlavní rozhraní pro newsletter
 ├── CampaignEditor.tsx        # WYSIWYG editor pro e-maily
 ├── CampaignHistory.tsx       # Historie odeslaných kampaní
 └── TiptapEditor.tsx          # Použit pro obsah e-mailů
-```
+\`\`\`
 
 #### **API Routes**
-```
+\`\`\`
 app/api/admin/newsletter/
 ├── route.ts                  # Subscribers CRUD
 ├── templates/route.ts        # Templates CRUD
 └── send/route.ts            # Campaign sending & history
-```
+\`\`\`
 
 #### **Data Storage**
-```
+\`\`\`
 data/
 ├── newsletter-subscribers.json   # Odběratelé
 ├── newsletter-templates.json     # E-mail šablony
 └── newsletter-campaigns.json     # Historie kampaní
-```
+\`\`\`
 
 ### 🔄 DATA FLOW
 
 1. **Přihlášení k odběru:**
-   ```
+   \`\`\`
    Uživatel → NewsletterSubscribe → POST /api/admin/newsletter → JSON storage
-   ```
+   \`\`\`
 
 2. **Vytvoření kampaně:**
-   ```
+   \`\`\`
    Admin → CampaignEditor → Tiptap → Preview → Send
-   ```
+   \`\`\`
 
 3. **Odesílání e-mailů:**
-   ```
+   \`\`\`
    CampaignEditor → POST /api/admin/newsletter/send → Resend API → Tracking
-   ```
+   \`\`\`
 
 ---
 
 ## 💻 TECHNICKÁ IMPLEMENTACE
 
 ### **Newsletter Signup (Veřejné)**
-```typescript
+\`\`\`typescript
 // Používá se v app/components/NewsletterSubscribe.tsx
 const response = await fetch('/api/admin/newsletter', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email })
 })
-```
+\`\`\`
 
 ### **Campaign Editor (Admin)**
-```typescript
+\`\`\`typescript
 // CampaignEditor s Tiptap WYSIWYG
 <TiptapEditor
   content={htmlContent}
   onChange={setHtmlContent}
   placeholder="Začněte psát obsah e-mailu..."
 />
-```
+\`\`\`
 
 ### **E-mail Sending**
-```typescript
+\`\`\`typescript
 // Integrace s Resend API
 if (process.env.RESEND_API_KEY) {
   const result = await resend.emails.send({
@@ -122,7 +122,7 @@ if (process.env.RESEND_API_KEY) {
     }
   })
 }
-```
+\`\`\`
 
 ---
 
@@ -164,7 +164,7 @@ if (process.env.RESEND_API_KEY) {
 - ✅ No sensitive data in URLs
 
 ### **Unsubscribe Mechanism**
-```typescript
+\`\`\`typescript
 // Každý e-mail obsahuje jedinečný token
 const unsubscribeToken = jwt.sign({ email }, JWT_SECRET)
 const unsubscribeUrl = `/api/admin/newsletter?token=${unsubscribeToken}`
@@ -174,7 +174,7 @@ headers: {
   'List-Unsubscribe': `<${unsubscribeUrl}>`,
   'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
 }
-```
+\`\`\`
 
 ---
 
@@ -218,20 +218,20 @@ headers: {
 ### **Setup**
 1. Získat API klíč z Resend.com
 2. Přidat do `.env.local`:
-   ```env
+   \`\`\`env
    RESEND_API_KEY=re_your_api_key_here
-   ```
+   \`\`\`
 3. Ověřit doménu v Resend dashboard
 
 ### **Testování bez Resend**
 Systém automaticky používá mock odesílání při absenci API klíče:
-```typescript
+\`\`\`typescript
 if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'test-key') {
   // Skutečné odesílání přes Resend
 } else {
   // Mock odesílání pro development
 }
-```
+\`\`\`
 
 ---
 

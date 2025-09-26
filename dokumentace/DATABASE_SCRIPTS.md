@@ -80,71 +80,71 @@ Testovací skripty pro ověření připojení k databázi.
 
 ### CommonJS moduly (.js)
 
-```javascript
+\`\`\`javascript
 // Příklad z complete-setup.js
 require("dotenv").config({ path: ".env.local" })
 const { neon } = require("@neondatabase/serverless")
 const { drizzle } = require("drizzle-orm/neon-http")
-```
+\`\`\`
 
 ### ES Modules (.mjs)
 
-```javascript
+\`\`\`javascript
 // Příklad z complete-setup.mjs
 import { neon } from "@neondatabase/serverless"
 import { drizzle } from "drizzle-orm/neon-http"
 import { sql } from "drizzle-orm"
 import * as schema from "../lib/schema.ts"
 import 'dotenv/config'
-```
+\`\`\`
 
 ### TypeScript import v JS souborech
 
 V `complete-setup.mjs` se používá přímý import TypeScript souboru:
 
-```javascript
+\`\`\`javascript
 import * as schema from "../lib/schema.ts" // Umožní automatické načítání TypeScript souboru při použití tsx
-```
+\`\`\`
 
 ## Specifické vzory a přístupy
 
 ### Různé přístupy k připojení DB
 
 - **Neon klient:**
-  ```javascript
+  \`\`\`javascript
   const sql = neon(process.env.DATABASE_URL)
   const db = drizzle(sql)
-  ```
+  \`\`\`
 
 - **PostgreSQL klient:**
-  ```javascript
+  \`\`\`javascript
   const client = new Client({
     connectionString,
     ssl: { rejectUnauthorized: false }
   })
-  ```
+  \`\`\`
 
 ### SSL konfigurace pro Neon DB
 
-```javascript
+\`\`\`javascript
 // Nastavení SSL pro připojení k Neon DB
 ssl: {
   rejectUnauthorized: false // V Neonu je SSL nutné, ale bez ověřování
 }
-```
+\`\`\`
 
 ### Zpracování chyb
 
 - Kontrola existence proměnné `DATABASE_URL`:
-  ```javascript
+  \`\`\`javascript
   if (!process.env.DATABASE_URL) {
     console.error("DATABASE_URL environment variable is not set.")
     process.exit(1)
   }
-  ```
+  \`\`\`
 
 - Try/catch bloky pro zachycení chyb při operacích s databází:
-  ```javascript
+  \`\`\`javascript
   try {
     // Databázové operace
   } catch (error) {
@@ -153,17 +153,17 @@ ssl: {
   } finally {
     // Případné ukončení spojení
   }
-  ```
+  \`\`\`
 
 ### Scripty v package.json
 
-```json
+\`\`\`json
 "scripts": {
   "db:setup": "node scripts/setup-database.js",
   "db:test": "node scripts/test-database.js",
   "test:db": "node scripts/test-db.js"
 }
-```
+\`\`\`
 
 ## Problémy a nekonzistence
 
@@ -175,44 +175,44 @@ ssl: {
 ### 2. Nekonzistentní použití importů
 
 - V některých skriptech se používá CommonJS `require()`:
-  ```javascript
+  \`\`\`javascript
   const { neon } = require("@neondatabase/serverless")
-  ```
+  \`\`\`
 
 - Jinde se používají ES Modules `import`:
-  ```javascript
+  \`\`\`javascript
   import { neon } from "@neondatabase/serverless"
-  ```
+  \`\`\`
 
 - V `setup-schema.mjs` se dokonce používají oba způsoby:
-  ```javascript
+  \`\`\`javascript
   import 'dotenv/config'
   require('dotenv').config();
-  ```
+  \`\`\`
 
 ### 3. Duplicitní závislosti v package.json
 
 - `dotenv` je uvedena dvakrát (v dependencies i devDependencies) se stejnou verzí:
-  ```json
+  \`\`\`json
   "dependencies": {
     "dotenv": "^17.0.1"
   },
   "devDependencies": {
     "dotenv": "^17.0.1"
   }
-  ```
+  \`\`\`
 
 ### 4. Mix přístupů k databázi
 
 - Některé skripty používají Drizzle ORM pro dotazy:
-  ```javascript
+  \`\`\`javascript
   await db.insert(categories).values(cat)
-  ```
+  \`\`\`
 
 - Jiné používají přímé SQL dotazy:
-  ```javascript
+  \`\`\`javascript
   await db.execute(`CREATE TABLE IF NOT EXISTS articles (...)`)
-  ```
+  \`\`\`
 
 ## Závěr
 

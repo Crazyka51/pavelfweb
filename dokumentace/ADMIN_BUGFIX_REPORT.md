@@ -12,7 +12,7 @@ V komponentách `ArticleEditor` a `ArticleManager` se pro autentizaci používá
 **Řešení:**
 1. Upravit všechny fetch požadavky přidáním `credentials: 'include'` pro zajištění, že cookies budou odesílány s požadavky:
 
-```typescript
+\`\`\`typescript
 const response = await fetch("/api/admin/articles", {
   method: "POST",
   headers: {
@@ -21,11 +21,11 @@ const response = await fetch("/api/admin/articles", {
   credentials: 'include',  // Přidat toto
   body: JSON.stringify(articleData)
 });
-```
+\`\`\`
 
 2. Odstranit kód, který explicitně přidává Authorization hlavičku s tokenem z localStorage:
 
-```typescript
+\`\`\`typescript
 // MÍSTO
 headers: {
   "Content-Type": "application/json",
@@ -37,7 +37,7 @@ headers: {
   "Content-Type": "application/json"
 },
 credentials: 'include'
-```
+\`\`\`
 
 ### 2. Problém s ukládáním statusu článku
 
@@ -47,7 +47,7 @@ V API endpointu pro vytváření článků je nejednoznačná logika pro určen�
 **Řešení:**
 Upravit logiku v API endpointu v `/app/api/admin/articles/route.ts`:
 
-```typescript
+\`\`\`typescript
 // MÍSTO
 status: (articleData.status || (articleData.published ? ArticleStatus.PUBLISHED : ArticleStatus.DRAFT)),
 
@@ -55,7 +55,7 @@ status: (articleData.status || (articleData.published ? ArticleStatus.PUBLISHED 
 status: articleData.status === ArticleStatus.PUBLISHED || articleData.published === true
   ? ArticleStatus.PUBLISHED 
   : ArticleStatus.DRAFT,
-```
+\`\`\`
 
 ### 3. Problém s validací formuláře
 
@@ -65,7 +65,7 @@ Formulář pro vytváření článku nevaliduje povinná pole jako `categoryId` 
 **Řešení:**
 V komponentě `ArticleEditor` přidat validaci před odesláním formuláře:
 
-```typescript
+\`\`\`typescript
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   
@@ -88,7 +88,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   setIsSaving(true);
   // Zbytek funkce zůstává stejný
 };
-```
+\`\`\`
 
 ### 4. Problém s aktualizací seznamu článků
 
@@ -98,7 +98,7 @@ Po vytvoření nebo aktualizaci článku nemusí dojít k aktualizaci seznamu č
 **Řešení:**
 Zajistit, že se vždy volá `loadArticles()` nebo `onRefresh()` po úspěšném uložení článku:
 
-```typescript
+\`\`\`typescript
 if (result.success) {
   toast({ title: articleId ? "Článek úspěšně aktualizován" : "Článek úspěšně vytvořen" });
   // Přidáno volání refresh funkce
@@ -106,7 +106,7 @@ if (result.success) {
   if (onSave) onSave();
   router.refresh();
 }
-```
+\`\`\`
 
 ## Testování řešení
 

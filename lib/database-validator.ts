@@ -1,8 +1,3 @@
-/**
- * Database Connection and Schema Validation Utility
- * Provides comprehensive validation of database connectivity and schema consistency
- */
-
 import { neon } from '@neondatabase/serverless';
 import prisma from './prisma-client';
 

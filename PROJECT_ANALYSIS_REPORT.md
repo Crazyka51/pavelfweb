@@ -91,7 +91,7 @@ Comprehensive analysis of the Pavel Fišer web project (Next.js CMS application)
 ### 2. Database Architecture Standardization
 
 #### Unified Type System
-```typescript
+\`\`\`typescript
 // Before: Mixed string literals and incomplete types
 status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
 
@@ -101,7 +101,7 @@ export const ArticleStatus = {
   PUBLISHED: 'PUBLISHED', 
   ARCHIVED: 'ARCHIVED'
 } as const;
-```
+\`\`\`
 
 #### Connection Validation
 - Created comprehensive database testing utilities
@@ -183,13 +183,13 @@ export const ArticleStatus = {
 ### Automated Health Checks
 The project now includes automated health monitoring tools that can be run regularly:
 
-```bash
+\`\`\`bash
 # Quick health assessment
 node scripts/health-check.mjs
 
 # Comprehensive analysis
 node scripts/analyze-project.mjs
-```
+\`\`\`
 
 ### Key Performance Indicators
 - TypeScript compilation: ✅ **0 errors**

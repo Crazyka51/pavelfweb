@@ -1,6 +1,3 @@
-// types/cms.ts
-// Centrální místo pro definice typů používaných v CMS
-
 export interface Category {
   id: string
   name: string

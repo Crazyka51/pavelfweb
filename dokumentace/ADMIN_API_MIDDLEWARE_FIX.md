@@ -15,25 +15,25 @@ Po analýze kódu jsme zjistili, že funkce pro správu článků a kategorií n
 Vrátili jsme všechny API endpointy k používání middleware `requireAuth`, který poskytuje konzistentní způsob autentizace:
 
 #### a) GET `/api/admin/articles`
-```typescript
+\`\`\`typescript
 // Před: export const GET = async (request: NextRequest) => { ... }
 // Po:
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => { ... });
-```
+\`\`\`
 
 #### b) POST `/api/admin/articles`
-```typescript
+\`\`\`typescript
 // Před: export const POST = async (request: NextRequest) => { ... }
 // Po:
 export const POST = requireAuth(async (request: NextRequest, authResult: any) => { ... });
-```
+\`\`\`
 
 #### c) DELETE `/api/admin/articles/[id]`
-```typescript
+\`\`\`typescript
 // Před: export const DELETE = async (request: NextRequest, { params }) => { ... }
 // Po:
 export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }) => { ... });
-```
+\`\`\`
 
 #### d) GET a POST `/api/admin/categories`
 Podobné změny byly provedeny i pro endpointy kategorií.
@@ -42,7 +42,7 @@ Podobné změny byly provedeny i pro endpointy kategorií.
 
 V komponentě `ArticleManager.tsx` jsme zajistili, aby při mazání článků byly vždy posílány jak cookies, tak i Authorization hlavička:
 
-```typescript
+\`\`\`typescript
 const headers: HeadersInit = {
   'Content-Type': 'application/json'
 };
@@ -56,16 +56,16 @@ const response = await fetch(`/api/admin/articles/${articleId}`, {
   headers,
   credentials: 'include',
 });
-```
+\`\`\`
 
 ### 3. Lepší logování
 
 Přidali jsme podrobnější logování, které pomůže identifikovat případné problémy:
 
-```typescript
+\`\`\`typescript
 console.log("Delete article endpoint - Auth header:", authHeader ? "Exists" : "Missing");
 console.log("Delete article endpoint - Auth result:", authResult ? "Valid" : "Invalid");
-```
+\`\`\`
 
 ## Jak nyní funguje autentizace
 

@@ -6,9 +6,9 @@ Tento dokument popisuje, jak integrovat články z CMS systému do hlavního web
 
 CMS poskytuje veřejné API pro čtení publikovaných článků:
 
-```
+\`\`\`
 GET http://localhost:3001/api/public/articles
-```
+\`\`\`
 
 ### Parametry
 
@@ -18,7 +18,7 @@ GET http://localhost:3001/api/public/articles
 
 ### Příklady použití
 
-```javascript
+\`\`\`javascript
 // Načtení posledních 3 článků
 fetch('http://localhost:3001/api/public/articles?limit=3')
   .then(res => res.json())
@@ -28,11 +28,11 @@ fetch('http://localhost:3001/api/public/articles?limit=3')
 fetch('http://localhost:3001/api/public/articles?category=Aktuality&limit=5')
   .then(res => res.json())
   .then(data => console.log(data.articles))
-```
+\`\`\`
 
 ### Struktura odpovědi
 
-```json
+\`\`\`json
 {
   "articles": [
     {
@@ -58,13 +58,13 @@ fetch('http://localhost:3001/api/public/articles?category=Aktuality&limit=5')
     }
   }
 }
-```
+\`\`\`
 
 ## 🔗 Integrace do hlavního webu
 
 ### 1. Vytvoření React komponenty
 
-```tsx
+\`\`\`tsx
 // app/components/LatestNews.tsx
 'use client'
 
@@ -172,11 +172,11 @@ export default function LatestNews() {
     </div>
   )
 }
-```
+\`\`\`
 
 ### 2. Stránka pro detail článku
 
-```tsx
+\`\`\`tsx
 // app/clanky/[id]/page.tsx
 import { notFound } from 'next/navigation'
 
@@ -276,11 +276,11 @@ export default async function ArticlePage({ params }: { params: { id: string } }
     </div>
   )
 }
-```
+\`\`\`
 
 ### 3. Stránka se všemi články
 
-```tsx
+\`\`\`tsx
 // app/clanky/page.tsx
 'use client'
 
@@ -401,18 +401,18 @@ export default function ArticlesPage() {
     </div>
   )
 }
-```
+\`\`\`
 
 ## 🚀 Produkční nasazení
 
 Pro produkční nasazení změňte URL v fetch() volání:
 
-```javascript
+\`\`\`javascript
 // Místo localhost použijte produkční URL CMS
 const CMS_API_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.pavelfiser.cz'
 
 fetch(`${CMS_API_URL}/api/public/articles`)
-```
+\`\`\`
 
 ## 📝 Poznámky
 

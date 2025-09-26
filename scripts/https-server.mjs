@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { createServer } from 'https';
 import { parse } from 'url';
 import fs from 'fs';

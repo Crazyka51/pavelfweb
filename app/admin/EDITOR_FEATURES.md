@@ -64,7 +64,7 @@ Pavel má k dispozici **pokročilý WYSIWYG editor** s funkcemi podobnými Micro
 ## 🎯 **Praktické příklady použití**
 
 ### Formátování článku o dopravě:
-```
+\`\`\`
 NADPIS H1: Nové cyklostezky v Praze 4
 
 NADPIS H2: Plánované trasy
@@ -77,10 +77,10 @@ CITACE: "Cyklistická doprava je budoucností městské mobility."
 ODKAZ: Více informací na webu Praha 4
 
 OBRÁZEK: Mapa plánovaných tras
-```
+\`\`\`
 
 ### Formátování novinky:
-```
+\`\`\`
 VELKÝ NADPIS: Rekonstrukce dokončena!
 
 BAREVNÉ ZVÝRAZNĚNÍ důležitých dat
@@ -91,7 +91,7 @@ BAREVNÉ ZVÝRAZNĚNÍ důležitých dat
 4. Kolaudace
 
 KÓDOVÝ BLOK pro technické specifikace
-```
+\`\`\`
 
 ## 🖥️ **Uživatelské rozhraní**
 

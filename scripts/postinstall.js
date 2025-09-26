@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Post-installation setup script for Pavel Fiser CMS
- * This script sets up the database and performs initial configuration
- */
-
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';

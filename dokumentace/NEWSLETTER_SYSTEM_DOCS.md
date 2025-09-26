@@ -63,37 +63,37 @@
 ## 📁 STRUKTURA SOUBORŮ
 
 ### Frontend Components
-```
+\`\`\`
 app/admin/components/
 ├── NewsletterManager.tsx     # Hlavní správa newsletteru
 ├── CampaignEditor.tsx       # WYSIWYG editor kampaní
 └── TiptapEditor.tsx         # Rich text editor
-```
+\`\`\`
 
 ### API Routes
-```
+\`\`\`
 app/api/admin/newsletter/
 ├── route.ts                 # Správa odběratelů (GET/POST/DELETE)
 ├── templates/route.ts       # Správa šablon (CRUD)
 └── send/route.ts           # Odesílání kampaní
-```
+\`\`\`
 
 ### Data Storage
-```
+\`\`\`
 data/
 ├── newsletter-subscribers.json  # Odběratelé
 ├── newsletter-templates.json    # E-mail šablony
 └── newsletter-campaigns.json    # Historie kampaní
-```
+\`\`\`
 
 ## 🚀 POUŽÍVÁNÍ
 
 ### 1. Přidání odběratele
-```bash
+\`\`\`bash
 curl -X POST "http://localhost:3000/api/admin/newsletter" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com"}'
-```
+\`\`\`
 
 ### 2. Admin přístup
 1. Jít na `/admin`
@@ -143,11 +143,11 @@ curl -X POST "http://localhost:3000/api/admin/newsletter" \
 ## 🔄 NEXT STEPS
 
 1. **Resend API Integration**
-   ```typescript
+   \`\`\`typescript
    // Nahradit simulaci v /api/admin/newsletter/send/route.ts
    import { Resend } from 'resend';
    const resend = new Resend(process.env.RESEND_API_KEY);
-   ```
+   \`\`\`
 
 2. **Database Migration**
    - PostgreSQL/MySQL místo JSON files

@@ -1,4 +1,3 @@
-// Finální testovací skript pro autentizaci a přístup k admin rozhraní
 import fetch from 'node-fetch';
 
 const baseUrl = 'http://localhost:3000';

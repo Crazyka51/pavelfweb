@@ -1,8 +1,3 @@
-/**
- * Code Quality Analysis Utility
- * Provides automated checks for code consistency, TypeScript compliance, and best practices
- */
-
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, extname } from 'path';
 

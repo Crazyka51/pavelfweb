@@ -1,20 +1,21 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client"
 
 // Přidáváme deklaraci typu pro global namespace
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prisma: PrismaClient | undefined
 }
 
-let prisma: PrismaClient;
+let prismaClient: PrismaClient
 
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
+if (process.env.NODE_ENV === "production") {
+  prismaClient = new PrismaClient()
 } else {
   // V development prostředí používáme global objekt pro cache
   if (!global.prisma) {
-    global.prisma = new PrismaClient();
+    global.prisma = new PrismaClient()
   }
-  prisma = global.prisma as PrismaClient;
+  prismaClient = global.prisma as PrismaClient
 }
 
-export default prisma;
+export { prismaClient as prisma }
+export default prismaClient

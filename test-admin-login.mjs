@@ -1,5 +1,3 @@
-// test-admin-login.mjs - Skript pro testování přihlášení do administrace
-
 const testAdminLogin = async () => {
   console.log('Testuji přihlášení do administrace...');
 

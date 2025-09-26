@@ -98,21 +98,21 @@ Pojďme vytvořit vylepšenou verzi pro současnou aplikaci:
 Provedly se změny.
 
 Nyní přidám komponentu do hlavní stránky: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvoříme konfigurační soubor pro environment variables: 
 
 Provedly se změny.
@@ -122,37 +122,37 @@ Nyní vytvořím API route pro bezpečnější přístup k Facebook API:
 Provedly se změny.
 
 Nyní upravím Facebook komponentu, aby používala naše API: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Také upravím props interface pro jednoduchost: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní vytvořím dokumentaci o tom, jak nastavit Facebook integration: 
 
 Provedly se změny.
@@ -170,41 +170,41 @@ Nyní vytvořím také stránku pro Terms of Service, na kterou odkazuje footer:
 Provedly se změny.
 
 Nyní přidám odkazy na tyto stránky do hlavního layoutu nebo footer komponenty. Nejdříve se podívám na strukturu: Nyní se podívám na Footer komponentu, abych do ní přidal odkazy na nové stránky: Nyní upravím Footer komponentu, aby obsahovala odkazy na nové stránky: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní ještě přidám správné odkazy na sociální sítě. Podívám se na vaši Facebook stránku: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní zkontrolujeme, jestli jsou stránky správně funkční a spustíme dev server: Výborně! Nyní vytvořím také komponentu pro zobrazení cookie banneru, která bude odkazovat na privacy policy: 
 
 Provedly se změny.
 
 Nyní přidám CookieBanner do hlavního layoutu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní se podívejme, zda vše funguje správně: Výborně! Server běží a stránky se kompilují bez chyb. Nyní ještě vytvořím README dokumentaci pro nové funkce: 
 
 Provedly se změny.
@@ -268,13 +268,13 @@ Stránky jsou profesionální, právně v pořádku a připravené pro nasazení
 Crazyka51: Doba uchovávání údajů - tabulka obsahuje bílé písmo, není vidět, změn na černou
 
 GitHub Copilot: Vidím problém s bílým písmem v tabulce. Opravím to změnou barvy textu na černou v buňkách tabulky: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravil jsem tabulku přidáním `text-gray-900` (černá barva) ke všem buňkám hlavičky i těla tabulky. Nyní by měl být text v tabulce dobře čitelný s černou barvou písma na bílém/šedém pozadí.
 
 Změny:
@@ -293,25 +293,25 @@ svá data z vaší aplikace nebo webu?
 GitHub Copilot: Souhrnná historie konverzacíAno, přesně tak! Podle požadavků Facebooku/Meta a GDPR můžeme splnit tento požadavek poskytnutím jasných instrukcí a mechanismu pro uživatele, jak požádat o smazání svých dat. 
 
 Pojďme implementovat mechanismus pro žádosti o smazání dat v naší aplikaci. Přidáme dedikovanou sekci do zásad ochrany osobních údajů a vytvoříme formulář pro žádosti o smazání dat. 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Souhrnná historie konverzacíAno, rozumím požadavku! Pro compliance s GDPR a Meta/Facebook politikami musíme uživatelům poskytnout jasný způsob, jak požádat o smazání jejich dat. Přidám do Privacy Policy sekci s konkrétními pokyny pro žádosti o smazání dat. 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
 
 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -353,37 +353,37 @@ GitHub Copilot: Samozřejmě! Vytvořím samostatnou stránku pro žádosti o sm
 Provedly se změny.
 
 Nyní přidám odkaz na tuto novou stránku do Privacy Policy a do footeru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravím import ikony Trash2: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji footer v hlavním layoutu, abych přidal odkaz na novou stránku: Přidám odkaz na novou stránku pro smazání údajů do footeru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také přidám odkaz do cookie banneru pro ještě lepší přístupnost: Přidám odkaz na smazání údajů do cookie banneru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Perfekt! Vytvořil jsem kompletní **samostatnou stránku pro žádosti o smazání dat** na adrese `/data-deletion`. 
 
 ## ✅ **Co jsem implementoval:**
@@ -434,16 +434,16 @@ GitHub Copilot: Podívám se na strukturu workspace a zjistím, jaké složky js
 
 ### 📊 **Stav repozitáře:**
 **Zahrnuto v Gitu (committed):**
-```
+\`\`\`
 ✅ app/globals.css
 ✅ package.json  
 ✅ pnpm-lock.yaml
 ✅ postcss.config.mjs
 ✅ styles/globals.css
-```
+\`\`\`
 
 **Nezahrnuto v Gitu (untracked):**
-```
+\`\`\`
 ❌ app/api/ (Facebook API)
 ❌ app/components/CookieBanner.tsx
 ❌ app/components/FacebookPosts.tsx  
@@ -452,19 +452,19 @@ GitHub Copilot: Podívám se na strukturu workspace a zjistím, jaké složky js
 ❌ app/terms-of-service/
 ❌ FACEBOOK_INTEGRATION.md
 ❌ PRIVACY_IMPLEMENTATION.md
-```
+\`\`\`
 
 ### 🚨 **Doporučení:**
 Všechny **nově vytvořené soubory pro privacy compliance** (včetně naší nové stránky `/data-deletion`) **NEJSOU** ještě v git repozitáři. Pokud je chcete zálohovat, měli byste je přidat:
 
-```bash
+\`\`\`bash
 git add app/data-deletion/
 git add app/privacy-policy/
 git add app/terms-of-service/
 git add app/components/CookieBanner.tsx
 git add app/api/facebook-posts/
 # atd...
-```
+\`\`\`
 
 **Složka pavelfiserv1 by měla být vyřazena** z projektu nebo přesunuta jinam, protože zřejmě obsahuje starou verzi.
 
@@ -476,29 +476,29 @@ Crazyka51: Ověřte doménu tak, že vložíte kód s metatagem do oddílu <head
 1. Zkopírujte metatag: <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
 
 GitHub Copilot: Přidám Facebook domain verification metatag do hlavního layoutu aplikace. Vidím, že layout má nesprávnou strukturu. Opravím ho a přidám Facebook domain verification metatag do `<head>` sekce: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní provedeme git operace podle požadavku uživatele: 
 
 Crazyka51: google4f5dc87ffdafdc6a.html a 84zli94h1aqmrsxj4u3bgxzuum7kzd.html jsem přidal do public plus profilovou fotku pavla fišera kterou jsem aktualizoval i v hero.tsx přidej příkazy git add
@@ -661,11 +661,11 @@ GitHub Copilot: Perfektní! Všechny soubory jsou připravené pro commit. Nyní
 - **Aktualizace profilové fotky** Pavla Fišera
 
 ### 📦 **Git operace:**
-```bash
+\`\`\`bash
 ✅ git add . (všechny soubory přidány)
 ✅ git commit (s popisným message)
 ✅ git push origin main (úspěšně nahráno)
-```
+\`\`\`
 
 ### 🚀 **Co je nyní na GitHubu:**
 - **Facebook integrace** (komponenta + API)
@@ -712,13 +712,13 @@ Vidím, že jste vložil skutečný Facebook Access Token do .env.example soubor
 ## 🛡️ **Rychlá oprava:**
 
 ### 1. Vyčistím .env.example (bezpečná verze): 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ### 2. Vytvořím .env.local s vašimi skutečnými tokeny: 
 
 Provedly se změny.
@@ -728,37 +728,37 @@ Provedly se změny.
 Crazyka51:  "API calls from the server require an appsecret_proof argument"
 
 GitHub Copilot: Tato chyba znamená, že Facebook vyžaduje `app_secret_proof` pro server-side API volání. Musíme upravit náš Facebook API endpoint. Nejdříve aktualizujeme environment variables a poté API endpoint: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní opravím Facebook API endpoint, aby generoval `app_secret_proof`: Nyní opravím API endpoint, aby generoval `app_secret_proof`: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teraz vytvořím .env.local soubor pro vaše skutečné tokeny: Přidám Facebook App Secret do existujícího .env.local: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní ověříme, že .gitignore obsahuje .env.local: Výborně! .gitignore již obsahuje `.env*`, takže .env.local nebude commitován.
 
 ## 🛠️ **Oprava pro Facebook API "appsecret_proof" chybu:**
@@ -779,9 +779,9 @@ Nyní ověříme, že .gitignore obsahuje .env.local: Výborně! .gitignore již
    - Zkopírujte "App Secret"
 
 2. **Vložte App Secret** do .env.local:
-   ```bash
+   \`\`\`bash
    FACEBOOK_APP_SECRET=your_real_app_secret_here
-   ```
+   \`\`\`
 
 3. **Commitněte změny**: 
 
@@ -951,7 +951,7 @@ GitHub Copilot: Podívám se na fungování formuláře v `ContactForm.tsx`:
 ### 🔍 **Aktuální stav:**
 Formulář **NEFUNGUJE pro skutečné odesílání** - je to pouze **simulace**. Podívejte se na funkci `onSubmit`:
 
-```tsx
+\`\`\`tsx
 function onSubmit(values: z.infer<typeof formSchema>) {
   setIsSubmitting(true)
   // Simulate API call - POUZE SIMULACE!
@@ -962,7 +962,7 @@ function onSubmit(values: z.infer<typeof formSchema>) {
     alert("Děkuji za Vaši zprávu. Ozvu se Vám co nejdříve!") // Falešné potvrzení
   }, 2000)
 }
-```
+\`\`\`
 
 ### ⚠️ **Co se skutečně děje:**
 1. **Uživatel vyplní formulář** a klikne "Odeslat"
@@ -994,26 +994,26 @@ GitHub Copilot: Pro kontaktní formulář máte několik jednoduchých možnost�
 
 ### 1️⃣ **Next.js API Routes + Resend** ⭐
 **Nejlepší volba pro váš projekt:**
-```bash
+\`\`\`bash
 npm install resend
-```
+\`\`\`
 - **Jednoduché**: Vytvoříte route.ts 
 - **Rychlé**: 10-15 minut implementace
 - **Levné**: 3000 emailů zdarma měsíčně
 - **Spolehlivé**: Moderní email služba
 
 ### 2️⃣ **Netlify Forms** (pokud nasazujete na Netlify)
-```html
+\`\`\`html
 <form netlify data-netlify="true">
-```
+\`\`\`
 - **Nejjednodušší**: Pouze přidáte atribut
 - **Zdarma**: 100 submissions/měsíc
 - **Bez kódu**: Žádný backend kód
 
 ### 3️⃣ **EmailJS** (frontend only)
-```bash
+\`\`\`bash
 npm install @emailjs/browser
-```
+\`\`\`
 - **Rychlé**: Funguje z frontendu
 - **Jednoduché**: Bez API routes
 - **Omezení**: Méně bezpečné (API klíče ve frontendu)
@@ -1059,13 +1059,13 @@ GitHub Copilot: Výborně! Pokud už máte Resend nainstalováno pomocí pnpm, t
 
 ### 3️⃣ **Přidání API klíče do environment**
 Přidám do .env.local: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Souhrnná historie konverzacíVidím, že máte nainstalované potřebné balíčky přes pnpm. Nyní dokončím implementaci skutečného odeslání e-mailu pomocí Resend API. Vytvořím API route a upravím kontaktní formulář tak, aby posílal skutečné e-maily.
 
 Nejdříve vytvořím API route pro odesílání e-mailů: 
@@ -1073,61 +1073,61 @@ Nejdříve vytvořím API route pro odesílání e-mailů:
 Provedly se změny.
 
 Opravím chybu s typem Resend API response: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní musím nainstalovat balíček `zod` pro validaci dat: Balíček zod je již nainstalován. Nyní upravím kontaktní formulář tak, aby používal novou API route: Nyní nahradím simulovanou funkci onSubmit skutečným odesíláním e-mailu přes API: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám zobrazení stavových zpráv do formuláře: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní ověřím, že je API route správně nastavena a zkontrolujeme chyby: Perfektní! Nyní aktualizuji .env.example soubor, aby obsahoval informace o Resend API: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
 
 Nyní vylepším API route tak, aby používala konfigurovatelné e-mailové adresy z environment variables: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím dokumentaci pro email integraci: 
 
 Provedly se změny.
@@ -1192,15 +1192,15 @@ Pro **Return-Path** v Resend při přidávání domény doporučuji použít:
 
 ## Doporučené nastavení Return-Path:
 
-```
+\`\`\`
 bounce@pavelfiser.cz
-```
+\`\`\`
 
 nebo alternativně:
 
-```
+\`\`\`
 noreply@pavelfiser.cz
-```
+\`\`\`
 
 ## Proč právě toto?
 
@@ -1220,13 +1220,13 @@ Když přidáváte doménu `pavelfiser.cz` do Resend:
 
 Po ověření domény budete moct v .env.local změnit:
 
-```bash
+\`\`\`bash
 # Místo testovací adresy:
 RESEND_FROM_EMAIL=onboarding@resend.dev
 
 # Použijete vlastní:
 RESEND_FROM_EMAIL=noreply@pavelfiser.cz
-```
+\`\`\`
 
 ## DNS záznamy, které budete muset přidat:
 
@@ -1253,9 +1253,9 @@ GitHub Copilot: Na základě této informace z Resend vidím, že se ptají na *
 
 ## Doporučená subdoména pro Return-Path:
 
-```
+\`\`\`
 send
-```
+\`\`\`
 
 Takže výsledná Return-Path adresa bude: `send.pavelfiser.cz`
 
@@ -1289,9 +1289,9 @@ Když zadáte subdoménu `send`, Resend automaticky vytvoří:
 **Doporučuji použít: `send`** 👍
 
 Po nastavení pak v .env.local budete moci změnit na:
-```bash
+\`\`\`bash
 RESEND_FROM_EMAIL=noreply@pavelfiser.cz
-```
+\`\`\`
 
 Crazyka51: resend api key byl úspěšně prpojen
 
@@ -1342,9 +1342,9 @@ Skutečné odesílání e-mailů se řídí nastavením v API route. Pojďme se 
 
 ### Proč:
 V .env.local nevidím nastavené `RESEND_TO_EMAIL`, takže se používá **defaultní hodnota** z API route:
-```typescript
+\`\`\`typescript
 const toEmail = process.env.RESEND_TO_EMAIL || 'pavel.fiser@praha4.cz'
-```
+\`\`\`
 
 ### Odkud se e-maily odesílají:
 **`onboarding@resend.dev`** (defaultní Resend adresa)
@@ -1352,13 +1352,13 @@ const toEmail = process.env.RESEND_TO_EMAIL || 'pavel.fiser@praha4.cz'
 ## 🔧 Pokud chcete změnit příjemce:
 
 Přidejte do .env.local:
-```bash
+\`\`\`bash
 # E-mailová adresa pro přijímání zpráv z kontaktního formuláře
 RESEND_TO_EMAIL=jiny-email@example.com
 
 # E-mailová adresa pro odesílání (volitelné)
 RESEND_FROM_EMAIL=onboarding@resend.dev
-```
+\`\`\`
 
 ## Shrnutí:
 - **Zobrazený e-mail v UI**: `pavel.fiser@praha4.cz` (informační)
@@ -1390,17 +1390,17 @@ Chcete otestovat kontaktní formulář s novou e-mailovou adresou? 📧
 Crazyka51: odeber odkazování na instagram - nebude použit a změň twiter na novou síť - X
 
 GitHub Copilot: Rozumím, chcete odstranit Instagram a změnit Twitter na X. Tyto změny jsou v kontaktním formuláři v sekci sociálních sítí. Pojďme to upravit: Nyní upravím sekci sociálních sítí - odstraním Instagram a změním Twitter na X: Zkusím najít přesnou část kódu s menším kontextem: Nejdříve změním Twitter na X: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní odstraním celou Instagram sekci: Podívám se na aktuální stav souboru po první změně: Nyní odstraním Instagram link s přesnějším kontextem: Zkusím menší část - jen samotný Instagram link: Zkusím najít přesný text pomocí grep a pak jej nahradit menšími částmi: Zkusím použít kratší a specifičtější část: Použiju insert_edit_into_file tool k odstranění Instagram části: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -1445,17 +1445,17 @@ GitHub Copilot: Prohledám všechny komponenty, abych zjistil, jestli se někde 
 
 1. **Twitter → X**
 2. **Instagram → odstraním** 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní odstraním Instagram z footeru: Zkusím kratší část: Použiji insert_edit_into_file nástroj pro přesnější úpravu: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -1628,17 +1628,17 @@ Provedly se změny.
 ### 🚀 Jak pokračovat:
 
 1. **Otestujte CMS:**
-   ```bash
+   \`\`\`bash
    cd cms-test
    npm install
    npm run dev
    # Otevřete http://localhost:3001
-   ```
+   \`\`\`
 
 2. **Otestujte API:**
-   ```bash
+   \`\`\`bash
    node test-api.js
-   ```
+   \`\`\`
 
 3. **Integrujte do hlavního webu** podle `INTEGRATION_GUIDE.md`
 
@@ -1667,41 +1667,41 @@ Crazyka51: takže pavel se může cítit jako redaktor a má vše potřebné pro
 GitHub Copilot: Ano, Pavel má k dispozici velmi pokročilý WYSIWYG editor s mnoha funkcemi podobnými MS Word! Aktuální implementace obsahuje React Quill editor, který poskytuje tyto funkce:
 
 ## 🎨 Aktuálně dostupné funkce editoru: Vidím, že současný editor má základní funkce. Pojďme ho rozšířit o pokročilejší funkce podobné MS Word! Vylepším konfiguraci React Quill editoru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji CSS styly pro lepší vzhled editoru s pokročilými funkcemi: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím dokumentaci s úplným seznamem funkcí editoru: 
 
 Provedly se změny.
 
 Nyní ještě vylepším minimum height editoru pro lepší uživatelský komfort: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Aktualizuji také CSS pro větší editor: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď vytvořím rychlý návod pro Pavel, jak editor používat: 
 
 Provedly se změny.
@@ -1729,7 +1729,7 @@ Provedly se změny.
 
 ### 🎯 **Pavel může psát jako profesionální redaktor:**
 
-```
+\`\`\`
 ✍️ Může vytvářet:
 • Strukturované články s nadpisy
 • Barevně zvýrazněné důležité informace  
@@ -1737,7 +1737,7 @@ Provedly se změny.
 • Citace a důležité výroky
 • Články s obrázky a odkazy
 • Profesionálně formátované texty
-```
+\`\`\`
 
 ### 📚 **Dokumentace pro Pavla:**
 1. **`EDITOR_FEATURES.md`** - úplný seznam všech funkcí
@@ -1751,53 +1751,53 @@ Může psát, formátovat a publikovat články stejně pohodlně jako v Microso
 Crazyka51: proč textové pole obsahuje obrázky? oprav to prosím
 
 GitHub Copilot: Vidím problém! React Quill editor má defaultně povolenou funkci drag & drop obrázků přímo do textového pole, což může být matoucí. Opravím to tak, aby se obrázky vkládaly pouze přes URL pomocí tlačítka v toolbaru. 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám CSS pravidla, která zabrání drag & drop obrázků do editoru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím custom handler pro obrázky, který bude řádně požadovat URL místo drag & drop: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám CSS pravidla pro lepší zabránění drag & drop funkcionalitě: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji dokumentaci pro Pavla, aby věděl, jak správně vkládat obrázky: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vytvořím ještě rychlé vysvětlení změny: 
 
 Provedly se změny.
@@ -1815,7 +1815,7 @@ Provedly se změny.
 
 ### 📋 **Nový proces pro Pavla:**
 
-```
+\`\`\`
 ✅ SPRÁVNĚ:
 1. Klikni na ikonu 🖼️ v toolbaru
 2. Zadej URL obrázku (https://...)
@@ -1825,7 +1825,7 @@ Provedly se změny.
 - Přetahování obrázků do editoru
 - Kopírování obrázků (Ctrl+C/V)
 - Vkládání ze souborů
-```
+\`\`\`
 
 ### 🎯 **Výsledek:**
 
@@ -1845,51 +1845,51 @@ GitHub Copilot: Výborná otázka! Podívám se na současný CMS z pohledu prak
 ## 🚨 **Kritické chybějící funkce:**
 
 ### 1. **Auto-save (automatické ukládání)**
-```javascript
+\`\`\`javascript
 ❌ Chybí: Když Pavel píše 30 minut a zavře se prohlížeč → ztracená práce
 ✅ Potřeba: Ukládání každých 30 sekund do localStorage/serveru
-```
+\`\`\`
 
 ### 2. **Word Count (počet slov)**
-```javascript
+\`\`\`javascript
 ❌ Chybí: Pavel neví, jak dlouhý článek píše
 ✅ Potřeba: Live počítadlo slov, znaků, odstavců
-```
+\`\`\`
 
 ### 3. **SEO Preview**
-```javascript
+\`\`\`javascript
 ❌ Chybí: Jak bude článek vypadat v Google vyhledávání?
 ✅ Potřeba: Náhled title, description, URL
-```
+\`\`\`
 
 ### 4. **Plánované publikování**
-```javascript
+\`\`\`javascript
 ❌ Chybí: Možnost naplánovat článek na konkrétní datum
 ✅ Potřeba: Datetime picker pro budoucí publikování
-```
+\`\`\`
 
 ### 5. **Quick Actions (rychlé akce)**
-```javascript
+\`\`\`javascript
 ❌ Chybí: Rychlé publish/unpublish bez otevírání editoru
 ✅ Potřeba: Toggle buttony v seznamu článků
-```
+\`\`\`
 
 Implementuji nejdůležitější funkce! Začnu s auto-save a word count: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Souhrnná historie konverzacíPodívám se na současné CMS rozhraní a identifikuji chybějící funkce a komponenty, které by mohly zlepšit uživatelský zážitek při vkládání článků. Nyní se podívám na Dashboard komponentu, abych viděl, jak se zobrazuje seznam článků: Nyní analyzuji současné CMS a identifikuji možná vylepšení. Na základě toho, co jsem viděl, vytvořím několik nových komponent a funkcí pro zlepšení uživatelského zážitku:
 
 1. **SEO náhled** - komponent pro zobrazení, jak bude článek vypadat ve vyhledávačích
@@ -1914,69 +1914,69 @@ Nyní vytvořím komponent pro rychlé akce v seznamu článků:
 Provedly se změny.
 
 Nyní aktualizuji ArticleEditor komponentu, aby obsahovala nové funkce: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní přidám funkce pro zpracování konceptů a naplánovaného publikování: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji hlavičku editoru, aby obsahovala nové tlačítka: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám sidebar s novými komponenty: 
 
 Pokračovat v iteraci?
@@ -1985,85 +1985,85 @@ Kopilot na tomto problému už nějakou dobu pracuje. Může pokračovat v itera
 Crazyka51: @agent Pokračovat: "Pokračovat v iteraci?"
 
 GitHub Copilot: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám modály na konec komponenty: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji Dashboard komponentu, aby obsahovala rychlé akce a notifikace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Opravím TypeScript chyby: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní nahradím tlačítka v seznamu článků komponentou QuickActions: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nakonec přidám NotificationSystem na konec Dashboard komponenty: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím dokumentaci pro nové funkce: 
 
 Provedly se změny.
@@ -2095,101 +2095,101 @@ Provedly se změny.
 Provedly se změny.
 
 Nyní přidám komponentu RecentNews na hlavní stránku: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám odkazy na novinky do hlavní navigace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím dokumentaci o tom, jak propojit CMS s hlavní stránkou: 
 
 Provedly se změny.
 
 Nyní otestujeme, zda funguje propojení. Nejdříve spustím CMS: Port 3001 je již používán. Změním port na 3002: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Také aktualizuji URL v komponente RecentNews: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní spustím CMS na novém portu: 
 
 Crazyka51: komponenty článků bych situoval pod rolující marquee.tsx 
 
 GitHub Copilot: Skvěle! Umístím komponenty článků pod rolující Marquee komponentu. Nejdříve se podívám na strukturu hlavní stránky a pak přidám články pod Marquee. Vidím, že Marquee je před ContactForm. Přidám RecentNews komponentu hned za Marquee. Nejdříve se podívám, jestli už RecentNews existuje: Komponenta RecentNews už existuje, ale je umístěna před AboutMe. Přesuňme ji za Marquee: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní se podívám na současný design RecentNews komponenty a upravím ji, aby vizuálně navazovala na Marquee: Nyní upravím design RecentNews komponenty, aby lépe navazovala na Marquee. Změním barvy a styl, aby to více odpovídalo designu webu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Také aktualizuji loading stav, aby odpovídal novému designu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také aktualizuji barevné schéma kategorií, aby odpovídalo designu webu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Perfektně! Nyní jsem:
 
 ## ✅ **Dokončené úpravy**
@@ -2228,81 +2228,81 @@ Crazyka51: když dám vytvořit nový článek v textovém poli se nachází : <
 GitHub Copilot: Vidím problém! V textovém poli editoru se zobrazuje HTML kód místo správného editoru. To je problém s React Quill komponentou - pravděpodobně se nevykresluje správně nebo je problém s client-side renderingem.
 
 Podívám se na ArticleEditor komponentu a opravím to: Problém je v dynamickém načítání React Quill. Musím přidat správnou konfiguraci a CSS. Nejdříve zkontrolujeme, jestli jsou správně nainstalovány závislosti: React Quill je nainstalovaný. Problém je pravděpodobně v CSS nebo v konfiguraci. Podívám se na globals.css: CSS vypadá v pořádku. Problém je pravděpodobně v tom, že React Quill potřebuje explicitní import CSS souborů. Aktualizuji ArticleEditor: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také přidám lepší error handling a configuraci pro React Quill. Nejdříve se podívám na quill moduly konfiguraci: Problém může být i v tom, že Quill potřebuje státní proměnnou pro mounted stav. Přidám to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní najdu místo, kde se používá ReactQuill a přidám podmíněné renderování: Nyní aktualizuji ReactQuill s podmíněným renderováním a lepší konfigurací: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také vylepším image handler, aby fungoval spolehlivěji: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také přidám do globals.css lepší styling pro Quill: Přidám ještě explicitní CSS pro React Quill na začátek: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také zkontrolujme, jestli je správně nakonfigurovaný Next.js pro CSS importy. Podívám se na next.config: Next.js config vypadá v pořádku. Nyní vytvořím jednoduchou alternativní verzi ArticleEditor s lepším error handlingem. Možná je problém s verzí React Quill. Zkusíme to bez dynamického importu: 
 
 Provedly se změny.
 
 Nyní aktualizuji Dashboard, aby dočasně používal SimpleArticleEditor místo problematického ArticleEditor: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vidím, že jsou tam duplicitní importy. Opravím to: Opravím duplicitní importy: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní změním použití ArticleEditor na SimpleArticleEditor: Nyní najdu místo, kde se používá ArticleEditor a změním to na SimpleArticleEditor: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní se podívám na chyby a spustím CMS: Výborně! Nyní spustím CMS server na portu 3002: 
 
 Crazyka51: 
@@ -2330,13 +2330,13 @@ Import trace for requested module:
  ✓ Compiled in 570ms (766 modules)
 
 GitHub Copilot: Vidím problém! V Dashboard komponentě jsou duplicitní importy. Opravím to: Dobře, vidím že už je tam jen jeden import. Možná se chyba zobrazuje z cache. Zkontrolujme celý soubor a ujistíme se, že nejsou duplicitní importy: Importy vypadají v pořádku. Možná je problém někde jinde v souboru. Podívám se na celý začátek Dashboard komponenty: Soubor vypadá v pořádku. Chyba může být způsobena cache nebo možná existuje někde v souboru duplicitní import. Projdu celý soubor a najdu duplicity: Aha! Vidím duplikát v řádku 7. Podívám se na řádky kolem toho: Možná grep našel nějaký skrytý duplikát. Zkusím vymazat celý import blok a napsat ho znovu: Možná je problém jinde. Zkusím najít všechny místa kde se používá useNotifications: Vypadá to správně. Možná je chyba způsobena tím, že server stále běží se starou verzí. Zkusím restartovat dev server nebo vymazat .next cache: Nyní zkusím znovu spustit dev server: Server běží, ale má varování o konfiguraci. Podívám se na next.config a opravím ho: Odstraním zastaralou `appDir` konfiguraci: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní zkontrolujím, jestli se server úspěšně spustil: Server běží! Nyní se podívám na hlavní stránku CMS. Možná chyba byla pouze v build cache. Zkusím otevřít CMS v prohlížeči: Výborně! Nyní se podívám, jestli se load chyba opravila. Také zkontrolujeme, jestli je už ReactQuill editor funkční. Mezitím vytvořím rychlý test článek v CMS, abychom viděli, jestli se propojení s hlavní stránkou funguje správně.
 
 Pojďme si nyní ověřit celé propojení:
@@ -2400,13 +2400,13 @@ Problém je pravděpodobně v tom, že hlavní web na portu 3000 se nemůže př
 Pojďme to diagnostikovat: API funguje! Vrací 3 publikované články. Problém je pravděpodobně v tom, že prohlížeč blokuje přístup z `localhost:3000` na `localhost:3002` kvůli CORS politice.
 
 Ověřím, jestli je v CMS nastavena CORS podpora. Podívám se na API routes: Vidím problém! API endpointu chybí CORS hlavičky. Přidám je: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní zkontrolujme, jestli je na hlavní stránce správně zobrazena komponenta RecentNews. Otevři hlavní stránku (`http://localhost:3000`) a refresh. Pokud se stále nezobrazují články, můžeme zkusit další řešení:
 
 1. **Prostá kontrola v prohlížeči** - Otevři Developer Tools (F12) v prohlížeči na `http://localhost:3000`, jdi na záložku Network a refresh stránku. Uvidíš, jestli se volá API na port 3002.
@@ -2418,13 +2418,13 @@ Mezitím vyvořím toto fallback řešení:
 Provedly se změny.
 
 Nyní aktualizuji RecentNews komponentu, aby používala nový proxy endpoint: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Souhrnná historie konverzacíVýborně! Vidím, že CMS server běží. Nyní provedeme finální test - ověříme, zda nové články vytvořené v CMS se skutečně zobrazují na hlavním webu pod Marquee komponentou.
 
 Pojďme otestovat celý workflow: 
@@ -2466,17 +2466,17 @@ Pokud chceš, můžu ti ještě ukázat nějaké konkrétní funkce nebo máš n
 Crazyka51: můžeš přidat do obsahu článku ikony nástroju ? jako ve wordu?
 
 GitHub Copilot: Skvělý nápad! Přidám do CMS editoru ikony nástrojů, jako máš ve Wordu. To výrazně usnadní používání editoru. Pojďme to implementovat: Teď se podívám na React Quill konfiguraci a toolbar: Skvělé! Vidím, že React Quill toolbar už je nakonfigurovaný. Ale můžu ho vylepšit přidáním ikon a lepším uspořádáním. Aktualizuji toolbar tak, aby vypadal více jako Word: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď přidám vlastní CSS styly pro lepší vzhled toolbaru, aby vypadal více jako Word. Nejdříve si ověřím, kde se nacházejí CSS soubory: Skvělé! Přidám do CSS souboru nové styly pro toolbar, aby vypadal více jako Word s lepšími ikonami: Přidám pokročilé styly pro toolbar, aby vypadal více jako Word: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -2486,9 +2486,9 @@ Nyní vytvořím nový souborak s návodem pro používání nového editoru s i
 Provedly se změny.
 
 Teraz aktualizujem hlavný návod pre Pavla, aby zahŕňal informácie o nových ikonách: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -2546,45 +2546,45 @@ Nyní vytvořím komponentu pro správu článků s filtry a hromadnými akcemi:
 Provedly se změny.
 
 Souhrnná historie konverzacíRozumím! Vercel poskytuje již veškeré potřebné statistiky, takže v AdminDashboard.tsx odstraním nebo zjednoduším sekci analytik a zaměřím se na lokální informace o článcích. Upravím dashboard tak, aby zobrazoval pouze místní statistiky o obsahu CMS. Nyní se podívám na kód a upravím dashboard tak, aby se více zaměřil na lokální CMS statistiky místo mock analytics dat. Odstraním nebo zjednoduším sekci zobrazení a zaměřím se na užitečné informace o obsahu. 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji zbytek kódu, aby odpovídal novému rozhraní a zaměřil se na lokální statistiky obsahu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní nahradím sekci s mock analytics daty za užitečnější lokální statistiky obsahu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Také odstraním import pro ikonu `Globe`, která už se nepoužívá: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď ověřím, že nejsou další chyby a zkontroluju aktualizovaný kód: Perfektní! Teď vytvořím nový soubor dokumentace, který shrne změny v admin dashboardu: 
 
 Provedly se změny.
@@ -2677,45 +2677,45 @@ Crazyka51: nevidím
 GitHub Copilot: Vidím, že v prohlížeči se zobrazuje starý dashboard - původní `ArticleManager` komponenta místo nového `AdminDashboard` s layoutem a statistikami. Problém je v tom, že jsme vytvořili nové komponenty, ale nezintegrovali je do routingu CMS. Potřebujeme upravit hlavní stránku CMS, aby používala nový admin layout.
 
 Podívejme se na současnou strukturu: Teď vidím problém! Hlavní stránka používá starý `Dashboard` komponenta místo nového `AdminLayout` a `AdminDashboard`. Musíme to opravit: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji celý komponent, aby používal nový admin systém s routing: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji i zbytek komponenty: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Musím se podívat na rozhraní AdminLayout, abych opravil props: Vidím problém - AdminLayout používá `currentSection` a `onSectionChange`, ale já používám jiné názvy. Opravím to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Upravím handleNavigation, aby přijímal string: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní zkontrolujme, zda nejsou další chyby: Výborně! Teď zkontrolujme, zda server CMS stále běží a obnovme stránku: Vidím, že server běží a došlo k několika reloadům kvůli chybám, ale nyní by mělo být vše opraveno. Obnovím prohlížeč, aby se načetl nový kód: Perfektně! 🎉 Nyní by měli vidět nový admin dashboard! 
 
 **Co jsme změnili:**
@@ -2813,37 +2813,37 @@ Nejdříve vytvořím `CategoryManager` komponentu:
 Provedly se změny.
 
 Nyní přidám CategoryManager do routing systému v page.tsx: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní přidám všechny chybějící sekce do `renderContent` funkce: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Zkontrolujme, zda nejsou chyby v kódu: Výborně! Nyní zkontrolujme, zda server stále běží a ověříme novou funkcionalita: Server běží a kompiluje změny. Obnovím prohlížeč pro testování nové funkcionalita: 🎉 **Výborně! Implementoval jsem kompletní Category Manager!**
 
 ## ✅ **CO JSEM PŘIDAL:**
@@ -2892,21 +2892,21 @@ GitHub Copilot: Výborně! 🎉 Pokračuji s další sekcí. Podle priority navr
 Provedly se změny.
 
 Nyní přidám SettingsManager do routing systému: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Zkontrolujme chyby: Výborně! Nyní obnovím prohlížeč, aby se načetly nové změny: 🎉 **Skvěle! Implementoval jsem kompletní Settings Manager!**
 
 ## ✅ **CO JSEM PŘIDAL:**
@@ -2993,9 +2993,9 @@ Nejprve zjistím, kde je úvodní text v admin rozhraní CMS.
 Provedly se změny.
 
 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
@@ -3007,13 +3007,13 @@ Pokud chcete animovat i jiný text nebo změnit rychlost, stačí upravit props 
 Crazyka51: undefined se objevilo za textem
 
 GitHub Copilot: Vidím problém - v komponente TypewriterText se zobrazuje "undefined" za textem. To je způsobeno tím, že se snažím přidat znak na pozici, která je mimo rozsah textu. Opravím tuto chybu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravil jsem chybu v komponente TypewriterText. Problém byl v tom, že se interval nepozastavil včas a snažil se přistupovat k charakteru na pozici mimo rozsah textu, což způsobovalo zobrazení "undefined".
 
 Nyní je logika opravena:
@@ -3026,13 +3026,13 @@ Animace typewriter efektu by nyní měla fungovat správně bez zobrazování "u
 Crazyka51: chybí ve slově vítejte písmenko "í" A stále vidím undefined
 
 GitHub Copilot: Vidím problém - chybí písmenko "í" ve slově "Vítejte" a stále se zobrazuje "undefined". Podívám se nejprve na aktuální kód komponenty a opravím obě chyby: Vidím text v AdminDashboard a komponenta TypewriterText vypadá správně. Problém je pravděpodobně v cachovaní nebo stále spuštěném development serveru. Nejpriv opravím text v AdminDashboard (opravím "Vítejte") a pak restartuju server: Text je správně napsan "Vítejte". Problém s "undefined" je zřejmě v cachovaní nebo v tom, že se componenta nevykresluje správně. Vytvorium úplně novou verzi komponenty s lepším error handlingem a vyčistím cache: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní restartuju development server, aby se vymazala cache a aplikovala se nová verze: Opravil jsem TypewriterText komponentu s lepším error handlingem a restartoval development server. Nyní by měly být opraveny obě chyby:
 
 1. **Opravený text**: "Vítejte zpět, Pavle! 👋" (s písmenkém "í")
@@ -3051,13 +3051,13 @@ Crazyka51: nezzobrazuje se špatně?
 GitHub Copilot: Ano, vidím problém! Text se zobrazuje s duplikovanými znaky: "VVíítteejjttee zzppěětt, PPaavvllee!!" místo "Vítejte zpět, Pavle!". To je způsobeno tím, že se interval spouští dvakrát nebo se komponenta znovu vykresluje. Problém je v logice komponenty - používám `setCurrentIndex` uvnitř intervalu, což způsobuje race condition.
 
 Opravím to použitím jednodušší a spolehlivější implementace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravil jsem komponentu TypewriterText. Klíčové změny:
 
 1. **Jednodušší logika**: Používám lokální proměnnou `currentIndex` místo state
@@ -3126,9 +3126,9 @@ GitHub Copilot: Ah, chápu! Vercel Analytics nejsou dostupné nebo nemáte propo
 ## 💡 **Co doporučuji udělat**
 
 **Varianta A: Google Analytics 4**
-```bash
+\`\`\`bash
 npm install gtag
-```
+\`\`\`
 - Přidat GA4 tracking do obou aplikací
 - Napojit Analytics sekci v admin rozhraní na GA4 API
 - Zobrazovat reálná data o návštěvnosti
@@ -3147,7 +3147,7 @@ Jaká varianta vám vyhovuje nejvíc?
 
 Crazyka51: Varianta A. níže značka Google : 
 
-```
+\`\`\`
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LNF9PDP1RH"></script>
 <script>
@@ -3157,7 +3157,7 @@ Crazyka51: Varianta A. níže značka Google :
 
   gtag('config', 'G-LNF9PDP1RH');
 </script>
-```
+\`\`\`
 
 poté všechny změny nahraj na git, comittni a pushni
 
@@ -3168,53 +3168,53 @@ Provedly se změny.
 Provedly se změny.
 
 Opravím TypeScript chybu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám Google Analytics do hlavní webové aplikace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám Google Analytics do CMS aplikace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím vylepšenou Analytics komponentu pro admin rozhraní, která bude používat Google Analytics data: 
 
 Provedly se změny.
@@ -3224,37 +3224,37 @@ Nyní přidám routing pro Analytics stránku v admin rozhraní:
 Provedly se změny.
 
 Opravím chybu s AdminLayout props: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám tracking eventů do kontaktního formuláře na hlavní stránce: 
-````
+\`\`\``
 
-````
+\`\`\``
 
 
 Provedly se změny.
 
 Opravím chybu s importem - musím správně přidat import na začátek souboru: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vidím, že jsem přidal import dvakrát. Opravím to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní commitnu všechny změny na git: 
 
 Crazyka51: už hotovo. přidej prosím do kódu google část:
@@ -3302,15 +3302,15 @@ GitHub Copilot: Pro přístup do CMS musíte:
 ## 🔑 **Přihlášení do CMS**
 
 1. **Spusťte CMS server** (pokud není spuštěný):
-   ```bash
+   \`\`\`bash
    cd cms-test
    pnpm dev
-   ```
+   \`\`\`
 
 2. **Otevřete CMS v prohlížeči**:
-   ```
+   \`\`\`
    http://localhost:3001
-   ```
+   \`\`\`
 
 3. **Přihlašovací údaje**:
    - **Uživatelské jméno**: `pavel`
@@ -3366,9 +3366,9 @@ GitHub Copilot: Aha, rozumím! Máte pravdu - když jsme udělali `git add .` a 
 Pokud je CMS nasazený jako součást hlavního projektu na Vercel, pak by měl být dostupný na:
 
 **🔗 URL pro CMS:**
-```
+\`\`\`
 https://fiserpavel.cz/cms-test
-```
+\`\`\`
 
 ## 🔑 **Přihlašovací údaje:**
 - **Uživatelské jméno**: `pavel`
@@ -3507,13 +3507,13 @@ Nyní vytvořím public API pro publikované články:
 Provedly se změny.
 
 Nyní musím aktualizovat RecentNews komponentu, aby používala nový API endpoint: Musím aktualizovat API endpoint v RecentNews: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím hlavní stránku admin CMS: 
 
 Provedly se změny.
@@ -3536,13 +3536,13 @@ GitHub Copilot: Perfektně! Nyní můžeme dokončit migraci. Potřebujeme:
 3. **Smazat starý CMS** - odstranit cms-test složku
 
 Začneme s aktualizací API cest v komponentách. Nejdříve zkontrolujme, které komponenty potřebují aktualizaci: Potřebujeme aktualizovat API cesty v několika komponentách. Začnu s AdminDashboard: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji ArticleManager: Vypadá to, že jsou problémy s kódováním cesty. Zkusím použít správnou cestu: Problém je s kódováním znaku 'š' v cestě. Zkusím použít terminal command k hromadné změně: 
 
 Crazyka51: již je vše ze složky přesunuté
@@ -3566,13 +3566,13 @@ https://nextjs.org/docs/messages/module-not-found
 This error occurred during the build process and can only be dismissed by fixing the error.
 
 GitHub Copilot: Problém je v tom, že admin layout se pokouší importovat `globals.css` z nesprávné cesty. Musíme opravit importy v admin layout: Problém je v tom, že admin layout importuje nesprávné soubory. Admin layout by neměl být root layout. Opravím to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní také zkontrolujme, zda je v admin složce nějaký globals.css soubor, který tam nepatří: Dobře, nyní by měl build fungovat. Zkusme spustit aplikaci znovu: Výborně! Server běží na portu 3001. Nyní otevřu admin panel: Nyní zkontrolujme, zda funguje hlavní stránka s novými článkami: Skvělé! Nyní můžeme smazat starou CMS složku, protože vše je přesunuto: 
 
 Crazyka51: nejde se přihlásit
@@ -3603,7 +3603,7 @@ Crazyka51: a kde má admin rozhrání brát globals.css?
 GitHub Copilot: Dobrá otázka! Admin rozhraní by mělo dědčit CSS styly z hlavního layoutu aplikace, nikoliv mít vlastní `globals.css`. 
 
 Struktura by měla být:
-```
+\`\`\`
 app/
   ├── globals.css         <- Hlavní CSS pro celou aplikaci
   ├── layout.tsx          <- Root layout pro celou aplikaci
@@ -3612,7 +3612,7 @@ app/
       ├── layout.tsx      <- Admin layout (jen wrapper, nedědí root layout)
       ├── page.tsx       <- Admin hlavní stránka
       └── components/    <- Admin komponenty
-```
+\`\`\`
 
 Admin layout by neměl být "root layout" ale pouze wrapper pro admin sekci. Opravím to: Vidím, že máme správný root layout s `globals.css`. Admin layout by tedy NEMĚL importovat `globals.css` ani být root layoutem. Admin layout by měl být jen wrapper komponenta.
 
@@ -3658,61 +3658,61 @@ GitHub Copilot: Souhrnná historie konverzacíVidím, že máte problém s přih
 Nejdříve se podívám na aktuální API route pro přihlášení, abych zjistil, jaký je problém s heslem: Souhrnná historie konverzacíVidím, že přihlašování do administrace nefunguje s chybou "Chyba při přihlašování". Pojďme to vyřešit krok za krokem.
 
 Nejprve si ověřím aktuální stav přihlašovacího API a zjistím, kde je problém: Teď si podívám na přihlašovací komponentu, abych viděl, jak se požadavek posílá: Vidím problém! V přihlašovací komponentě LoginForm.tsx na řádku 25 se posílá požadavek na `/api/auth/login`, ale API route je ve skutečnosti na `/api/admin/auth/login`. Musím to opravit: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také potřebujem ověřit, že všechny ostatní API volání v admin komponentách používají správné cesty. Podívám se na AdminDashboard a ArticleManager: Vidím, že Dashboard.tsx a CategoryManager.tsx používají nesprávné cesty. Musím je opravit: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Pokračuji s dalšími cestamai v Dashboard.tsx: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď se podívám na další výskyt v Dashboard.tsx: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď opravím CategoryManager.tsx: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď ověřím, že hash hesla je správný. Použiji jednoduchý test přímo v terminálu: Aha! Problém je v hash hesla. Default hash v kódu není správný pro heslo "test123". Vygeneruji nový hash: Teď opravím hash v login route: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď ověřím, že mám všechny potřebné závislosti v package.json: Výborně, všechny potřebné závislosti jsou nainstalované. Teď spustím dev server a otestuju přihlášení: Počkám chvíli, než se server spustí: Skvělé! Server běží na portu 3001. Teď otestují admin rozhraní: Nyní otestuje přihlášení přímo přes API endpoint, aby ověřil, že API funguje: 
 
 Crazyka51: funguje, teď co v administrací není dokončeno?
@@ -3720,13 +3720,13 @@ Crazyka51: funguje, teď co v administrací není dokončeno?
 GitHub Copilot: Skvělé! Nyní když přihlášení funguje, pojďme zkontrolovat, co ještě není dokončeno v administraci. Provedu systematickou kontrolu: Nyní zkontrolujme systematicky jednotlivé sekce administrace. Začnu s kontrolou API endpointů: Dobře! API funguje. Nyní zkontrolujme, co chybí v jednotlivých sekcích:
 
 ## 1. Zkontrolujme komponenty, které ještě mohou používat staré API cesty: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 2. Zkontrolujme ArticleEditor, ArticleManager a další komponenty: Výborně! ArticleManager už používá správné API cesty.
 
 ## 3. Zkontrolujme, zda všechny komponenty mají správné props a fungují: ## 4. Zjistěme, co konkrétně chybí - zkontrolujeme jednotlivé funkce: Podívejme se na renderování sekcí: ## Chybějící funkce, které musím ověřit:
@@ -3814,69 +3814,69 @@ Chyba při načítání Facebook příspěvků: B [Error]: Dynamic server usage:
 GitHub Copilot: Vidím chybu s Facebook API route. Problém je v tom, že Facebook API route používá `request.url`, což způsobuje, že Next.js ji nemůže staticky vyrenderovat. Musím to opravit.
 
 Nejprve se podívám na současnou implementaci Facebook API route: Problém je v použití `request.url` na řádku 5. Musím to refaktorovat, aby nepoužívalo `request.url`. Místo toho budu přistupovat k `searchParams` přímo z requestu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Dále musím přidat `export const dynamic = 'force-dynamic'` na začátek souboru, aby Next.js věděl, že tato route musí být vždy dynamická (kvůli Facebook API volání): 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Stejný problém může být i u admin API routes. Zkontrolujme a opravme je také: Dobře! Admin API routes nepoužívají `request.url`. Teď přidáme `export const dynamic = 'force-dynamic'` do všech admin API routes: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Také musím opravit send-email API route: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní znovu otestujeme build: Ještě je tu starý `/api/cms-articles` endpoint! Musím ho najít a opravit nebo smazat: Našel jsem to! Existuje soubor route.ts který ještě používá starý název. Podívám se na něj: Tohle je starý proxy endpoint! Ten už nepotřebujeme, protože nyní CMS běží přímo v hlavní aplikaci. Smažu tento soubor: Také musím zkontrolovat, jestli někde v kódu ještě není použito `/api/cms-articles`: 
 
 Pokračovat v iteraci?
@@ -3938,53 +3938,53 @@ Nejprve se podívám na současný stav Analytics manageru: Současný Analytics
 Provedly se změny.
 
 ## 2. Teď aktualizujeme AnalyticsManager, aby používal reálné API 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravím chyby v inicializaci: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní nahradím celou loadAnalyticsData funkci, aby volala skutečné API: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 3. Teď přidáme nové metriky do UI a vylepšíme dashboard Podívám se na zbytek komponentu a přidám nové metriky: Přidám nové metriky před existující KPI cards: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 4. Teď aktualizujeme top pages sekci, aby používala title: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 5. Přidáme novou sekci s rychlými informacemi Vylepšíme info box a přidáme nové informace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 6. Teď otestujeme a zobrazíme analytics v admin rozhraní Skvělé! Build prošel. Teď otestujeme v admin rozhraní: Teď rychle otestujeme analytics API endpoint: API endpoint bude fungovat se správným tokenem z admin rozhraní. Commitnu změny: 
 
 Crazyka51: špatně viditelný button
@@ -3992,87 +3992,87 @@ Crazyka51: špatně viditelný button
 GitHub Copilot: Vidím problém s viditelností tlačítka. Podívám se na CSS třídy a opravím to. Problém je pravděpodobně s barvami primary, které nejsou správně definované v Tailwind konfiguraci.
 
 Nejprve se podívám na současný Tailwind config: Vidím problém! Tailwind config používá HSL color variables, ale `primary-600` a `primary-700` třídy nejsou definované v `primary` objektu. Musím přidat číselné varianty primary barvy: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také aktualizuji CSS variables v globals.css, aby měly správné hodnoty: CSS variables vypadají v pořádku. Problém je pravděpodobně v tom, že komponenty používají `bg-primary-600` ale primary v CSS variables je definované jinak. Pojďme se podívat na konkrétní komponentu s problémem: Problém je v LoginForm komponentě. Místo používání numerických variant (`bg-primary-600`) bychom měli používat CSS variables nebo jsme potřebovali přidat `primary-600` do konfigurace. Jelikož jsem už přidal primary varianty do Tailwind configu, teď zkusím rebuild: Dev server stále běží. Podívám se teď na přihlašovací formulář - možná lepší je použít konzistentní barvy. Změním LoginForm, aby používal explicitní hex barvy místo primary variant: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Souhrnná historie konverzacíVidím problém s viditelností tlačítka v admin rozhraní. Z přiloženého CSS kódu vidím, že tlačítko používá třídy `bg-primary-600` a `hover:bg-primary-700`, ale tyto barvy nejsou správně definované v Tailwind konfiguraci.
 
 Nejdříve se podívám na současnou konfiguraci Tailwind: Vidím, že v Tailwind konfiguraci jsou definované `primary-600` a `primary-700`, ale zkusím nejprí ověřit, jak vypadá LoginForm komponenta: Podívám se na zbytek komponenty, zejména na tlačítko: Podívám se na celou část s formulářem: Vidím, že tlačítko už používá `bg-blue-600` a `hover:bg-blue-700`, což by mělo fungovat. Možná je problém v tom, že některé CSS styly se nekompilují správně. Zkusím se podívat na globální CSS soubor: Problém je vyřešen - v LoginForm se již používají správné třídy `bg-blue-600` a `hover:bg-blue-700` místo původních `bg-primary-600`. Ale zkontrolujme, jestli jsou všechny ostatní komponenty v admin rozhraní také aktualizované. Podívám se na jiné tlačítka v admin rozhraní: Našel jsem několik míst, kde se stále používají třídy `bg-primary-600` a `hover:bg-primary-700`. Opravím je na `bg-blue-600` a `hover:bg-blue-700` pro konzistenci: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní zkontrolujme, jestli nejsou ještě někde další výskyty: Našel jsem další místa, kde se používají primary barvy. Tyto jsou méně kritické (loading spinnery, linky, checkboxy), ale pro konzistenci je také opravím: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Podívám se na SeoPreview komponentu podrobněji: Nyní opravím obě místa jednotlivě: 
 
 Pokračovat v iteraci?
@@ -4081,45 +4081,45 @@ Kopilot na tomto problému už nějakou dobu pracuje. Může pokračovat v itera
 Crazyka51: @agent Pokračovat: "Pokračovat v iteraci?"
 
 GitHub Copilot: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní opravím SchedulePublishing komponentu: Opravím všechna tři místa v SchedulePublishing: Musím být více specifický: Podívám se na celý soubor a opravím jednotlivě: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní ověřím, že jsou všechny výskyty opravené: Perfektní! Všechny výskyty `primary-6` byly odstraněny. Nyní si ověřím, že aplikace funguje správně. Spustím development server: Skvělé! Server běží. Nyní si otevřu admin rozhraní pro test: Vypadá to dobře! Nyní ručně otestujte admin rozhraní - tlačítka by nyní měla být dobře viditelná s modrou barvou (`bg-blue-600` s hover efektem `hover:bg-blue-700`) místo problematických `primary-600` tříd.
 
 Pro kompletní ověření můžeme také zkusit build: 
@@ -4149,37 +4149,37 @@ Crazyka51: nastav ještě sdílené příspěvky mezi FB
 • Open Graph meta tagy na každé sdílené stránce – og:title, og:description, og:image (1200×630 px), og:url, og:type
 
 GitHub Copilot: Výborně! Přidám Open Graph meta tagy pro lepší sdílení na sociálních sítích. Začnu tím, že se podívám na současnou strukturu meta tagů v layout: Nyní přidám Open Graph meta tagy do základního metadata a vytvořím obrázek pro sdílení. Nejdříve aktualizuji layout s kompletními Open Graph tagy: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám specifické Open Graph meta tagy na důležité stránky. Začnu s privacy policy: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám Open Graph meta tagy pro Terms of Service: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám Open Graph meta tagy pro Data Deletion stránku: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní potřebuji vytvořit Open Graph obrázky. Začnu s hlavním OG obrázkem. Vytvořím jednoduchou placeholder image a poté návod jak vytvořit správné obrázky: Vytvořím jednoduchou komponentu pro generování Open Graph obrázků a základní placeholder obrázky. Nejdříve vytvořím dokumentaci: 
 
 Provedly se změny.
@@ -4195,69 +4195,69 @@ Provedly se změny.
 Provedly se změny.
 
 Nyní musím změnit odkazy v metadatech na `.svg` místo `.jpg`, protože jsem vytvořil SVG placeholder: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní si ověřím, že je aplikace správně nakonfigurovaná: Výborně! Server běží bez chyb. Nyní si otevřu hlavní stránku pro ověření, že Open Graph meta tagy se správně načítají: Nyní vytvořím také strukturovanou data pro lepší SEO a sociální sdílení. Přidám JSON-LD strukturovaná data: 
 
 Provedly se změny.
@@ -4270,45 +4270,45 @@ Kopilot na tomto problému už nějakou dobu pracuje. Může pokračovat v itera
 Crazyka51: @agent Pokračovat: "Pokračovat v iteraci?"
 
 GitHub Copilot: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám strukturovaná data také na ostatní stránky. Začnu s privacy policy: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Musím teď najít konec komponenty a přidat uzavírací tag: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím dokumentaci o implementaci Open Graph tags: 
 
 Provedly se změny.
@@ -4363,65 +4363,65 @@ Crazyka51: přidej prosím setDefaultConsentStateupdateConsentStategtagSetads_da
 GitHub Copilot: Rozumím, potřebujeme přidat pokročilé Google Consent Mode funkce pro GDPR compliance. Upravím Google Analytics komponentu a cookie banner pro správné řízení souhlasů.
 
 Nejdříve se podívám na současnou implementaci Google Analytics: Nyní se podívám na současný CookieBanner: Nyní implementuji Google Consent Mode v2 s potřebnými funkcemi. Nejdříve upravím GoogleAnalytics komponentu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám export funkcí pro consent management: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní upravím CookieBanner, aby používal tyto consent funkce: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám pokročilé UI pro cookie nastavení: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím komponentu pro správu consent po načtení stránky (cookie preferences center): 
 
 Provedly se změny.
 
 Nyní přidám do Footer odkaz na správu cookies: Přidám do Footer odkaz na správu cookies: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní přidám CookiePreferences komponentu do layoutu a napojím na custom event: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím CookieManager komponentu, která bude řídit zobrazování CookiePreferences: 
 
 Provedly se změny.
@@ -4431,37 +4431,37 @@ Nyní vytvořím dokumentaci pro Google Consent Mode implementaci:
 Provedly se změny.
 
 Souhrnná historie konverzacíRozumím, chcete přidat pokročilé funkce pro správu cookies souhlasu, které vyžaduje Google Consent Mode v2. Přidám tyto funkce do stávající implementace Google Analytics. Nyní vylepším implementaci Google Consent Mode v2 a cookies managementu. Nejprve si zjistím aktuální stav projektu: Nyní si podívám na současnou implementaci CookieBanner: Vidím, že základní implementace Consent Mode v2 už existuje. Nyní vytvořím pokročilé komponenty pro granulární správu cookies s kompletnějšími funkcemi: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
-
-
-Provedly se změny.
-
-
-```
-
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
+
+\`\`\`
+
+
+Provedly se změny.
+
+
+\`\`\`
 Nyní vytvořím pokročilý cookie banner s granulárním ovládáním: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní pokračuji s rest zbývajícím kódem pro CookieBanner: Vidím, že došlo k duplikaci kódu. Opravím celý soubor: Nejdřív si přečtu celý soubor, abych viděl jeho současný stav: 
 
 Pokračovat v iteraci?
@@ -4470,13 +4470,13 @@ Kopilot na tomto problému už nějakou dobu pracuje. Může pokračovat v itera
 Crazyka51: @agent Pokračovat: "Pokračovat v iteraci?"
 
 GitHub Copilot: Vidím, že soubor CookieBanner.tsx je poškozený a obsahuje duplikovaný kód. Opravím celý soubor: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vidím, že stále jsou v souboru problémy. Vytvořím kompletně nový soubor odstraněním a novým vytvořením: 
 
 Provedly se změny.
@@ -4728,41 +4728,41 @@ GitHub Copilot: Nejprve si ověřím aktuální stav CookieBanner souboru a pot�
 Provedly se změny.
 
 Nyní přidám nového admina a vytvořím workplan: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní musím vygenerovat správný bcrypt hash pro heslo "kILhQO9h3@NY": 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní vytvořím hlavní workplan soubor: 
 
 Provedly se změny.
 
 Nyní ještě vytvořím rychlý test, jestli nový admin funguje: Hash je nesprávný, vygeneruji nový: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní aktualizuji workplan s dokončeným úkolem: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vytvořím ještě rychlý přehledový soubor s nejdůležitějšími informacemi: 
 
 Provedly se změny.
@@ -4806,21 +4806,21 @@ Vše je zdokumentované v WORKPLAN.md a můžete si úkoly postupně odškrtáva
 Crazyka51: testujeme prozatím localhost
 
 GitHub Copilot: Aktualizuji informace pro localhost testing: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní spustím development server pro testování: Server běží na portu 3001. Aktualizuji informace: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní otevřu admin panel v prohlížeči pro testování: 
 
 Crazyka51: PS C:\Pavel_Fišer_WEB\2506\pavelfweb> pnpm dev
@@ -4867,21 +4867,21 @@ digest: "40781997"
  ✓ Compiled in 709ms (895 modules)
 
 GitHub Copilot: Vidím, že máme problém s `'use client'` direktivou v některých komponentách. Pojďme to opravit. Nejprve zjistím, která komponenta způsobuje problém: Problém je pravděpodobně v některé komponentě, která nepoužívá `'use client'` direktivu, ale obsahuje interaktivní elementy. Zkontrolujme některé komponenty: Problém může být v tom, že některá komponenta nemá `'use client'` direktivu. Zkontrolujme Header komponentu: Možná problém je v Footer komponentě. Zkontrolujme ji: Našel jsem problém! Footer komponenta nemá `'use client'` direktivu, ale má interaktivní elementy (onclick event). Opravím to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nyní zkontrolujme jiné komponenty, které můžou mít podobný problém: Zkontrolujme ProductShowcase a PortfolioGrid, zda mají 'use client': Tyto komponenty mají `'use client'`. Zkusme zkontrolovat, zda problém není ve FloatingActionButton: Zkontrolujme layout.tsx a zjistíme, kde přesně je problém: Problém je pravděpodobně v tom, že některá komponenta ve hlavní stránce není client komponenta, ale má interaktivní prvky. Zkusme restartovat development server a podívat se na přesnější chybovou zprávu: Aktualizujme QUICK_OVERVIEW s novým portem a zkusme otevřít web: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Nechám server běžet ještě chvíli a potom zkontrolujeme, zda se podařilo problém vyřešit: Souhrnná historie konverzacíVidím, že máte chybu s event handlery v Client Component. Tato chyba obvykle vzniká, když se pokusíte předat funkci onClick do komponenty, která nepoužívá `'use client'` direktivu. Pojďme to vyřešit.
 
 Nejprve si nechám zobrazit strukturu a najdu, kde je problém: Teď se podívám na Header komponentu, která může být zdrojem problému: Header komponenta vypadá v pořádku s `'use client'`. Teď se podívám na layout.tsx, kde může být problém: Teď se podívám na Footer komponentu, která může být problémová: Footer vypadá také v pořádku. Teď se podívám na CookieBanner a CookieManager komponenty, které mohou být problémové: 
@@ -4900,21 +4900,21 @@ Podívám se na všechny komponenty, které nemají `'use client'`: Teď se pod�
 Provedly se změny.
 
 Teď opravím URL v QUICK_OVERVIEW.md, protože server běží na portu 3001: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Oprava neproběhla, protože URL už bylo správné. Teď zkusím obnovit server a podívat se, jestli je chyba opravená: Výborně! Server se spustil na portu 3000 bez chyb. Opravím URL v QUICK_OVERVIEW.md: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď otevřu web v prohlížeči a ověřím, že vše funguje: A otevřu také admin přihlášení: Nyní ověřím v terminálu, že nebyly žádné další chyby: Výborně! Server běží správně a hlavní chyba s event handlery je vyřešená. Vidím následující stav:
 
 1. ✅ **Hlavní chyba vyřešena** - CookiePreferences.tsx byl prázdný, nyní je vytvořen a server běží bez chyb s event handlery
@@ -4953,13 +4953,13 @@ Musíme ověřit, že máme stejné ENV proměnné nastavené v produkci na Verc
 
 ### 3. **Zkontrolujme produkční build**
 Spustíme produkční build lokálně, abychom odhalili případné problémy: 💥 **Problém s EPERM chybou!** To je Windows-specifický problém. Zkusím to vyřešit: 🎉 **Výborně! Build je úspěšný!** Teď spustím produkční server lokálně pro test: Perfektní! Produkční verze běží bez problémů. Teď otestuju produkční web: ### 4. **Zkontrolujme aktuální stav produkčního webu** Vidím, že posledních několik deploymentů je úspěšných! Nový deployment bude potřeba. Ale nejdříve updatujme WORKPLAN s dokončenou úlohou: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 📋 **ODPOVĚĎ NA VAŠI OTÁZKU:**
 
 ### ✅ **POZITIVNÍ INDIKACE**
@@ -4998,21 +4998,21 @@ GitHub Copilot: Rozumím! Takže commit a push už jsou hotové. Teď spustím p
 Crazyka51: vercel --prod jsem již spustil
 
 GitHub Copilot: Skvělé! Vercel deployment je spuštěný. Pojďme zkontrolovat stav a pak otestovat produkční web. Zkusím jiný přístup - podívám se na aktuální produkční URL: Zkusím získat URL jinak: Perfektní! Vidím, že náš projekt `pavelfiserv12` byl aktualizován před 13 minutami. Podívám se na nové produkční URL: Teď zkusím také otevřít admin panel: Výborně! Produkční deployment je úspěšný. Teď aktualizujme WORKPLAN.md a označme deployment jako dokončený: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď aktualizujme i QUICK_OVERVIEW.md s produkční URL: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 ## 🎉 **DEPLOYMENT DOKONČEN!**
 
 ### ✅ **CO BYLO PROVEDENO:**
@@ -5062,69 +5062,69 @@ hook.js:608  TypeError: Cannot read properties of undefined (reading 'delta')
 GitHub Copilot: Vidím, že máte problém s chybou 401 (Unauthorized) při přístupu k API a také chybu s React Quill editorem. Pojďme to vyřešit krok za krokem.
 
 Nejdříve se podívám na aktuální stav API route pro články: Problém je v tom, že API vyžaduje JWT token, ale frontend ho možná neposílá správně. Podívám se na admin login systém a jak se token ukládá: Teď se podívám, jak se token ukládá a používá v ArticleManager: Potřebuji najít, jak se volají API calls. Podívám se dále do ArticleManager: Aha! Problém je v tom, že fetch volání neobsahují Authorization header s JWT tokenem. Potřebuji upravit všechny API calls v ArticleManager, aby používaly token. Nejdříve si ověřím, jak se token ukládá v hlavní admin komponentě: Vidím problém! Token se ukládá do localStorage jako `admin_token`, ale ArticleManager ho nepoužívá. Potřebuji předat token do ArticleManager jako prop a upravit všechny API calls. Nejdříve opravím ArticleManager: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Opravím import pro FileText: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď aktualizuji loadArticles funkci, aby používala Authorization header: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď najdu a opravím všechny ostatní fetch volání. Podívám se na deleteArticle funkci: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Pokračuji s dalšími fetch voláními: Podívám se na konkrétní místo: Použiju více kontextu: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Pokračuji s dalšími fetch voláními: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď najdu posledni fetch volání: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď potřebujem předat token do ArticleManager z hlavní admin stránky: 
 
 Pokračovat v iteraci?
@@ -5133,45 +5133,45 @@ Kopilot na tomto problému už nějakou dobu pracuje. Může pokračovat v itera
 Crazyka51: @agent Pokračovat: "Pokračovat v iteraci?"
 
 GitHub Copilot: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také potřebujem opravit ArticleEditor komponentu. Podívám se na ni: ArticleEditor asi neposílá API requesty sám, spíš posílá data přes onSave callback. Ale podívám se, jestli obsahuje nějaké fetch volání: Dobře, ArticleEditor neobsahuje API volání. Teď potřebujem opravit hlavní admin stránku, aby správně používala API. Podívám se na handleSaveArticle funkci: Vidím problém! handleSaveArticle používá `/api/articles` místo `/api/admin/articles`. Opravím to: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také potřebujem opravit API pro verify token - admin stránka používá `/api/auth/verify` místo `/api/admin/auth/verify`: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď potřebujem vytvořit API endpoint pro verify token. Podívám se, jestli už existuje: Verify endpoint existuje, ale používá POST místo GET s Authorization header. Opravím to, aby podporovalo oba způsoby: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď také opravím React Quill chybu. Problém je v tom, že React Quill má závislost na DOM, která není k dispozici během SSR. Aktualizuju ArticleEditor: Podívám se na to, kde se používá ReactQuill: ReactQuill je už správně nastaven s dynamic importem a isMounted check. Problém může být v `quillModules` konfiguraci. Podívám se na ni: Problém může být v custom image handleru. Opravím quillModules aby byly bezpečnější: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď commitnu všechny změny a testujme: 
 
 Crazyka51: comitnutl jsem, teď pushni prosím a proveď vercel --prod
@@ -5179,13 +5179,13 @@ Crazyka51: comitnutl jsem, teď pushni prosím a proveď vercel --prod
 GitHub Copilot: Výborně! Pushnu změny na GitHub a pak spustím produkční deployment na Vercel. Skvělé! Push byl úspěšný. Teď spustím produkční deployment na Vercel: 🎉 **DEPLOYMENT ÚSPĚŠNÝ!**
 
 Nový produkční deployment je hotový. Aktualizuji WORKPLAN a označím opravy jako dokončené: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď otevřu nový produkční web a admin panel pro testování: 
 
 Crazyka51: http://localhost:3000/admin otevři lokální prohlížeč
@@ -5328,19 +5328,19 @@ node_modules\.pnpm\next@14.2.30_react-dom@19.1.0_react@19.1.0__react@19.1.0\node
 GitHub Copilot: Vidím problém! Chyba je v React Quill editoru - `Cannot read properties of undefined (reading 'delta')`. Toto je známý problém s React Quill a Next.js. Musím opravit ArticleEditor komponentu.
 
 Nejdříve si podívám na aktuální stav ArticleEditor: Podívám se na inicializaci a quillModules: Podívám se na quillModules konfiguraci: Problém je v tom, že React Quill má problémy s delta operacemi. Musím kompletně přepsat inicializaci a správu stavu. Vytvořím bezpečnější verzi: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Teď opravím quillModules konfiguraci, aby byla bezpečnější: 
-```
+\`\`\`
 
 
 Provedly se změny.
 
 
-```
+\`\`\`
 Vytváří se souhrn historie konverzací...

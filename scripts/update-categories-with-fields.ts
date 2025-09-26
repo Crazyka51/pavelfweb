@@ -1,4 +1,3 @@
-// Tento skript aktualizuje existující kategorie po přidání nových sloupců
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

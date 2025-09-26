@@ -1,0 +1,10 @@
+
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro:generateContent" \
+  -H "Content-Type: application/json" \
+  -H "X-goog-api-key: AIzaSyCqx2-dpbZyJSlRaNX3S2yA3R6jsn1jdjI" \
+  -X POST \
+  -d '{
+    "contents": [
+      { "parts": [ { "text": "Explain how AI works in a few words" } ] }
+    ]
+  }'

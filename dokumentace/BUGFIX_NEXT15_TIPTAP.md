@@ -5,35 +5,35 @@
 **Problém**: Next.js 15.4.5 vyžaduje explicitní použití `await` na parametrech v dynamických cestách.
 
 **Chybová hláška**:
-```
+\`\`\`
 Error: Route "/aktuality/[id]" used `params.id`. `params` should be awaited before using its properties.
-```
+\`\`\`
 
 **Řešení**:
 - V souborech `/app/aktuality/[id]/page.tsx` a podobných jsme přidali explicitní `await` pro parametry:
 
-```typescript
+\`\`\`typescript
 // Před:
 const article = await getArticle(params.id);
 
 // Po:
 const resolvedParams = await params;
 const article = await getArticle(resolvedParams.id);
-```
+\`\`\`
 
 ## 2. Chyba s Tiptap editorem při SSR
 
 **Problém**: Tiptap editor hlásil chybu SSR hydratace, protože nebyl explicitně nastaven režim vykreslování.
 
 **Chybová hláška**:
-```
+\`\`\`
 Error: Tiptap Error: SSR has been detected, please set `immediatelyRender` explicitly to `false` to avoid hydration mismatches.
-```
+\`\`\`
 
 **Řešení**:
 - Ve všech komponentách používajících Tiptap editor jsme přidali nastavení `immediatelyRender: false`:
 
-```typescript
+\`\`\`typescript
 const editor = useEditor({
   // Přidáno nastavení pro řešení SSR hydratační chyby
   immediatelyRender: false,
@@ -42,7 +42,7 @@ const editor = useEditor({
   ],
   // ...
 });
-```
+\`\`\`
 
 Opravy byly provedeny v těchto souborech:
 - `/app/aktuality/[id]/page.tsx`

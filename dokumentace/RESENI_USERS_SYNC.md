@@ -6,9 +6,9 @@ Tento dokument popisuje řešení problému s neexistující tabulkou `users_syn
 
 Při spouštění databázových skriptů docházelo k chybě:
 
-```
+\`\`\`
 NeonDbError: relation "users_sync" does not exist
-```
+\`\`\`
 
 Tato chyba vznikala, protože některé skripty předpokládaly existenci tabulky `users_sync` se sloupcem `published`, která ve skutečnosti v databázi neexistuje.
 
@@ -36,7 +36,7 @@ Tato chyba vznikala, protože některé skripty předpokládaly existenci tabulk
 
 ## Struktura vytvořené tabulky `users_sync`
 
-```sql
+\`\`\`sql
 CREATE TABLE users_sync (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE users_sync (
     raw_json JSONB,
     published BOOLEAN DEFAULT false
 );
-```
+\`\`\`
 
 ## Vzorová data
 
@@ -61,9 +61,9 @@ Do tabulky jsou vloženy tři základní záznamy:
 
 Pro kompletní řešení problému stačí spustit jeden příkaz:
 
-```bash
+\`\`\`bash
 npm run db:setup-all
-```
+\`\`\`
 
 Tento příkaz postupně:
 1. Vytvoří/upraví tabulku `users_sync` a vloží do ní vzorová data

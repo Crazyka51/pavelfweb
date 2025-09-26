@@ -1,4 +1,3 @@
-// Typové deklarace pro Google Analytics
 interface Window {
   gtag: (
     command: string,

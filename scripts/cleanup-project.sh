@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Skript pro vyčištění nepotřebných souborů v projektu
 # Vytvořen: 10. září 2025
 

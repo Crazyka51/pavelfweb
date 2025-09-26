@@ -1,4 +1,3 @@
-// Middleware pro dynamické CORS nastavení
 import { NextResponse, NextRequest } from 'next/server';
 
 // Povolené domény pro CORS

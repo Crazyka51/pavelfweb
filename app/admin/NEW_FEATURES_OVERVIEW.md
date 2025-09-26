@@ -18,13 +18,13 @@ Po analýze současného stavu CMS jsem identifikoval a implementoval několik c
 - Doporučení pro optimalizaci
 
 **Použití:**
-```tsx
+\`\`\`tsx
 <SeoPreview
   title="Název článku"
   excerpt="Popis článku pro SEO"
   url="pavelfiser.cz/aktuality/nazev-clanku"
 />
-```
+\`\`\`
 
 ### 2. Plánované publikování (`SchedulePublishing.tsx`)
 **Účel:** Umožňuje naplánovat publikování článku na konkrétní datum a čas.

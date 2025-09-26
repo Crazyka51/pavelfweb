@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
 /**
  * Klientská služba pro práci s autentizací
  * Používá access token uložený v localStorage a refresh token v HTTP-only cookie
  */
 export class AuthService {
-  private static readonly ACCESS_TOKEN_KEY = 'adminToken';
-  private static readonly TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minut
-  private refreshInterval: number | null = null;
-  private eventListeners: Map<string, Function[]> = new Map();
+  private static readonly ACCESS_TOKEN_KEY = "adminToken"
+  private static readonly TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000 // 10 minut
+  private refreshInterval: number | null = null
+  private eventListeners: Map<string, Function[]> = new Map()
 
   /**
    * Přihlásí uživatele
@@ -16,63 +16,94 @@ export class AuthService {
    * @param password Heslo
    * @returns Informace o přihlášení
    */
-  async login(username: string, password: string): Promise<{
-    success: boolean;
-    message: string;
+  async login(
+    username: string,
+    password: string,
+  ): Promise<{
+    success: boolean
+    message: string
     user?: {
-      id: string;
-      username: string;
-      displayName?: string;
-      role: string;
+      id: string
+      username: string
+      displayName?: string
+      role: string
     }
   }> {
     try {
-      const response = await fetch('/api/admin/auth/v2/login', {
-        method: 'POST',
+      console.log("[v0] AuthService: Starting login request")
+      const response = await fetch("/api/admin/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include', // Důležité pro cookies
+        credentials: "include", // Důležité pro cookies
         body: JSON.stringify({ username, password }), // Používáme username přímo
-      });
-      
-      const data = await response.json();
-      
+      })
+
+      console.log("[v0] AuthService: Response status:", response.status)
+      console.log("[v0] AuthService: Response headers:", Object.fromEntries(response.headers.entries()))
+
+      let data
+      const contentType = response.headers.get("content-type")
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+        console.log("[v0] AuthService: JSON response received:", data)
+      } else {
+        const textResponse = await response.text()
+        console.error("[v0] AuthService: Non-JSON response received:", textResponse)
+
+        // Try to extract meaningful error information
+        let errorMessage = "Neočekávaná odpověď serveru"
+        if (textResponse.toLowerCase().includes("internal server error")) {
+          errorMessage = "Chyba serveru - zkuste to prosím znovu"
+        } else if (!response.ok) {
+          errorMessage = `Chyba serveru (${response.status}): ${textResponse.substring(0, 100)}`
+        }
+
+        return {
+          success: false,
+          message: errorMessage,
+        }
+      }
+
       if (response.ok && data.success && data.token) {
+        console.log("[v0] AuthService: Login successful")
         // Uložení tokenu do localStorage
-        localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token);
-        
+        localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token)
+
         // Nastavení automatického obnovování tokenu
-        this.startTokenRefresh();
-        
+        this.startTokenRefresh()
+
         // Upravení struktury uživatele pro kompatibilitu
         const user = {
           id: data.user.id,
           username: data.user.username,
           displayName: data.user.displayName || data.user.username,
-          role: data.user.role
-        };
-        
+          role: data.user.role,
+        }
+
         // Informování posluchačů o přihlášení
-        this.notify('login', { user });
-        
+        this.notify("login", { user })
+
         return {
           success: true,
-          message: data.message || 'Přihlášení proběhlo úspěšně',
-          user
-        };
+          message: data.message || "Přihlášení proběhlo úspěšně",
+          user,
+        }
       }
-      
+
+      console.log("[v0] AuthService: Login failed:", data.message)
       return {
         success: false,
-        message: data.message || 'Přihlášení selhalo',
-      };
+        message: data.message || "Přihlášení selhalo",
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("[v0] AuthService: Login error:", error)
       return {
         success: false,
-        message: `Přihlášení selhalo: ${error.message || 'Neznámá chyba'}`,
-      };
+        message: `Přihlášení selhalo: ${error.message || "Neznámá chyba"}`,
+      }
     }
   }
 
@@ -83,32 +114,32 @@ export class AuthService {
   async logout(): Promise<{ success: boolean; message: string }> {
     try {
       // Zastavení obnovování tokenu
-      this.stopTokenRefresh();
-      
+      this.stopTokenRefresh()
+
       // Odstranění tokenu z localStorage
-      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
-      
+      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
+
       // Volání API pro odstranění refresh tokenu cookie
-      const response = await fetch('/api/admin/auth/v2/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      const data = await response.json();
-      
+      const response = await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+
+      const data = await response.json()
+
       // Informování posluchačů o odhlášení
-      this.notify('logout', {});
-      
+      this.notify("logout", {})
+
       return {
         success: true,
-        message: data.message || 'Odhlášení proběhlo úspěšně',
-      };
+        message: data.message || "Odhlášení proběhlo úspěšně",
+      }
     } catch (error: any) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error)
       return {
         success: false,
-        message: `Odhlášení selhalo: ${error.message || 'Neznámá chyba'}`,
-      };
+        message: `Odhlášení selhalo: ${error.message || "Neznámá chyba"}`,
+      }
     }
   }
 
@@ -117,89 +148,97 @@ export class AuthService {
    * @returns Informace o přihlášení
    */
   async checkAuth(): Promise<{
-    isAuthenticated: boolean;
+    isAuthenticated: boolean
     user?: {
-      userId: string;
-      username: string;
-      displayName?: string;
-      role: string;
+      userId: string
+      username: string
+      displayName?: string
+      role: string
     }
   }> {
     try {
       // Kontrola parametru v URL - pokud obsahuje force=true, přeskočíme automatické přihlášení
-      if (typeof window !== 'undefined') {
-        const urlSearch = window.location.search;
-        
+      if (typeof window !== "undefined") {
+        const urlSearch = window.location.search
+
         // Pouze pokud máme force=true parametr, zastavíme automatické přihlášení
-        if (urlSearch.includes('force=true')) {
-          console.log('Vynucené odhlášení - force=true parametr');
-          
+        if (urlSearch.includes("force=true")) {
+          console.log("Vynucené odhlášení - force=true parametr")
+
           // Pouze pro force=true vymažeme token
-          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
-          return { isAuthenticated: false };
+          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
+          return { isAuthenticated: false }
         }
       }
 
       // Nejdříve zkontrolujeme localStorage
-      const token = localStorage.getItem(AuthService.ACCESS_TOKEN_KEY);
-      
+      const token = localStorage.getItem(AuthService.ACCESS_TOKEN_KEY)
+
       if (!token) {
         // Pokud nemáme token v localStorage, zkusíme obnovit token z cookies
-        return await this.refreshToken();
+        return await this.refreshToken()
       }
-      
+
       // Ověříme platnost token u serveru
-      const response = await fetch('/api/admin/auth/v2/verify', {
-        method: 'GET',
-        credentials: 'include',
+      const response = await fetch("/api/admin/auth/verify", {
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
-      
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      let data
+      const contentType = response.headers.get("content-type")
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+      } else {
+        console.error("Non-JSON response from verify endpoint")
+        return { isAuthenticated: false }
+      }
+
       if (response.ok && data.success) {
         // Pokud byl token obnoven, aktualizujeme localStorage
         if (data.token) {
-          localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token);
+          localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token)
         }
-        
+
         // Pokud ještě nemáme nastavené obnovování tokenu, nastavíme ho
         if (!this.refreshInterval) {
-          this.startTokenRefresh();
+          this.startTokenRefresh()
         }
-        
+
         return {
           isAuthenticated: true,
-          user: data.user
-        };
+          user: data.user,
+        }
       }
-      
+
       // Pokud server vrátil 200, ale success: false, token je neplatný - vyčistíme
       if (response.ok && !data.success) {
-        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
-        return { isAuthenticated: false };
+        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
+        return { isAuthenticated: false }
       }
-      
+
       // Pokud ověření selhalo, zkusíme obnovit token
       if (!response.ok) {
-        const refreshResult = await this.refreshToken();
-        
+        const refreshResult = await this.refreshToken()
+
         // Pokud se nepodařilo obnovit token, vyčistíme localStorage
         if (!refreshResult.isAuthenticated) {
-          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+          localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
         }
-        
-        return refreshResult;
+
+        return refreshResult
       }
-      
-      return { isAuthenticated: false };
+
+      return { isAuthenticated: false }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.error("Auth check error:", error)
       // Při chybě odstraníme token z localStorage
-      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
-      return { isAuthenticated: false };
+      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
+      return { isAuthenticated: false }
     }
   }
 
@@ -208,44 +247,52 @@ export class AuthService {
    * @returns Informace o přihlášení
    */
   async refreshToken(): Promise<{
-    isAuthenticated: boolean;
+    isAuthenticated: boolean
     user?: {
-      userId: string;
-      username: string;
-      displayName?: string;
-      role: string;
+      userId: string
+      username: string
+      displayName?: string
+      role: string
     }
   }> {
     try {
-      const response = await fetch('/api/admin/auth/v2/refresh', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      
-      const data = await response.json();
-      
+      const response = await fetch("/api/admin/auth/refresh", {
+        method: "GET",
+        credentials: "include",
+      })
+
+      let data
+      const contentType = response.headers.get("content-type")
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+      } else {
+        console.error("Non-JSON response from refresh endpoint")
+        return { isAuthenticated: false }
+      }
+
       if (response.ok && data.success && data.token) {
         // Uložení nového tokenu do localStorage
-        localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token);
-        
+        localStorage.setItem(AuthService.ACCESS_TOKEN_KEY, data.token)
+
         return {
           isAuthenticated: true,
-          user: data.user
-        };
+          user: data.user,
+        }
       }
-      
+
       // Když je response.ok ale nemáme token, tak je pravděpodobně token neplatný
       // Provedeme čištění, aby uživatel musel zadat přihlášení znovu
       if (response.ok && !data.success) {
-        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
+        localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
       }
-      
-      return { isAuthenticated: false };
+
+      return { isAuthenticated: false }
     } catch (error) {
-      console.error('Token refresh error:', error);
+      console.error("Token refresh error:", error)
       // Při chybě také odstraníme token, aby nedocházelo k opakovaným pokusům
-      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
-      return { isAuthenticated: false };
+      localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY)
+      return { isAuthenticated: false }
     }
   }
 
@@ -254,7 +301,7 @@ export class AuthService {
    * @returns Access token nebo null
    */
   getToken(): string | null {
-    return localStorage.getItem(AuthService.ACCESS_TOKEN_KEY);
+    return localStorage.getItem(AuthService.ACCESS_TOKEN_KEY)
   }
 
   /**
@@ -262,13 +309,10 @@ export class AuthService {
    */
   private startTokenRefresh(): void {
     // Zastavit případné existující obnovování
-    this.stopTokenRefresh();
-    
+    this.stopTokenRefresh()
+
     // Nastavit nový interval
-    this.refreshInterval = window.setInterval(
-      () => this.refreshToken(),
-      AuthService.TOKEN_REFRESH_INTERVAL
-    );
+    this.refreshInterval = window.setInterval(() => this.refreshToken(), AuthService.TOKEN_REFRESH_INTERVAL)
   }
 
   /**
@@ -276,8 +320,8 @@ export class AuthService {
    */
   private stopTokenRefresh(): void {
     if (this.refreshInterval !== null) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
+      clearInterval(this.refreshInterval)
+      this.refreshInterval = null
     }
   }
 
@@ -288,9 +332,9 @@ export class AuthService {
    */
   addEventListener(event: string, callback: Function): void {
     if (!this.eventListeners.has(event)) {
-      this.eventListeners.set(event, []);
+      this.eventListeners.set(event, [])
     }
-    this.eventListeners.get(event)?.push(callback);
+    this.eventListeners.get(event)?.push(callback)
   }
 
   /**
@@ -300,12 +344,12 @@ export class AuthService {
    */
   removeEventListener(event: string, callback: Function): void {
     if (!this.eventListeners.has(event)) {
-      return;
+      return
     }
-    const callbacks = this.eventListeners.get(event) || [];
-    const index = callbacks.indexOf(callback);
+    const callbacks = this.eventListeners.get(event) || []
+    const index = callbacks.indexOf(callback)
     if (index !== -1) {
-      callbacks.splice(index, 1);
+      callbacks.splice(index, 1)
     }
   }
 
@@ -315,17 +359,17 @@ export class AuthService {
    * @param data Data události
    */
   private notify(event: string, data: any): void {
-    const callbacks = this.eventListeners.get(event) || [];
-    callbacks.forEach(callback => {
+    const callbacks = this.eventListeners.get(event) || []
+    callbacks.forEach((callback) => {
       try {
-        callback(data);
+        callback(data)
       } catch (error) {
-        console.error(`Error in event listener for ${event}:`, error);
+        console.error(`Error in event listener for ${event}:`, error)
       }
-    });
+    })
   }
 }
 
 // Vytvoříme singleton instanci
-const authService = new AuthService();
-export default authService;
+const authService = new AuthService()
+export default authService

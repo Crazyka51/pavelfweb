@@ -11,7 +11,7 @@ V Next.js 15.4.5 je nutné počkat na parametry dynamických tras pomocí `await
 V této trase byly upraveny všechny metody (GET, PUT, DELETE) tak, aby správně čekaly na parametry:
 
 #### DELETE metoda:
-```typescript
+\`\`\`typescript
 export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
     // Nejprve počkáme na params
@@ -20,10 +20,10 @@ export const DELETE = requireAuth(async (request: NextRequest, authResult: any, 
     // ...
   }
 });
-```
+\`\`\`
 
 #### GET metoda:
-```typescript
+\`\`\`typescript
 export const GET = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }) => {
   try {
     // Nejprve počkáme na params
@@ -32,10 +32,10 @@ export const GET = requireAuth(async (request: NextRequest, { params }: { params
     // ...
   }
 });
-```
+\`\`\`
 
 #### PUT metoda:
-```typescript
+\`\`\`typescript
 export const PUT = requireAuth(async (request: NextRequest, { params }: { params: { id: string } }, authResult: any) => {
   try {
     // ...
@@ -45,25 +45,25 @@ export const PUT = requireAuth(async (request: NextRequest, { params }: { params
     // ...
   }
 });
-```
+\`\`\`
 
 ### 2. Další úpravy
 
 Odstraněna reference na `resolvedParams` v bloky `catch`, protože tato proměnná není dostupná mimo blok `try`. Chybové zprávy byly upraveny:
 
-```typescript
+\`\`\`typescript
 // Změněno z
 console.error(`Error deleting article ${resolvedParams.id}:`, error);
 
 // Na
 console.error(`Error deleting article:`, error);
-```
+\`\`\`
 
 ## Poznámka
 
 V trase `/app/api/admin/categories/[id]/route.ts` není nutné dělat úpravy, protože již obsahuje správný přístup:
 
-```typescript
+\`\`\`typescript
 export const GET = requireAuth(
   async (request: NextRequest, authResult: any, context: any) => {
     try {
@@ -72,7 +72,7 @@ export const GET = requireAuth(
     }
   }
 );
-```
+\`\`\`
 
 ## Výsledek
 

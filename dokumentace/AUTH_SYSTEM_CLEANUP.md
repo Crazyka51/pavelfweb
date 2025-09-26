@@ -28,29 +28,29 @@ Máme middleware pro CORS a pro debugování autentizace, které se aplikují na
 ### 1. Sjednocení autentizačních utilit
 
 #### Možnost A: Odstranění zastaralých utilit
-```bash
+\`\`\`bash
 # Odstranit zastaralé utility
 rm /workspaces/pavelfweb/lib/auth-utils.ts
 rm /workspaces/pavelfweb/lib/auth-utils-new.ts
-```
+\`\`\`
 
 #### Možnost B: Sjednocení implementací
 Upravit `auth-utils-new.ts` tak, aby používala stejnou implementaci jako `auth-utils-v2.ts`:
 
-```javascript
+\`\`\`javascript
 // auth-utils-new.ts
 export * from './auth-utils-v2';
-```
+\`\`\`
 
 ### 2. Odstranění nepoužívaných API endpointů
 
-```bash
+\`\`\`bash
 # Odstranění starších verzí API endpointů
 rm -r /workspaces/pavelfweb/app/api/admin/auth/login
 rm -r /workspaces/pavelfweb/app/api/admin/auth/logout
 rm -r /workspaces/pavelfweb/app/api/admin/auth/verify
 # Ponechat diagnostiku a debug endpointy
-```
+\`\`\`
 
 ### 3. Aktualizace dokumentace
 

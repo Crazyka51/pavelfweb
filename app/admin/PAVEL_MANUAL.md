@@ -15,7 +15,7 @@ Ahoj Pavle! Zde je rychlý návod, jak efektivně používat tvůj nový CMS edi
 ## ✍️ **Základní tipy pro psaní**
 
 ### **Struktura článku:**
-```
+\`\`\`
 📋 Postup psaní:
 1. Zadej název článku
 2. Začni hlavním nadpisem (H1)
@@ -24,7 +24,7 @@ Ahoj Pavle! Zde je rychlý návod, jak efektivně používat tvůj nový CMS edi
 5. Vlož obrázky a odkazy
 6. Zkontroluj náhled
 7. Publikuj nebo ulož jako koncept
-```
+\`\`\`
 
 ### **Panel nástrojů - řádek po řádku:**
 
@@ -68,7 +68,7 @@ Ahoj Pavle! Zde je rychlý návod, jak efektivně používat tvůj nový CMS edi
 ## 🎯 **Praktické příklady**
 
 ### **Článek o dopravě:**
-```
+\`\`\`
 🚦 NOVÉ CYKLOSTEZKY V PRAZE 4 (H1 - velký nadpis)
 
 📅 Datum: 26. ledna 2025 (normální text)
@@ -92,10 +92,10 @@ Celkové náklady: 15 milionů Kč (zvýrazněno barvou)
 📷 Obrázek: [vložit URL mapy tras]
 
 🔗 Více informací: praha4.cz/cyklostezky
-```
+\`\`\`
 
 ### **Novinka o akci:**
-```
+\`\`\`
 🎉 DOKONČENA REKONSTRUKCE HŘIŠTĚ (H1)
 
 ✅ Práce byly úspěšně dokončeny! (zelená barva)
@@ -110,7 +110,7 @@ Postup rekonstrukce:
 Hřiště bude uzavřeno do 15. února kvůli dokončovacím pracím.
 
 📸 Fotogalerie: [vložit obrázky]
-```
+\`\`\`
 
 ## ⌨️ **Klávesové zkratky**
 
@@ -174,7 +174,7 @@ Hřiště bude uzavřeno do 15. února kvůli dokončovacím pracím.
 ## 🎨 **Designové tipy**
 
 ### **Struktura článku:**
-```
+\`\`\`
 📋 Doporučená struktura:
 1. Výstižný nadpis (H1)
 2. Úvodní odstavec (shrnutí)
@@ -182,7 +182,7 @@ Hřiště bude uzavřeno do 15. února kvůli dokončovacím pracím.
 4. Obrázky mezi sekcemi
 5. Závěr nebo výzva k akci
 6. Kontaktní informace/odkazy
-```
+\`\`\`
 
 ### **Formátování:**
 - **Tučně** - jen nejdůležitější informace

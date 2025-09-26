@@ -1,11 +1,3 @@
-/**
- * Oprava typů Next.js App Router
- * 
- * Tento soubor opravuje chybu typů v Next.js App Router, kde generované typy očekávají Promise<SegmentParams>
- * místo SegmentParams jako typ pro params.
- */
-
-// Přepíšeme definice z Next.js App Router, aby správně používaly SegmentParams bez Promise
 declare module 'next/navigation' {
   export interface PageProps {
     params?: Record<string, string>;

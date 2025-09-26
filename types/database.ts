@@ -1,8 +1,3 @@
-/**
- * Database type definitions to ensure consistency between Prisma models and application code
- */
-
-// Article Status Enum - use const assertion for literal types
 export const ArticleStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED', 

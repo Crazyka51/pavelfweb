@@ -1,4 +1,3 @@
-// Použijeme definici gtag z types/gtag.d.ts
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-LNF9PDP1RH";
 
 export function pageview(url: string) {

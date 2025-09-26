@@ -13,13 +13,13 @@ Toto chování způsobovalo:
 
 Hlavní příčinou bylo nevhodně nastavené useEffect s příliš mnoha závislostmi:
 
-```javascript
+\`\`\`javascript
 // Původní implementace
 useEffect(() => {
   // ...
   loadArticles();
 }, [propArticles, onRefresh, checkApiAccess, loadArticles]);
-```
+\`\`\`
 
 Protože `checkApiAccess` a `loadArticles` jsou callbacky vytvářené pomocí `useCallback`, 
 jejich identita se mění při každém přerenderování komponenty, což vedlo k opakovanému

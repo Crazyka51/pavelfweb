@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Skript pro generování lokálních SSL certifikátů pro vývojové prostředí
 
 # Vytvoření adresáře pro certifikáty

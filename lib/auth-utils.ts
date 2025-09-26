@@ -1,23 +1,23 @@
-import { jwtVerify, SignJWT } from "jose";
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify, SignJWT } from "jose"
+import { cookies } from "next/headers"
+import { NextRequest, NextResponse } from "next/server"
 
 // Hlavní tajné klíče pro JWT tokeny
-const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET || "access_secret_key";
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret_key";
+const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET || "access_secret_key"
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret_key"
 
 // Převedení na TextEncoder objekty pro JOSE knihovnu
-const ACCESS_KEY = new TextEncoder().encode(ACCESS_TOKEN_SECRET);
-const REFRESH_KEY = new TextEncoder().encode(REFRESH_TOKEN_SECRET);
+const ACCESS_KEY = new TextEncoder().encode(ACCESS_TOKEN_SECRET)
+const REFRESH_KEY = new TextEncoder().encode(REFRESH_TOKEN_SECRET)
 
 // Expirace tokenů
-const ACCESS_TOKEN_EXPIRATION = "15m"; // 15 minut
-const REFRESH_TOKEN_EXPIRATION = "7d"; // 7 dní
+const ACCESS_TOKEN_EXPIRATION = "15m" // 15 minut
+const REFRESH_TOKEN_EXPIRATION = "7d" // 7 dní
 
 export type UserPayload = {
-  userId: string;
-  username: string;
-  role: string;
+  userId: string
+  username: string
+  role: string
 }
 
 /**
@@ -30,7 +30,7 @@ export async function createAccessToken(payload: UserPayload) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(ACCESS_TOKEN_EXPIRATION)
-    .sign(ACCESS_KEY);
+    .sign(ACCESS_KEY)
 }
 
 /**
@@ -43,7 +43,7 @@ export async function createRefreshToken(payload: UserPayload) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(REFRESH_TOKEN_EXPIRATION)
-    .sign(REFRESH_KEY);
+    .sign(REFRESH_KEY)
 }
 
 /**
@@ -53,14 +53,14 @@ export async function createRefreshToken(payload: UserPayload) {
  */
 export async function verifyAccessToken(token: string | undefined = "") {
   try {
-    if (!token) return null;
+    if (!token) return null
     const { payload } = await jwtVerify(token, ACCESS_KEY, {
       algorithms: ["HS256"],
-    });
-    return payload;
+    })
+    return payload
   } catch (error) {
-    console.error("Failed to verify access token:", error);
-    return null;
+    console.error("Failed to verify access token:", error)
+    return null
   }
 }
 
@@ -71,14 +71,14 @@ export async function verifyAccessToken(token: string | undefined = "") {
  */
 export async function verifyRefreshToken(token: string | undefined = "") {
   try {
-    if (!token) return null;
+    if (!token) return null
     const { payload } = await jwtVerify(token, REFRESH_KEY, {
       algorithms: ["HS256"],
-    });
-    return payload;
+    })
+    return payload
   } catch (error) {
-    console.error("Failed to verify refresh token:", error);
-    return null;
+    console.error("Failed to verify refresh token:", error)
+    return null
   }
 }
 
@@ -90,31 +90,45 @@ export async function verifyRefreshToken(token: string | undefined = "") {
  * @returns Object obsahující access token
  */
 export async function createSession(userId: string, username: string, role: string) {
-  const userPayload = { userId, username, role };
-  
-  // Vytvoření access a refresh tokenů
-  const accessToken = await createAccessToken(userPayload);
-  const refreshToken = await createRefreshToken(userPayload);
-  
-  // Nastavení refresh tokenu jako HTTP-only cookie
-  const refreshExpires = new Date();
-  refreshExpires.setDate(refreshExpires.getDate() + 7); // 7 dní
-  
-  // Použití cookies() API asynchronně
-  const cookieStore = await cookies();
-  const isProduction = process.env.NODE_ENV === "production";
-  
-  cookieStore.set("refresh_token", refreshToken, {
-    httpOnly: true,
-    secure: true, // Vždy používat secure
-    expires: refreshExpires,
-    sameSite: "strict", // Používáme strict pro lepší bezpečnost
-    path: "/",
-    domain: isProduction ? ".fiserpavel.cz" : undefined // Doména pouze v produkci
-  });
-  
-  // Access token je vracen klientovi
-  return { accessToken };
+  try {
+    console.log("[v0] Creating session for user:", username)
+    const userPayload = { userId, username, role }
+
+    // Vytvoření access a refresh tokenů
+    const accessToken = await createAccessToken(userPayload)
+    const refreshToken = await createRefreshToken(userPayload)
+
+    console.log("[v0] Tokens created, setting cookie")
+    // Nastavení refresh tokenu jako HTTP-only cookie
+    const refreshExpires = new Date()
+    refreshExpires.setDate(refreshExpires.getDate() + 7) // 7 dní
+
+    try {
+      const cookieStore = cookies()
+      const isProduction = process.env.NODE_ENV === "production"
+
+      cookieStore.set("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: true, // Vždy používat secure
+        expires: refreshExpires,
+        sameSite: "strict", // Používáme strict pro lepší bezpečnost
+        path: "/",
+        domain: isProduction ? ".fiserpavel.cz" : undefined, // Doména pouze v produkci
+      })
+
+      console.log("[v0] Cookie set successfully")
+    } catch (cookieError) {
+      console.error("[v0] Error setting cookie:", cookieError)
+      // Continue without cookie - client will still get access token
+    }
+
+    // Access token je vracen klientovi
+    console.log("[v0] Session created successfully")
+    return { accessToken }
+  } catch (error) {
+    console.error("[v0] Error in createSession:", error)
+    throw error
+  }
 }
 
 /**
@@ -123,28 +137,33 @@ export async function createSession(userId: string, username: string, role: stri
  */
 export async function refreshSession() {
   try {
-    // Použití cookies() API asynchronně
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refresh_token")?.value;
-    
-    if (!refreshToken) return null;
-    
+    let refreshToken: string | undefined
+    try {
+      const cookieStore = cookies()
+      refreshToken = cookieStore.get("refresh_token")?.value
+    } catch (cookieError) {
+      console.error("[v0] Error accessing cookies in refreshSession:", cookieError)
+      return null
+    }
+
+    if (!refreshToken) return null
+
     // Ověření refresh tokenu
-    const payload = await verifyRefreshToken(refreshToken);
-    if (!payload) return null;
-    
+    const payload = await verifyRefreshToken(refreshToken)
+    if (!payload) return null
+
     // Vytvoření nového access tokenu
     const userPayload = {
       userId: payload.userId as string,
       username: payload.username as string,
       role: payload.role as string,
-    };
-    
-    const accessToken = await createAccessToken(userPayload);
-    return { accessToken, user: userPayload };
+    }
+
+    const accessToken = await createAccessToken(userPayload)
+    return { accessToken, user: userPayload }
   } catch (error) {
-    console.error("Failed to refresh session:", error);
-    return null;
+    console.error("Failed to refresh session:", error)
+    return null
   }
 }
 
@@ -152,9 +171,13 @@ export async function refreshSession() {
  * Odstraní session (logout)
  */
 export async function deleteSession() {
-  // Použití cookies() API asynchronně
-  const cookieStore = await cookies();
-  cookieStore.delete("refresh_token");
+  try {
+    const cookieStore = cookies()
+    cookieStore.delete("refresh_token")
+  } catch (cookieError) {
+    console.error("[v0] Error deleting cookie in deleteSession:", cookieError)
+    // Continue - logout should still work even if cookie deletion fails
+  }
 }
 
 /**
@@ -164,35 +187,38 @@ export async function deleteSession() {
  */
 export async function verifyAuth(request: NextRequest) {
   // Debug logy pro produkční prostředí
-  console.log('[Auth Debug] Auth header:', request.headers.get("Authorization"));
-  console.log('[Auth Debug] Request origin:', request.headers.get('origin'));
-  console.log('[Auth Debug] Cookie header:', request.headers.get('cookie'));
-  
+  console.log("[Auth Debug] Auth header:", request.headers.get("Authorization"))
+  console.log("[Auth Debug] Request origin:", request.headers.get("origin"))
+  console.log("[Auth Debug] Cookie header:", request.headers.get("cookie"))
+
   // Získání access tokenu z Authorization hlavičky
-  const authHeader = request.headers.get("Authorization");
-  const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
-  
+  const authHeader = request.headers.get("Authorization")
+  const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null
+
   if (accessToken) {
-    const payload = await verifyAccessToken(accessToken);
-    if (payload) return payload;
+    const payload = await verifyAccessToken(accessToken)
+    if (payload) return payload
   }
-  
+
   // Pokud access token není nebo je neplatný, zkusíme refresh token
-  const refreshResult = await refreshSession();
-  
+  const refreshResult = await refreshSession()
+
   if (refreshResult) {
     // Toto je speciální případ - vracíme NextResponse s novým access tokenem
-    return NextResponse.json({ 
-      message: "Access token expired, but refreshed successfully",
-      accessToken: refreshResult.accessToken 
-    }, { 
-      status: 401,
-      headers: { "X-Refresh-Token": "true" }
-    });
+    return NextResponse.json(
+      {
+        message: "Access token expired, but refreshed successfully",
+        accessToken: refreshResult.accessToken,
+      },
+      {
+        status: 401,
+        headers: { "X-Refresh-Token": "true" },
+      },
+    )
   }
-  
+
   // Žádný validní token nebyl nalezen
-  return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
 }
 
 /**
@@ -202,27 +228,27 @@ export async function verifyAuth(request: NextRequest) {
  */
 export async function authenticateAdmin(request: NextRequest): Promise<UserPayload | null> {
   // Nejdříve zkusíme získat access token z hlavičky
-  const authHeader = request.headers.get('Authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7); // Odstranit 'Bearer ' prefix
-    const payload = await verifyAccessToken(token);
-    
-    if (payload && payload.role === 'admin') {
+  const authHeader = request.headers.get("Authorization")
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7) // Odstranit 'Bearer ' prefix
+    const payload = await verifyAccessToken(token)
+
+    if (payload && payload.role === "admin") {
       return {
         userId: payload.userId as string,
         username: payload.username as string,
         role: payload.role as string,
-      };
+      }
     }
   }
-  
+
   // Pokud access token není nebo je neplatný, zkusíme refresh token
-  const refreshResult = await refreshSession();
-  if (refreshResult && refreshResult.user.role === 'admin') {
-    return refreshResult.user;
+  const refreshResult = await refreshSession()
+  if (refreshResult && refreshResult.user.role === "admin") {
+    return refreshResult.user
   }
-  
-  return null;
+
+  return null
 }
 
 /**
@@ -233,40 +259,40 @@ export async function authenticateAdmin(request: NextRequest): Promise<UserPaylo
  */
 export function requireAuth(handler: Function, roles?: string[]) {
   return async (request: NextRequest, ...args: any[]): Promise<NextResponse | any> => {
-    const authResult = await verifyAuth(request);
+    const authResult = await verifyAuth(request)
 
     // Pokud je výsledek NextResponse, mohlo dojít k refresh tokenu
     if (authResult instanceof NextResponse) {
       // Kontrolujeme, zda došlo k úspěšnému refresh tokenu
-      const refreshHeader = authResult.headers.get("X-Refresh-Token");
+      const refreshHeader = authResult.headers.get("X-Refresh-Token")
       if (refreshHeader === "true") {
-        const data = await authResult.json();
-        
+        const data = await authResult.json()
+
         // Upravíme request a přidáme nový access token do hlavičky
-        const newAuthHeader = `Bearer ${data.accessToken}`;
-        const newHeaders = new Headers(request.headers);
-        newHeaders.set("Authorization", newAuthHeader);
-        
+        const newAuthHeader = `Bearer ${data.accessToken}`
+        const newHeaders = new Headers(request.headers)
+        newHeaders.set("Authorization", newAuthHeader)
+
         // Vytvoříme nový request s aktualizovanou hlavičkou
         const newRequest = new NextRequest(request.url, {
           method: request.method,
           headers: newHeaders,
-          body: request.body
-        });
-        
+          body: request.body,
+        })
+
         // Rekurzivně voláme requireAuth s novým requestem
-        return requireAuth(handler, roles)(newRequest, ...args);
+        return requireAuth(handler, roles)(newRequest, ...args)
       }
-      
-      return authResult; // Unauthorized response
+
+      return authResult // Unauthorized response
     }
 
     // Kontrola rolí, pokud jsou definovány
     if (roles && !roles.includes(authResult.role as string)) {
-      return NextResponse.json({ message: "Forbidden: Insufficient role" }, { status: 403 });
+      return NextResponse.json({ message: "Forbidden: Insufficient role" }, { status: 403 })
     }
 
     // Vše je v pořádku, voláme handler
-    return handler(request, authResult, ...args);
-  };
+    return handler(request, authResult, ...args)
+  }
 }

@@ -1,11 +1,3 @@
-/**
- * Centralizovaný přístup k databázi pomocí @neondatabase/serverless klienta
- * 
- * Toto je doporučený způsob přístupu k databázi v celém projektu.
- * Využívá @neondatabase/serverless klienta, který je optimalizován pro serverless prostředí
- * a zajišťuje automatické poolování spojení.
- */
-
 import { neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { sql as drizzleSql } from "drizzle-orm";

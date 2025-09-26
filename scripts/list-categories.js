@@ -1,4 +1,3 @@
-// Tento skript vypíše všechny kategorie v databázi
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

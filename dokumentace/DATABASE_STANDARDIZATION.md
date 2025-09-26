@@ -40,20 +40,20 @@ Tento dokument popisuje standardy, kterými se řídí práce s databází v pro
 Používáme Neon Database pro serverless PostgreSQL. Pro připojení používáme `@neondatabase/serverless` klienta.
 
 Příklad použití:
-```javascript
+\`\`\`javascript
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 
 const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
-```
+\`\`\`
 
 ## Drizzle ORM
 
 Pro práci s databází používáme Drizzle ORM, který nabízí typově bezpečný přístup k databázi.
 
 Příklad definice schématu:
-```typescript
+\`\`\`typescript
 import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -62,7 +62,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
-```
+\`\`\`
 
 ## Provedené změny
 

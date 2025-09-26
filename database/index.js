@@ -1,5 +1,3 @@
-// Tento soubor slouží pouze jako odkaz na dokumentaci k databázi
-
 console.log(`
 ==================================================
  DOKUMENTACE K DATABÁZI - NEON POSTGRESQL

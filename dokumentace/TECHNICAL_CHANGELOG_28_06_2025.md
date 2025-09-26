@@ -17,7 +17,7 @@
 - `SchedulePublishing` komponenta správně odesílala `publishNow` parametr, ale nebyl zpracován
 
 **Řešení:**
-```typescript
+\`\`\`typescript
 // app/admin/page.tsx - handleSaveArticle
 if (articleData.published && articleData.publishedAt) {
   const publishTime = new Date(articleData.publishedAt).getTime()
@@ -27,7 +27,7 @@ if (articleData.published && articleData.publishedAt) {
     articleData.publishedAt = new Date().toISOString()
   }
 }
-```
+\`\`\`
 
 **Test:** ✅ Ověřeno funkcionalita publikování z konceptu
 
@@ -42,7 +42,7 @@ if (articleData.published && articleData.publishedAt) {
 - API endpoint vyžaduje JWT token pro načtení článků
 
 **Řešení:**
-```typescript
+\`\`\`typescript
 // CategoryManager.tsx
 interface CategoryManagerProps {
   token?: string  // Přidán token prop
@@ -58,7 +58,7 @@ const articlesResponse = await fetch('/api/admin/articles', {
 
 // admin/page.tsx
 <CategoryManager token={localStorage.getItem('admin_token') || ''} />
-```
+\`\`\`
 
 **Test:** ✅ Ověřeno správné zobrazení počtu článků v kategoriích
 
@@ -76,7 +76,7 @@ const articlesResponse = await fetch('/api/admin/articles', {
 **Řešení:**
 
 **Backend** (`/api/admin/newsletter/route.ts`):
-```typescript
+\`\`\`typescript
 export async function DELETE(request: NextRequest) {
   // Check if this is admin request
   const isAdminRequest = await verifyAdminToken(request)
@@ -90,10 +90,10 @@ export async function DELETE(request: NextRequest) {
     // ... existing logic
   }
 }
-```
+\`\`\`
 
 **Frontend** (`NewsletterManager.tsx`):
-```typescript
+\`\`\`typescript
 const handleUnsubscribe = async (email: string) => {
   if (!confirm(`Opravdu chcete odhlásit ${email} z newsletteru?`)) return
   
@@ -112,7 +112,7 @@ const handleUnsubscribe = async (email: string) => {
 <button onClick={() => handleUnsubscribe(subscriber.email)}>
   Odhlásit
 </button>
-```
+\`\`\`
 
 **Test:** ✅ Ověřeno pomocí PowerShell API testů a UI
 
@@ -121,7 +121,7 @@ const handleUnsubscribe = async (email: string) => {
 ## 🧪 TESTOVÁNÍ
 
 ### API Tests (PowerShell):
-```powershell
+\`\`\`powershell
 # Login test
 $token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
@@ -132,7 +132,7 @@ Invoke-RestMethod -Uri 'http://localhost:3001/api/admin/newsletter' -Method GET 
 # Newsletter DELETE test  
 Invoke-RestMethod -Uri 'http://localhost:3001/api/admin/newsletter' -Method DELETE -Headers @{'Authorization'='Bearer $token'; 'Content-Type'='application/json'} -Body '{"email":"test@example.com"}'
 # ✅ Success: "Odběr novinek byl úspěšně zrušen"
-```
+\`\`\`
 
 ### File Changes Verification:
 - ✅ `data/newsletter-subscribers.json` - test@example.com má `isActive: false`
