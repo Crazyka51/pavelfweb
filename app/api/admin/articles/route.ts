@@ -98,13 +98,16 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       );
     }
 
-    // Ověření existence autora
-    const author = await db.select().from(adminUsers).where(eq(adminUsers.id, authResult.userId));
-    if (!author || author.length === 0) {
+    // Najdeme prvního dostupného autora z User tabulky (protože admin_users.id != user.id)
+    const cmsUser = await prisma.user.findFirst({
+      where: { isActive: true },
+    });
+
+    if (!cmsUser) {
       return NextResponse.json(
         {
           success: false,
-          error: "Autor nebyl nalezen",
+          error: "Žádný aktivní autor nebyl nalezen v CMS systému.",
         },
         { status: 404 },
       );
@@ -119,15 +122,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
         {
           success: false,
           error: "Kategorie nebyla nalezena",
-        },
-        { status: 404 },
-      );
-    }
-    if (!author || author.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Uživatel (autor) nebyl nalezen.",
         },
         { status: 404 },
       );
@@ -148,7 +142,7 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       imageUrl: articleData.imageUrl,
       publishedAt: articleData.status === ArticleStatus.PUBLISHED || articleData.published ? new Date() : null,
       isFeatured: articleData.isFeatured || false,
-      authorId: authResult.userId,
+      authorId: cmsUser.id, // Použijeme CMS User ID místo admin_users ID
       metaTitle: articleData.metaTitle,
       metaDescription: articleData.metaDescription,
     };

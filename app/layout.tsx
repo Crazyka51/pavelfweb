@@ -6,6 +6,7 @@ import CookieBanner from "./components/CookieBanner";
 import CookieManager from "./components/CookieManager";
 import { GoogleAnalytics } from "./components/GoogleAnalytics";
 import StructuredData from "./components/StructuredData";
+import { Analytics } from "@vercel/analytics/next";
 import type React from "react";
 import { Suspense } from "react";
 
@@ -73,6 +74,7 @@ export default function RootLayout({
           <CookieBanner />
           <CookieManager />
         </Suspense>
+        <Analytics />
       </body>
     </html>
   );

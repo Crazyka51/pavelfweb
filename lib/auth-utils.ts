@@ -106,9 +106,9 @@ export async function createSession(userId: string, username: string, role: stri
   
   cookieStore.set("refresh_token", refreshToken, {
     httpOnly: true,
-    secure: true, // Vždy používat secure
+    secure: isProduction, // Secure pouze v produkci (HTTPS)
     expires: refreshExpires,
-    sameSite: "strict", // Používáme strict pro lepší bezpečnost
+    sameSite: isProduction ? "strict" : "lax", // Lax pro development, strict pro produkci
     path: "/",
     domain: isProduction ? ".fiserpavel.cz" : undefined // Doména pouze v produkci
   });

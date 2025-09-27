@@ -57,23 +57,49 @@ export default function AnalyticsWidget() {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("7d");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [dataSource, setDataSource] = useState<'vercel' | 'google' | 'auto'>('auto');
 
   const fetchAnalytics = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/analytics?range=${timeRange}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-        },
-      });
+      // Výběr zdroje dat
+      if (dataSource === 'vercel' || dataSource === 'auto') {
+        const vercelResponse = await fetch(`/api/admin/vercel-analytics?range=${timeRange}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        });
 
-      if (response.ok) {
-        const analyticsData = await response.json();
-        setData(analyticsData);
-      } else {
-        // Fallback to mock data if API fails
-        setData(getMockData());
+        if (vercelResponse.ok) {
+          const vercelData = await vercelResponse.json();
+          if (vercelData.success) {
+            setData(vercelData.data);
+            setLastUpdated(new Date());
+            setIsLoading(false);
+            return;
+          }
+        }
       }
+
+      // Pokud Vercel Analytics selhává nebo je vybrán Google Analytics
+      if (dataSource === 'google' || dataSource === 'auto') {
+        const response = await fetch(`/api/admin/analytics?range=${timeRange}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        });
+
+        if (response.ok) {
+          const analyticsData = await response.json();
+          setData(analyticsData);
+          setLastUpdated(new Date());
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Fallback to mock data if all APIs fail
+      setData(getMockData());
     } catch (error) {
       console.error("Analytics fetch error:", error);
       setData(getMockData());
@@ -124,7 +150,7 @@ export default function AnalyticsWidget() {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [timeRange]);
+  }, [timeRange, dataSource]);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("cs-CZ").format(num);
@@ -192,6 +218,16 @@ export default function AnalyticsWidget() {
           <p className="text-sm text-gray-500">Poslední aktualizace: {lastUpdated.toLocaleString("cs-CZ")}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Select value={dataSource} onValueChange={(value: 'vercel' | 'google' | 'auto') => setDataSource(value)}>
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">🔄 Auto</SelectItem>
+              <SelectItem value="vercel">📊 Vercel</SelectItem>
+              <SelectItem value="google">🎯 Google</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-32">
               <SelectValue />

@@ -22,7 +22,26 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['localhost'],
   },
+  // Optimalizace fontů
+  optimizeFonts: true,
+  // Disable font optimization warnings in dev
+  ...(process.env.NODE_ENV === 'development' && {
+    onDemandEntries: {
+      maxInactiveAge: 25 * 1000,
+      pagesBufferLength: 2,
+    },
+    webpack: (config, { dev }) => {
+      if (dev) {
+        // Suppress warnings for missing assets in development
+        config.infrastructureLogging = {
+          level: 'error',
+        };
+      }
+      return config;
+    },
+  }),
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
     JWT_SECRET: process.env.JWT_SECRET,

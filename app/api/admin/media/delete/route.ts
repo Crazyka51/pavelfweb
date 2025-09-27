@@ -3,6 +3,7 @@ import { authenticateAdmin } from '@/lib/auth-utils';
 import { unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { del } from '@vercel/blob';
 
 /**
  * API endpoint pro smazání média
@@ -29,6 +30,23 @@ export async function DELETE(request: NextRequest) {
     // Odstranění počátečního lomítka (pokud existuje)
     const cleanPath = mediaPath.startsWith('/') ? mediaPath.substring(1) : mediaPath;
     
+    // PRODUKCE: Použít Vercel Blob Storage
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL_BLOB_API) {
+      // Pro Blob Storage očekáváme URL, ne lokální cestu
+      try {
+        await del(mediaPath, { token: process.env.VERCEL_BLOB_API });
+        return NextResponse.json({ 
+          success: true, 
+          message: 'File deleted successfully',
+          path: mediaPath
+        });
+      } catch (error) {
+        console.error('Error deleting from blob storage:', error);
+        return NextResponse.json({ success: false, error: 'Failed to delete from blob storage' }, { status: 500 });
+      }
+    }
+
+    // DEVELOPMENT: Lokální filesystem
     // Kontrola, zda cesta obsahuje pouze povolené složky (média)
     if (!cleanPath.startsWith('media/')) {
       return NextResponse.json({ success: false, error: 'Invalid file path' }, { status: 400 });

@@ -4,6 +4,7 @@ import "./styles/tiptap.css";
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth-context';
 import AdminAuthLayout from './components/AdminAuthLayout';
+import AuthDebugInfo from './components/AuthDebugInfo';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +19,7 @@ export default function AdminLayout({
         <AdminAuthLayout>
           {children}
         </AdminAuthLayout>
+        <AuthDebugInfo />
       </AuthProvider>
     </div>
   );
