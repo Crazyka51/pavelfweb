@@ -24,8 +24,6 @@ const nextConfig = {
     unoptimized: true,
     domains: ['localhost'],
   },
-  // Optimalizace fontů
-  optimizeFonts: true,
   // Disable font optimization warnings in dev
   ...(process.env.NODE_ENV === 'development' && {
     onDemandEntries: {

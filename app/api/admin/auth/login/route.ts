@@ -1,8 +1,7 @@
-iiimport { createSession } from "@/lib/auth-utils";
-import { comparePasswords } from "@/lib/password-utils";port { createSession } from "@/lib/auth-utils";
-import { comparePasswords } from "@/lib/password-utils";port { type NextRequest, NextResponse } from "next/server";
-import { createSession, comparePasswords } from "@/lib/auth-utils-v2";
+import { createSession } from "@/lib/auth-utils";
+import { type NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Porovnání hesla s hashem uloženým v databázi
-    const isPasswordValid = await comparePasswords(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
       return NextResponse.json({ message: "Nesprávný email nebo heslo." }, { status: 401 });
