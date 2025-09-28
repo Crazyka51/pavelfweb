@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, UploadIcon, Trash2, Search } from 'lucide-react'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
+import { authorizedFetch } from '@/lib/auth-fetch'
 
 type MediaFile = {
   name: string
@@ -66,8 +67,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchYears = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/media/list', {
-        credentials: 'include',
+      const response = await authorizedFetch('/api/admin/media/list', {
+        method: 'GET',
       })
       const data = await response.json()
       
@@ -93,8 +94,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMonths = async (year: string) => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/media/list?year=${year}`, {
-        credentials: 'include',
+      const response = await authorizedFetch(`/api/admin/media/list?year=${year}`, {
+        method: 'GET',
       })
       const data = await response.json()
       
@@ -120,8 +121,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMediaFiles = async (year: string, month: string) => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/media/list?year=${year}&month=${month}`, {
-        credentials: 'include',
+      const response = await authorizedFetch(`/api/admin/media/list?year=${year}&month=${month}`, {
+        method: 'GET',
       })
       const data = await response.json()
       
@@ -173,10 +174,9 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         const formData = new FormData()
         formData.append('file', file)
         
-        const response = await fetch('/api/admin/media/upload', {
+        const response = await authorizedFetch('/api/admin/media/upload', {
           method: 'POST',
           body: formData,
-          credentials: 'include',
         })
         
         const data = await response.json()
@@ -226,9 +226,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
     }
     
     try {
-      const response = await fetch(`/api/admin/media/delete?path=${encodeURIComponent(file.url)}`, {
+      const response = await authorizedFetch(`/api/admin/media/delete?path=${encodeURIComponent(file.url)}`, {
         method: 'DELETE',
-        credentials: 'include',
       })
       
       const data = await response.json()

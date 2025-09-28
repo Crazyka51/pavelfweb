@@ -17,6 +17,7 @@ import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { useCallback, useEffect, useState } from 'react'
 import TiptapToolbar from './TiptapToolbar'
+import { authorizedFetch } from '@/lib/auth-fetch'
 
 interface EnhancedTiptapEditorProps {
   content: string
@@ -136,12 +137,9 @@ export default function EnhancedTiptapEditor({
       formData.append('file', file)
       
       // Uploadujeme soubor na server
-      const response = await fetch('/api/admin/media/upload', {
+      const response = await authorizedFetch('/api/admin/media/upload', {
         method: 'POST',
         body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-        }
       })
       
       if (!response.ok) {
@@ -186,12 +184,9 @@ export default function EnhancedTiptapEditor({
           formData.append('file', file)
           
           // Uploadujeme soubor na server
-          const response = await fetch('/api/admin/media/upload', {
+          const response = await authorizedFetch('/api/admin/media/upload', {
             method: 'POST',
             body: formData,
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-            }
           })
           
           if (!response.ok) {
