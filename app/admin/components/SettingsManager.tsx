@@ -1,16 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, RefreshCw, Globe, Mail, FileText, Shield, Bell, Palette, Database } from "lucide-react";
+import { Save, RefreshCw, Mail, FileText, Bell } from "lucide-react";
 
 interface CMSSettings {
-  // Obecné nastavení
-  siteName: string
-  siteDescription: string
-  adminEmail: string
-  language: string
-  timezone: string
-
   // Editor nastavení
   defaultCategory: string | null // Now stores category ID
   autoSaveInterval: number
@@ -25,14 +18,8 @@ interface CMSSettings {
   // Notifikace
   emailNotifications: boolean
   newArticleNotification: boolean
+  adminEmail: string
 
-  // Vzhled
-  primaryColor: string
-  darkMode: boolean
-
-  // Bezpečnost
-  sessionTimeout: number
-  maxLoginAttempts: number
   updatedAt?: string
 }
 
@@ -43,12 +30,6 @@ interface CategoryOption {
 
 export default function SettingsManager() {
   const [settings, setSettings] = useState<CMSSettings>({
-    siteName: "Pavel Fišer - Praha 4",
-    siteDescription: "Oficiální web zastupitele Prahy 4",
-    adminEmail: "pavel@praha4.cz",
-    language: "cs",
-    timezone: "Europe/Prague",
-
     defaultCategory: null, // Default to null, will be populated from DB
     autoSaveInterval: 3000,
     allowImageUpload: true,
@@ -60,27 +41,13 @@ export default function SettingsManager() {
 
     emailNotifications: true,
     newArticleNotification: true,
-
-    primaryColor: "#3B82F6",
-    darkMode: false,
-
-    sessionTimeout: 24,
-    maxLoginAttempts: 5,
+    adminEmail: "pavel@praha4.cz",
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("editor");
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
-
-  const colorOptions = [
-    { value: "#3B82F6", label: "Modrá", preview: "bg-blue-500" },
-    { value: "#EF4444", label: "Červená", preview: "bg-red-500" },
-    { value: "#10B981", label: "Zelená", preview: "bg-green-500" },
-    { value: "#F59E0B", label: "Oranžová", preview: "bg-yellow-500" },
-    { value: "#8B5CF6", label: "Fialová", preview: "bg-purple-500" },
-    { value: "#06B6D4", label: "Azurová", preview: "bg-cyan-500" },
-  ];
 
   useEffect(() => {
     loadSettings();
@@ -191,79 +158,12 @@ export default function SettingsManager() {
   };
 
   const tabs = [
-    { id: "general", label: "Obecné", icon: Globe },
     { id: "editor", label: "Editor", icon: FileText },
     { id: "notifications", label: "Notifikace", icon: Bell },
-    { id: "appearance", label: "Vzhled", icon: Palette },
-    { id: "security", label: "Bezpečnost", icon: Shield },
-    { id: "backup", label: "Zálohy", icon: Database },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "general":
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Název webu</label>
-                <input
-                  type="text"
-                  value={settings.siteName}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, siteName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Admin email</label>
-                <input
-                  type="email"
-                  value={settings.adminEmail}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, adminEmail: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Popis webu</label>
-              <textarea
-                value={settings.siteDescription}
-                onChange={(e) => setSettings((prev) => ({ ...prev, siteDescription: e.target.value }))}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Jazyk</label>
-                <select
-                  value={settings.language}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, language: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="cs">Čeština</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Časové pásmo</label>
-                <select
-                  value={settings.timezone}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, timezone: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="Europe/Prague">Europe/Prague</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        );
-
       case "editor":
         return (
           <div className="space-y-6">
@@ -411,134 +311,6 @@ export default function SettingsManager() {
                   <h4 className="text-sm font-semibold text-blue-900">Emailové notifikace</h4>
                   <p className="text-sm text-blue-700 mt-1">
                     Notifikace budou odesílány na email: <strong>{settings.adminEmail}</strong>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "appearance":
-        return (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Hlavní barva</label>
-              <div className="flex flex-wrap gap-3">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => setSettings((prev) => ({ ...prev, primaryColor: color.value }))}
-                    className={`w-12 h-12 rounded-lg ${color.preview} border-2 ${
-                      settings.primaryColor === color.value ? "border-gray-900" : "border-gray-300"
-                    } hover:scale-110 transition-transform flex items-center justify-center`}
-                    title={color.label}
-                  >
-                    {settings.primaryColor === color.value && <span className="text-white text-xs">✓</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="darkMode"
-                checked={settings.darkMode}
-                onChange={(e) => setSettings((prev) => ({ ...prev, darkMode: e.target.checked }))}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="darkMode" className="ml-2 block text-sm text-gray-700">
-                Tmavý režim (bude implementován v budoucí verzi)
-              </label>
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Palette className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-yellow-900">Poznámka k vzhledu</h4>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    Změny barev se projeví v celém admin rozhraní. Hlavní web má své vlastní CSS.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "security":
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Timeout relace (hodiny)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="168"
-                  value={settings.sessionTimeout}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, sessionTimeout: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Max. pokusů o přihlášení</label>
-                <input
-                  type="number"
-                  min="3"
-                  max="10"
-                  value={settings.maxLoginAttempts}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, maxLoginAttempts: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-red-600 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-red-900">Bezpečnostní upozornění</h4>
-                  <p className="text-sm text-red-700 mt-1">
-                    Změny bezpečnostních nastavení se projeví při příštím přihlášení. Doporučujeme používat silné heslo
-                    a pravidelně měnit přihlašovací údaje.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "backup":
-        return (
-          <div className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Export dat</h3>
-              <p className="text-gray-600 mb-4">Stáhněte zálohu všech dat z CMS systému.</p>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                Stáhnout zálohu
-              </button>
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Import dat</h3>
-              <p className="text-gray-600 mb-4">Nahrajte zálohu pro obnovení dat.</p>
-              <input
-                type="file"
-                accept=".json"
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Database className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-semibold text-yellow-900">Poznámka k zálohám</h4>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    Funkce zálohování bude plně implementována v budoucí verzi. Aktuálně jsou data ukládána v databázi
-                    Neon.
                   </p>
                 </div>
               </div>

@@ -144,33 +144,30 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files || files.length === 0) return
-    
+
     setUploading(true)
-    
+
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        
-        // Kontrola typu souboru
+      for (const file of files) {
         if (!file.type.startsWith('image/')) {
-          toast({
-            title: 'Nepodporovaný formát',
-            description: `Soubor "${file.name}" není obrázek`,
-            variant: 'destructive',
+          toast({ 
+            title: 'Nepodporovaný formát', 
+            description: `Soubor "${file.name}" není obrázek`, 
+            variant: 'destructive' 
           })
           continue
         }
-        
-        // Kontrola velikosti souboru
-        if (file.size > 5 * 1024 * 1024) { // 5MB
-          toast({
-            title: 'Soubor je příliš velký',
-            description: `Soubor "${file.name}" je větší než 5MB`,
-            variant: 'destructive',
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast({ 
+            title: 'Soubor je příliš velký', 
+            description: `Soubor "${file.name}" je větší než 5MB`, 
+            variant: 'destructive' 
           })
           continue
         }
-        
+
+        // Vytvoříme FormData pro upload přes náš API endpoint
         const formData = new FormData()
         formData.append('file', file)
         
@@ -181,41 +178,38 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         
         const data = await response.json()
         
-        if (data.success) {
-          toast({
-            title: 'Soubor nahrán',
-            description: `Soubor "${file.name}" byl úspěšně nahrán`,
-          })
-          
-          // Aktualizace seznamu souborů
-          const currentDate = new Date()
-          const year = currentDate.getFullYear().toString()
-          const month = (currentDate.getMonth() + 1).toString().padStart(2, '0')
-          
-          if (selectedYear !== year || selectedMonth !== month) {
-            setSelectedYear(year)
-            setSelectedMonth(month)
-          } else {
-            fetchMediaFiles(year, month)
-          }
+        if (!data.success) {
+          throw new Error(data.error || 'Upload failed')
+        }
+        
+        const url = data.url
+
+        toast({ 
+          title: 'Soubor nahrán', 
+          description: `Soubor "${file.name}" byl úspěšně nahrán` 
+        })
+
+        // Aktualizace seznamu souborů
+        const currentDate = new Date()
+        const year = currentDate.getFullYear().toString()
+        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0')
+        
+        if (selectedYear !== year || selectedMonth !== month) {
+          setSelectedYear(year)
+          setSelectedMonth(month)
         } else {
-          toast({
-            title: 'Chyba',
-            description: data.error || `Nepodařilo se nahrát soubor "${file.name}"`,
-            variant: 'destructive',
-          })
+          fetchMediaFiles(year, month)
         }
       }
     } catch (error) {
       console.error('Error uploading files:', error)
-      toast({
-        title: 'Chyba',
-        description: 'Nepodařilo se nahrát soubory',
-        variant: 'destructive',
+      toast({ 
+        title: 'Chyba', 
+        description: 'Nepodařilo se nahrát soubory', 
+        variant: 'destructive' 
       })
     } finally {
       setUploading(false)
-      // Reset input field
       event.target.value = ''
     }
   }
