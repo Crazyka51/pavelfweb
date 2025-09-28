@@ -9,7 +9,6 @@ import {
   PlusCircle,
   Tag,
   BarChart3,
-  Archive,
   Settings,
   LogOut,
   Menu,
@@ -42,7 +41,6 @@ export default function AdminLayout({
     { id: "media", label: "Média", icon: Image, description: "Správa obrázků a souborů" },
     { id: "categories", label: "Kategorie", icon: Tag, description: "Správa kategorií a štítků" },
     { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },
-    { id: "backup", label: "Zálohy", icon: Archive, description: "Export a import dat" },
     { id: "settings", label: "Nastavení", icon: Settings, description: "Konfigurace systému" },
   ];
 
