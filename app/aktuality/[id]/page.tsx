@@ -132,11 +132,11 @@ export default async function ArticlePage({ params }: { params: { id: string } }
   const sanitizedContent = DOMPurify.sanitize(articleData.content);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-gray-100">
+    <div className="min-h-screen bg-white text-gray-900">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Breadcrumb navigation */}
         <div className="mb-6">
-          <Button variant="ghost" asChild className="text-gray-400 hover:text-white">
+          <Button variant="ghost" asChild className="text-gray-600 hover:text-gray-900">
             <Link href="/aktuality" className="flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" />
               Zpět na aktuality
@@ -144,7 +144,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
           </Button>
         </div>
 
-        <Card className="bg-slate-800 border-slate-700">
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardHeader className="space-y-4">
             {/* Article image */}
             {articleData.imageUrl && (
@@ -161,7 +161,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
 
             {/* Article metadata */}
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   {new Date(articleData.publishedAt).toLocaleDateString("cs-CZ", {
@@ -177,16 +177,16 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                 <Badge variant="secondary">{articleData.category}</Badge>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">{articleData.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">{articleData.title}</h1>
 
-              {articleData.excerpt && <p className="text-lg text-gray-300 leading-relaxed">{articleData.excerpt}</p>}
+              {articleData.excerpt && <p className="text-lg text-gray-700 leading-relaxed">{articleData.excerpt}</p>}
 
               {/* Tags */}
               {articleData.tags && articleData.tags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Tag className="w-4 h-4 text-gray-400" />
+                  <Tag className="w-4 h-4 text-gray-600" />
                   {articleData.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-gray-400 border-gray-600">
+                    <Badge key={tag} variant="outline" className="text-gray-600 border-gray-300">
                       {tag}
                     </Badge>
                   ))}
@@ -198,10 +198,10 @@ export default async function ArticlePage({ params }: { params: { id: string } }
           <CardContent>
             {/* Article content */}
             <div
-              className="prose prose-invert prose-lg max-w-none
-                prose-headings:text-white prose-p:text-gray-300 prose-a:text-blue-400 
-                prose-strong:text-white prose-code:text-gray-300 prose-pre:bg-slate-700
-                prose-blockquote:border-l-blue-500 prose-blockquote:text-gray-300"
+              className="prose prose-gray prose-lg max-w-none
+                prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 
+                prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100
+                prose-blockquote:border-l-blue-500 prose-blockquote:text-gray-700"
               dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
           </CardContent>
