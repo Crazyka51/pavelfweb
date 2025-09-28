@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BarChart3, Users, Eye, Clock, TrendingUp, Globe, Smartphone, Monitor } from "lucide-react";
+import { useVercelAnalytics } from "@/hooks/useVercelAnalytics";
 
 interface AnalyticsData {
   pageViews: {
@@ -45,51 +46,8 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsManager() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState("30d"); // Corresponds to 'thisMonth' in backend logic
-
-  useEffect(() => {
-    loadAnalyticsData();
-  }, [selectedPeriod]);
-
-  const loadAnalyticsData = async () => {
-    setIsLoading(true);
-    try {
-      const now = new Date();
-      let fromDate: Date;
-      const toDate: Date = now;
-
-      switch (selectedPeriod) {
-        case "7d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-          break;
-        case "30d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
-          break;
-        case "90d":
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90);
-          break;
-        default:
-          fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30); // Default to 30 days
-      }
-
-      const response = await fetch(`/api/admin/analytics?from=${fromDate.toISOString()}&to=${toDate.toISOString()}`);
-
-      if (response.ok) {
-        const data: AnalyticsData = await response.json();
-        setAnalyticsData(data);
-      } else {
-        console.error("Failed to load analytics:", response.status, await response.text());
-        setAnalyticsData(null);
-      }
-    } catch (error) {
-      console.error("Error loading analytics:", error);
-      setAnalyticsData(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [selectedPeriod, setSelectedPeriod] = useState("30d");
+  const { data: analyticsData, isLoading, error, refresh } = useVercelAnalytics(selectedPeriod);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("cs-CZ").format(num);
@@ -131,6 +89,13 @@ export default function AnalyticsManager() {
         <div className="text-center py-12">
           <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">Nepodařilo se načíst analytická data</p>
+          {error && <p className="text-red-500 text-sm mt-2">Chyba: {error}</p>}
+          <button 
+            onClick={refresh}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Zkusit znovu
+          </button>
         </div>
       </div>
     );
@@ -153,9 +118,9 @@ export default function AnalyticsManager() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600">Přehledy návštěvnosti a výkonu webu</p>
+          <p className="text-gray-600">Přehledy návštěvnosti a výkonu webu s Vercel Analytics</p>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
@@ -165,6 +130,12 @@ export default function AnalyticsManager() {
             <option value="30d">Posledních 30 dní</option>
             <option value="90d">Posledních 90 dní</option>
           </select>
+          <button
+            onClick={refresh}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            🔄 Obnovit
+          </button>
         </div>
       </div>
 
@@ -342,10 +313,10 @@ export default function AnalyticsManager() {
         <div className="flex items-start gap-3">
           <BarChart3 className="w-5 h-5 text-blue-600 mt-0.5" />
           <div>
-            <h4 className="text-sm font-semibold text-blue-900">Poznámka k analytickým datům</h4>
+            <h4 className="text-sm font-semibold text-blue-900">Vercel Analytics Integration</h4>
             <p className="text-sm text-blue-700 mt-1">
-              Tato data jsou nyní načítána z databáze. Denní přehledy a další pokročilé metriky vyžadují další
-              implementaci.
+              Data jsou automaticky načítána z Vercel Analytics API s fallbackem na lokální databázi. 
+              Pro plnou funkcionalnost nastavte VERCEL_API_TOKEN v production prostředí.
             </p>
           </div>
         </div>
