@@ -196,11 +196,16 @@ export async function verifyAuth(request: NextRequest) {
  * @returns Null pokud autentizace selže, nebo UserPayload objekt pokud je úspěšná
  */
 export async function authenticateAdmin(request: NextRequest): Promise<UserPayload | null> {
+  console.log("authenticateAdmin called for:", request.url);
+  
   // Nejdříve zkusíme získat access token z hlavičky
   const authHeader = request.headers.get('Authorization');
+  console.log("Auth header:", authHeader ? "Bearer token present" : "No Bearer token");
+  
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7); // Odstranit 'Bearer ' prefix
     const payload = await verifyAccessToken(token);
+    console.log("Bearer token payload:", payload);
     
     if (payload && payload.role === 'admin') {
       return {
@@ -214,11 +219,15 @@ export async function authenticateAdmin(request: NextRequest): Promise<UserPaylo
   // Pokud access token není nebo je neplatný, zkusíme refresh token z cookies
   try {
     const refreshToken = request.cookies.get("refresh_token")?.value;
+    console.log("Refresh token from cookies:", refreshToken ? "Present" : "Missing");
     
     if (refreshToken) {
       // Ověření refresh tokenu
       const payload = await verifyRefreshToken(refreshToken);
+      console.log("Refresh token payload:", payload);
+      
       if (payload && payload.role === 'admin') {
+        console.log("Admin authenticated via refresh token");
         return {
           userId: payload.userId as string,
           username: payload.username as string,
@@ -230,6 +239,7 @@ export async function authenticateAdmin(request: NextRequest): Promise<UserPaylo
     console.error("Failed to authenticate admin from cookies:", error);
   }
   
+  console.log("Admin authentication failed");
   return null;
 }
 

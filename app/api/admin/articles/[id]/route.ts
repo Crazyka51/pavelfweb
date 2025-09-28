@@ -66,19 +66,26 @@ export const GET = requireAuth(async (request: NextRequest, { params }: { params
 
 export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
-    const authHeader = request.headers.get("Authorization");
+    console.log("DELETE endpoint called with authResult:", authResult);
     
     if (authResult.role !== "admin") {
+      console.log("DELETE failed: insufficient permissions, role:", authResult.role);
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
     }
     
     // Nejprve počkáme na params
     const resolvedParams = await params;
+    console.log("DELETE endpoint attempting to delete article ID:", resolvedParams.id);
+    
     const success = await articleService.deleteArticle(resolvedParams.id);
+    console.log("ArticleService.deleteArticle returned:", success);
+    
     if (!success) {
+      console.log("DELETE failed: article not found or deletion failed");
       return NextResponse.json({ success: false, error: "Article not found" }, { status: 404 });
     }
     
+    console.log("DELETE successful for article ID:", resolvedParams.id);
     return NextResponse.json({ success: true, message: "Article deleted successfully" });
   } catch (error) {
     console.error(`Error deleting article:`, error);

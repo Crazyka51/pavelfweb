@@ -84,6 +84,7 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   // Funkce pro načítání článků
   const loadArticles = useCallback(async () => {
     try {
+      console.log("loadArticles called");
       setIsLoading(true);
       
       // Použijeme authorizedFetch pro automatické přidání tokenu
@@ -104,7 +105,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
       const result = await response.json();
       if (result.success) {
         // Přidáváme console.log pro vypsání struktury objektů článků z API
-        console.log("Loaded articles from API:", JSON.parse(JSON.stringify(result.data)));
+        console.log("Loaded articles from API - total count:", result.data.articles?.length || 0);
+        console.log("Article IDs loaded:", result.data.articles?.map((a: any) => a.id) || []);
         
         // Validace dat článků pro zajištění, že všechny objekty mají požadované vlastnosti
         const articles = result.data.articles || [];
@@ -345,25 +347,39 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   };
 
   const handleDeleteArticle = async (articleId: string) => {
+    console.log("handleDeleteArticle called for ID:", articleId);
+    
     if (confirm("Opravdu chcete smazat tento článek?")) {
       try {
+        console.log("User confirmed deletion, calling API...");
+        
         // Použijeme authorizedFetch pro automatické přidání tokenu
         const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
           method: "DELETE",
           debug: true
         });
 
+        console.log("DELETE API response status:", response.status);
+        console.log("DELETE API response headers:", Object.fromEntries(response.headers.entries()));
+
         const result = await response.json();
+        console.log("DELETE API response body:", result);
+        
         if (result.success) {
+          console.log("DELETE successful, reloading articles...");
           await loadArticles();
+          console.log("Articles reloaded after deletion");
           alert("Článek byl úspěšně smazán");
         } else {
+          console.log("DELETE failed with result:", result);
           throw new Error(result.error || "Neznámá chyba při mazání článku");
         }
       } catch (error) {
         console.error("Error deleting article:", error);
         alert(`Chyba při mazání článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
       }
+    } else {
+      console.log("User cancelled deletion");
     }
   };
 

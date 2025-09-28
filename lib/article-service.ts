@@ -200,9 +200,29 @@ export class ArticleService {
    */
   async deleteArticle(id: string): Promise<boolean> {
     try {
-      await prisma.article.delete({
+      console.log("ArticleService.deleteArticle called with ID:", id);
+      
+      // Nejprve zkontrolujme, že článek existuje
+      const existingArticle = await prisma.article.findUnique({
         where: { id },
       });
+      console.log("Existing article before deletion:", existingArticle ? `Found article: ${existingArticle.title}` : "Article not found");
+      
+      if (!existingArticle) {
+        console.log("Cannot delete - article does not exist");
+        return false;
+      }
+
+      const deleteResult = await prisma.article.delete({
+        where: { id },
+      });
+      console.log("Prisma delete result:", deleteResult);
+      
+      // Ověříme, že článek byl skutečně smazán
+      const verifyDeleted = await prisma.article.findUnique({
+        where: { id },
+      });
+      console.log("Verification after deletion - article found:", verifyDeleted ? "STILL EXISTS!" : "Successfully deleted");
       
       return true;
       
