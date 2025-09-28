@@ -8,13 +8,14 @@ interface Article {
   id: string
   title: string
   content: string
-  excerpt: string
-  category: string
+  excerpt: string | null
+  category: { id: string; name: string } | string
   tags: string[]
-  published: boolean
+  status: string
   createdAt: string
   updatedAt: string
-  imageUrl?: string
+  publishedAt: string | null
+  imageUrl?: string | null
 }
 
 interface ApiResponse {
@@ -49,21 +50,25 @@ export default function NewsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const articles: Article[] = await response.json();
+      const data: ApiResponse = await response.json();
+      const articles: Article[] = data.articles || [];
       
       // Client-side filtering and pagination
       let filteredArticles = articles;
       
       // Filter by category
       if (selectedCategory !== 'all') {
-        filteredArticles = filteredArticles.filter(article => article.category === selectedCategory);
+        filteredArticles = filteredArticles.filter(article => {
+          const categoryName = typeof article.category === 'string' ? article.category : article.category.name;
+          return categoryName === selectedCategory;
+        });
       }
       
       // Filter by search term
       if (searchTerm) {
         filteredArticles = filteredArticles.filter(article =>
           article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (article.excerpt && article.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
           article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
         );
       }
@@ -94,7 +99,8 @@ export default function NewsPage() {
     });
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: string | { id: string; name: string }) => {
+    const categoryName = typeof category === 'string' ? category : category.name;
     const colors: { [key: string]: string } = {
       'Aktuality': 'bg-blue-100 text-blue-800',
       'Městská politika': 'bg-purple-100 text-purple-800',
@@ -103,7 +109,7 @@ export default function NewsPage() {
       'Kultura': 'bg-pink-100 text-pink-800',
       'Sport': 'bg-orange-100 text-orange-800'
     };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+    return colors[categoryName] || 'bg-gray-100 text-gray-800';
   };
 
   const totalPages = Math.ceil(totalArticles / articlesPerPage);
@@ -208,7 +214,7 @@ export default function NewsPage() {
                   <div className="p-6">
                     <div className="flex items-center gap-2 mb-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(article.category)}`}>
-                        {article.category}
+                        {typeof article.category === 'string' ? article.category : article.category.name}
                       </span>
                       <div className="flex items-center text-sm text-gray-500">
                         <Calendar className="w-4 h-4 mr-1" />
@@ -221,7 +227,7 @@ export default function NewsPage() {
                     </h3>
                     
                     <p className="text-gray-600 mb-4 line-clamp-3">
-                      {article.excerpt}
+                      {article.excerpt || 'Žádný úryvek není k dispozici'}
                     </p>
                     
                     {article.tags.length > 0 && (

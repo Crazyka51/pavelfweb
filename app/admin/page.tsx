@@ -160,15 +160,17 @@ export default function AdminPage() {
         return <ArticleManager articles={articles} onEditArticle={handleEditArticle} onCreateNew={handleCreateNew} onRefresh={loadArticles} />;
       case "new-article":
         return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="p-8 bg-white min-h-full">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900">
               {editingArticleId ? "Upravit článek" : "Nový článek"}
             </h2>
-            <ArticleEditor
-              articleId={editingArticleId || undefined}
-              onSave={handleBackToArticles}
-              onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
-            />
+            <div className="bg-white">
+              <ArticleEditor
+                articleId={editingArticleId || undefined}
+                onSave={handleBackToArticles}
+                onCancel={editingArticleId ? handleBackToArticles : handleBackToDashboard}
+              />
+            </div>
           </div>
         );
       case "media":

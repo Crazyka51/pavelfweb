@@ -66,11 +66,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchYears = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('adminToken')
       const response = await fetch('/api/admin/media/list', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
       const data = await response.json()
       
@@ -96,11 +93,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMonths = async (year: string) => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('adminToken')
       const response = await fetch(`/api/admin/media/list?year=${year}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
       const data = await response.json()
       
@@ -126,11 +120,8 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
   const fetchMediaFiles = async (year: string, month: string) => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('adminToken')
       const response = await fetch(`/api/admin/media/list?year=${year}&month=${month}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
       const data = await response.json()
       
@@ -185,9 +176,7 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         const response = await fetch('/api/admin/media/upload', {
           method: 'POST',
           body: formData,
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          }
+          credentials: 'include',
         })
         
         const data = await response.json()
@@ -239,9 +228,7 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
     try {
       const response = await fetch(`/api/admin/media/delete?path=${encodeURIComponent(file.url)}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-        }
+        credentials: 'include',
       })
       
       const data = await response.json()

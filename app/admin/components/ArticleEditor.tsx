@@ -133,10 +133,42 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
   }, [articleId, toast]);
 
 
+  const generateMetaTags = useCallback((title: string, content: string) => {
+    // Generování meta title
+    const metaTitle = title.length > 60 ? title.substring(0, 57) + '...' : title;
+    
+    // Generování meta description z obsahu
+    // Odstranění HTML tagů a získání prvních cca 150 znaků
+    const plainContent = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    const metaDescription = plainContent.length > 150 
+      ? plainContent.substring(0, 147) + '...' 
+      : plainContent;
+    
+    return { metaTitle, metaDescription };
+  }, []);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    
     if (!articleId) { // Only auto-generate slug for new articles
-      setSlug(generateSlug(e.target.value));
+      setSlug(generateSlug(newTitle));
+    }
+    
+    // Auto-generování meta tagů pokud jsou prázdné
+    if (!metaTitle.trim() && newTitle.trim()) {
+      const { metaTitle: autoMetaTitle } = generateMetaTags(newTitle, content);
+      setMetaTitle(autoMetaTitle);
+    }
+  };
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    
+    // Auto-generování meta description pokud je prázdná
+    if (!metaDescription.trim() && newContent.trim() && title.trim()) {
+      const { metaDescription: autoMetaDescription } = generateMetaTags(title, newContent);
+      setMetaDescription(autoMetaDescription);
     }
   };
 
@@ -237,7 +269,7 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
         <Label htmlFor="content">Obsah</Label>
         <MediaEnabledTiptapEditor
           content={content}
-          onChange={setContent}
+          onChange={handleContentChange}
           placeholder="Zde napište obsah článku..."
         />
       </div>
@@ -299,14 +331,47 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
       </div>
       
       <div className="space-y-4 rounded-md border p-4">
-        <h3 className="text-lg font-medium">SEO Nastavení</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">SEO Nastavení</h3>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              if (title.trim() && content.trim()) {
+                const { metaTitle: autoMetaTitle, metaDescription: autoMetaDescription } = generateMetaTags(title, content);
+                setMetaTitle(autoMetaTitle);
+                setMetaDescription(autoMetaDescription);
+                toast({ title: "Meta tagy byly automaticky vygenerovány" });
+              } else {
+                toast({ 
+                  title: "Nelze generovat meta tagy", 
+                  description: "Nejprve vyplňte název a obsah článku",
+                  variant: "destructive" 
+                });
+              }
+            }}
+          >
+            🤖 Generovat automaticky
+          </Button>
+        </div>
          <div className="space-y-2">
             <Label htmlFor="metaTitle">Meta Title</Label>
-            <Input id="metaTitle" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} />
+            <Input 
+              id="metaTitle" 
+              value={metaTitle} 
+              onChange={(e) => setMetaTitle(e.target.value)}
+              placeholder="Automaticky vygenerováno při vyplnění názvu"
+            />
         </div>
         <div className="space-y-2">
             <Label htmlFor="metaDescription">Meta Description</Label>
-            <Textarea id="metaDescription" value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} />
+            <Textarea 
+              id="metaDescription" 
+              value={metaDescription} 
+              onChange={(e) => setMetaDescription(e.target.value)}
+              placeholder="Automaticky vygenerováno při vyplnění obsahu"
+            />
         </div>
       </div>
 
