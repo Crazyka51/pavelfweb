@@ -7,6 +7,7 @@ import CookieManager from "./components/CookieManager";
 import { GoogleAnalytics } from "./components/GoogleAnalytics";
 import StructuredData from "./components/StructuredData";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type React from "react";
 import { Suspense } from "react";
 
@@ -75,6 +76,7 @@ export default function RootLayout({
           <CookieManager />
         </Suspense>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
