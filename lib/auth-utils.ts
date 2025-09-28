@@ -211,10 +211,23 @@ export async function authenticateAdmin(request: NextRequest): Promise<UserPaylo
     }
   }
   
-  // Pokud access token není nebo je neplatný, zkusíme refresh token
-  const refreshResult = await refreshSession();
-  if (refreshResult && refreshResult.user.role === 'admin') {
-    return refreshResult.user;
+  // Pokud access token není nebo je neplatný, zkusíme refresh token z cookies
+  try {
+    const refreshToken = request.cookies.get("refresh_token")?.value;
+    
+    if (refreshToken) {
+      // Ověření refresh tokenu
+      const payload = await verifyRefreshToken(refreshToken);
+      if (payload && payload.role === 'admin') {
+        return {
+          userId: payload.userId as string,
+          username: payload.username as string,
+          role: payload.role as string,
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Failed to authenticate admin from cookies:", error);
   }
   
   return null;

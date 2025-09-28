@@ -15,13 +15,21 @@ import { useState } from 'react'
 interface MediaPickerDialogProps {
   onSelectMedia: (url: string) => void
   trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export default function MediaPickerDialog({
   onSelectMedia,
-  trigger
+  trigger,
+  open: controlledOpen,
+  onOpenChange
 }: MediaPickerDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen
 
   const handleSelectMedia = (url: string) => {
     onSelectMedia(url)
@@ -30,14 +38,19 @@ export default function MediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
+      {trigger && (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      )}
+      {!trigger && !isControlled && (
+        <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <ImageIcon className="h-4 w-4 mr-2" />
             Vybrat médium
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle>Správce médií</DialogTitle>

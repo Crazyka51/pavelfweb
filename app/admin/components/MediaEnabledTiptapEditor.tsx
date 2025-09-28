@@ -187,15 +187,15 @@ export default function MediaEnabledTiptapEditor({
       />
       <EditorContent editor={editor} className={uploadingImage ? "opacity-70" : ""} />
       
-      {mediaDialogOpen && (
-        <MediaPickerDialog
-          onSelectMedia={(url) => {
-            addImageFromMedia(url)
-            setMediaDialogOpen(false)
-          }}
-          trigger={null}
-        />
-      )}
+      <MediaPickerDialog
+        open={mediaDialogOpen}
+        onOpenChange={setMediaDialogOpen}
+        onSelectMedia={(url) => {
+          addImageFromMedia(url)
+          setMediaDialogOpen(false)
+        }}
+        trigger={null}
+      />
     </div>
   )
 }
