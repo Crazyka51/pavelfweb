@@ -1,31 +1,5 @@
-import Hero from "./components/Hero";
-import Introduction from "./components/WearYourStory";
-import Priorities from "./components/Services";
-import AboutMe from "./components/AboutUs";
-// Timeline komponenta byla odstraněna, protože je prázdná
-import Projects from "./components/Projects";
-import Testimonials from "./components/Testimonials";
-import Marquee from "./components/Marquee";
-import FacebookPosts from "./components/FacebookPosts";
-import RecentNews from "./components/RecentNews";
-import ContactForm from "./components/ContactForm";
-import NewsletterSubscribe from "./components/NewsletterSubscribe";
+import UnderConstruction from "./components/UnderConstruction";
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <Introduction />
-      <Priorities />
-      <AboutMe />
-      <Projects />
-      {/* Timeline komponenta byla odstraněna, protože je prázdná */}
-      <Testimonials />
-      <FacebookPosts />
-      <Marquee />
-      <RecentNews />
-      <ContactForm />
-      <NewsletterSubscribe />
-    </>
-  );
+  return <UnderConstruction />;
 }
