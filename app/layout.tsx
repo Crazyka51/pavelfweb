@@ -50,12 +50,24 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Vytvoříme proměnnou na sledování, zda jsme na hlavní stránce
+  const isHomePage = true; // V produkční verzi by zde byla detekce cesty
+  
   return (
     <html lang="cs" suppressHydrationWarning>
       <head>
         <meta name="facebook-domain-verification" content="84zli94h1aqmrsxj4u3bgxzuum7kzd" />
+        {/* Inline styl pro skrytí původního headeru když je aktivní Under Construction stránka */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Skryje původní header */
+            body.under-construction-active > header:first-of-type {
+              display: none !important;
+            }
+          `
+        }} />
       </head>
-      <body className={`${inter.className} min-h-screen`}>
+      <body className={`${inter.className} min-h-screen under-construction-active`}>
         <Suspense fallback={null}>
           <GoogleAnalytics />
           <StructuredData
@@ -67,6 +79,7 @@ export default function RootLayout({
           />
         </Suspense>
 
+        {/* Původní header stále ponecháme pro ostatní stránky */}
         <Header />
         <main>{children}</main>
         <Footer />

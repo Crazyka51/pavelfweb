@@ -3,7 +3,10 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Wrench, Calendar, Clock } from "lucide-react";
+import HeaderV2 from "./HeaderV2";
+import Head from "next/head";
 
+// Vytvoříme komponentu, která použije CSS k odstranění původního headeru
 export default function UnderConstruction() {
   // Set the target date to 14 days from now
   const [targetDate] = useState(() => {
@@ -41,9 +44,11 @@ export default function UnderConstruction() {
   }, [targetDate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-800 via-blue-700 to-blue-600 text-white flex items-center justify-center px-4">
-      <div className="max-w-4xl w-full">
-        <motion.div
+    <>
+      <HeaderV2 />
+      <div className="min-h-screen bg-gradient-to-br from-blue-800 via-blue-700 to-blue-600 text-white flex items-center justify-center px-4">
+        <div className="max-w-4xl w-full">
+          <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,7 +161,8 @@ export default function UnderConstruction() {
             </p>
           </motion.div>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
