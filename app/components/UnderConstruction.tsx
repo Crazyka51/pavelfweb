@@ -8,11 +8,10 @@ import Head from "next/head";
 
 // Vytvoříme komponentu, která použije CSS k odstranění původního headeru
 export default function UnderConstruction() {
-  // Set the target date to 14 days from now
+  // Pevné datum dokončení - 19. října 2025 (14 dní od 5. října 2025)
   const [targetDate] = useState(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 14);
-    return date;
+    // Použití pevného data místo dynamického výpočtu
+    return new Date(2025, 9, 19, 12, 0, 0); // 19. října 2025, 12:00:00
   });
 
   const [timeLeft, setTimeLeft] = useState({
@@ -93,9 +92,14 @@ export default function UnderConstruction() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <Calendar className="w-5 h-5 text-blue-200" />
-              <p className="text-lg text-blue-100">Očekávané dokončení za:</p>
+            <div className="flex flex-col items-center justify-center gap-1 mb-6">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-200" />
+                <p className="text-lg text-blue-100">Očekávané dokončení za:</p>
+              </div>
+              <p className="text-sm text-blue-200">
+                (Připravujeme spuštění na 19. října 2025)
+              </p>
             </div>
 
             <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
