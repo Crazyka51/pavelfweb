@@ -38,3 +38,6 @@ next-env.d.ts
 # Záložní adresáře z čištění projektu
 _cleanup_backup_*/
 _cleanup_scripts_*/
+
+# Backup files
+*.backup
