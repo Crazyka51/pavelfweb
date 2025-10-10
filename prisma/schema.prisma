@@ -226,3 +226,16 @@ enum CampaignStatus {
   SENT
   FAILED
 }
+
+model EditableText {
+  id        String   @id @default(cuid())
+  component String   @db.VarChar(100)
+  textKey   String   @db.VarChar(100)
+  value     String
+  lang      String   @default("cs") @db.VarChar(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([component, textKey, lang])
+  @@index([component])
+}

@@ -15,6 +15,7 @@ import {
   X,
   User,
   Image,
+  Type,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -40,6 +41,7 @@ export default function AdminLayout({
     { id: "new-article", label: "Nový článek", icon: PlusCircle, description: "Vytvořit nový článek" },
     { id: "media", label: "Média", icon: Image, description: "Správa obrázků a souborů" },
     { id: "categories", label: "Kategorie", icon: Tag, description: "Správa kategorií a štítků" },
+    { id: "texts", label: "Správa textů", icon: Type, description: "Editovatelné texty komponent" },
     { id: "analytics", label: "Statistiky", icon: BarChart3, description: "Lokální přehledy" },
     { id: "settings", label: "Nastavení", icon: Settings, description: "Konfigurace systému" },
   ];

@@ -8,6 +8,7 @@ import ArticleEditor from "./components/ArticleEditor";
 import CategoryManager from "./components/CategoryManager";
 import SettingsManager from "./components/SettingsManager";
 import AnalyticsManager from "./components/AnalyticsManager";
+import TextsManager from "./components/TextsManager";
 import { Article, ArticleStatus } from "@/types/cms";
 import { useAuth } from '@/lib/auth-context';
 
@@ -17,6 +18,7 @@ type AdminSection =
   | "new-article"
   | "media"
   | "categories"
+  | "texts"
   | "analytics"
   | "backup"
   | "settings"
@@ -207,6 +209,8 @@ export default function AdminPage() {
         );
       case "settings":
         return <SettingsManager />;
+      case "texts":
+        return <TextsManager />;
       default:
         return <Dashboard />;
     }
