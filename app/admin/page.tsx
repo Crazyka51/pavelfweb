@@ -8,6 +8,7 @@ import ArticleEditor from "./components/ArticleEditor";
 import CategoryManager from "./components/CategoryManager";
 import SettingsManager from "./components/SettingsManager";
 import AnalyticsManager from "./components/AnalyticsManager";
+import CodeEditor from "./components/CodeEditor";
 import { Article, ArticleStatus } from "@/types/cms";
 import { useAuth } from '@/lib/auth-context';
 
@@ -20,6 +21,7 @@ type AdminSection =
   | "analytics"
   | "backup"
   | "settings"
+  | "code-editor"
 
 export default function AdminPage() {
   const { user, logout } = useAuth();
@@ -207,6 +209,8 @@ export default function AdminPage() {
         );
       case "settings":
         return <SettingsManager />;
+      case "code-editor":
+        return <CodeEditor />;
       default:
         return <Dashboard />;
     }
