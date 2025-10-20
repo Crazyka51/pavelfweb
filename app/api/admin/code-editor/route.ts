@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { requireAuth } from "@/lib/auth-utils";
 
 // List all component files
-export async function GET(request: NextRequest) {
+export const GET = requireAuth(async () => {
   try {
     const componentsDir = path.join(process.cwd(), "app", "components");
     
@@ -30,20 +31,22 @@ export async function GET(request: NextRequest) {
       success: true,
       files: filesWithContent,
     });
-  } catch (error: any) {
-    console.error("Error listing component files:", error);
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error listing component files:", error);
+    }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to list component files",
+        error: error instanceof Error ? error.message : "Failed to list component files",
       },
       { status: 500 }
     );
   }
-}
+});
 
 // Get file content or save file
-export async function POST(request: NextRequest) {
+export const POST = requireAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { filePath, action } = body;
@@ -95,14 +98,16 @@ export async function POST(request: NextRequest) {
       { success: false, error: "Invalid action" },
       { status: 400 }
     );
-  } catch (error: any) {
-    console.error("Error in code editor API:", error);
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error in code editor API:", error);
+    }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Operation failed",
+        error: error instanceof Error ? error.message : "Operation failed",
       },
       { status: 500 }
     );
   }
-}
+});

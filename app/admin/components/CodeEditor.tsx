@@ -33,7 +33,9 @@ export default function CodeEditor() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/admin/code-editor");
+      
+      const { authorizedFetch } = await import('@/lib/auth-fetch');
+      const response = await authorizedFetch("/api/admin/code-editor");
       const data = await response.json();
 
       if (data.success) {
@@ -41,8 +43,8 @@ export default function CodeEditor() {
       } else {
         setError(data.error || "Failed to load files");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to load files");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load files");
     } finally {
       setLoading(false);
     }
@@ -54,7 +56,8 @@ export default function CodeEditor() {
       setError(null);
       setSuccess(null);
       
-      const response = await fetch("/api/admin/code-editor", {
+      const { authorizedFetch } = await import('@/lib/auth-fetch');
+      const response = await authorizedFetch("/api/admin/code-editor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,8 +75,8 @@ export default function CodeEditor() {
       } else {
         setError(data.error || "Failed to load file content");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to load file content");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load file content");
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,8 @@ export default function CodeEditor() {
       setError(null);
       setSuccess(null);
 
-      const response = await fetch("/api/admin/code-editor", {
+      const { authorizedFetch } = await import('@/lib/auth-fetch');
+      const response = await authorizedFetch("/api/admin/code-editor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,8 +110,8 @@ export default function CodeEditor() {
       } else {
         setError(data.error || "Failed to save file");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to save file");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save file");
     } finally {
       setSaving(false);
     }
