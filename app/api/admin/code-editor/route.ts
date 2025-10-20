@@ -67,6 +67,18 @@ export const POST = requireAuth(async (request: NextRequest) => {
     }
 
     const fullPath = path.join(process.cwd(), filePath);
+    const componentsDir = path.join(process.cwd(), "app", "components");
+    
+    // Additional security: ensure resolved path is within components directory
+    const resolvedPath = path.resolve(fullPath);
+    const resolvedComponentsDir = path.resolve(componentsDir);
+    
+    if (!resolvedPath.startsWith(resolvedComponentsDir)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid file path - path traversal detected" },
+        { status: 403 }
+      );
+    }
 
     if (action === "read") {
       // Read file content

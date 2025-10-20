@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Save, FileCode, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { authorizedFetch } from "@/lib/auth-fetch";
 
 interface ComponentFile {
   name: string;
@@ -34,7 +35,6 @@ export default function CodeEditor() {
       setLoading(true);
       setError(null);
       
-      const { authorizedFetch } = await import('@/lib/auth-fetch');
       const response = await authorizedFetch("/api/admin/code-editor");
       const data = await response.json();
 
@@ -56,7 +56,6 @@ export default function CodeEditor() {
       setError(null);
       setSuccess(null);
       
-      const { authorizedFetch } = await import('@/lib/auth-fetch');
       const response = await authorizedFetch("/api/admin/code-editor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,7 +89,6 @@ export default function CodeEditor() {
       setError(null);
       setSuccess(null);
 
-      const { authorizedFetch } = await import('@/lib/auth-fetch');
       const response = await authorizedFetch("/api/admin/code-editor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
