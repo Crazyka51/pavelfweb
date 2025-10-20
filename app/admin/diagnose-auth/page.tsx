@@ -21,8 +21,8 @@ export default function DiagnoseAuth() {
         setCookies(document.cookie || 'Žádné cookies');
 
         // Zjištění localStorage
-        const accessToken = window.localStorage.getItem('access_token');
-        setLocalStorage(accessToken ? 'access_token je nastaven' : 'access_token není nastaven');
+        const accessToken = window.localStorage.getItem('adminToken');
+        setLocalStorage(accessToken ? 'adminToken je nastaven' : 'adminToken není nastaven');
 
         // Test API přístupu
         const response = await fetch('/api/admin/articles', {
@@ -75,7 +75,7 @@ export default function DiagnoseAuth() {
       requestHeaders.append('Content-Type', 'application/json');
       
       // Získáme token z localStorage a přidáme ho do Authorization hlavičky
-      const accessToken = window.localStorage.getItem('access_token');
+      const accessToken = window.localStorage.getItem('adminToken');
       if (accessToken) {
         requestHeaders.append('Authorization', `Bearer ${accessToken}`);
       }
