@@ -219,6 +219,17 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
 enum CampaignStatus {
   DRAFT
   SCHEDULED
