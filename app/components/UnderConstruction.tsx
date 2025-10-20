@@ -11,7 +11,7 @@ export default function UnderConstruction() {
   // Pevné datum dokončení - 19. října 2025 (14 dní od 5. října 2025)
   const [targetDate] = useState(() => {
     // Použití pevného data místo dynamického výpočtu
-    return new Date(2025, 9, 19, 12, 0, 0); // 19. října 2025, 12:00:00
+    return new Date(2025, 10, 1, 12, 0, 0); // 19. října 2025, 12:00:00
   });
 
   const [timeLeft, setTimeLeft] = useState({
@@ -98,7 +98,7 @@ export default function UnderConstruction() {
                 <p className="text-lg text-blue-100">Očekávané dokončení za:</p>
               </div>
               <p className="text-sm text-blue-200">
-                (Připravujeme spuštění na 19. října 2025)
+                (Připravujeme spuštění na 1. listopadu 2025)
               </p>
             </div>
 
