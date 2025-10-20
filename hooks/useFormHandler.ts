@@ -26,7 +26,6 @@ export const useFormHandler = ({ initialValues, validate, onSubmit }: FormHandle
     try {
       await onSubmit(values);
     } catch (error) {
-      console.error('Error submitting form:', error);
     } finally {
       setIsSubmitting(false);
     }

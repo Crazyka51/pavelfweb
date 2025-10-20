@@ -122,7 +122,6 @@ export default function AdminDashboard({ onCreateNew, onViewArticles, onViewSett
         setRecentArticles(recent);
       }
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
     } finally {
       setIsLoading(false);
     }

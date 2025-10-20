@@ -56,7 +56,6 @@ export const useArticlesData = () => {
           throw new Error("Failed to load articles")
         }
       } catch (error) {
-        console.error("Error loading articles:", error)
         throw error
       } finally {
         setIsLoading(false)
@@ -87,7 +86,6 @@ export const useArticlesData = () => {
           throw new Error("Failed to create article")
         }
       } catch (error) {
-        console.error("Error creating article:", error)
         throw error
       }
     },
@@ -116,7 +114,6 @@ export const useArticlesData = () => {
           throw new Error("Failed to update article")
         }
       } catch (error) {
-        console.error("Error updating article:", error)
         throw error
       }
     },
@@ -142,7 +139,6 @@ export const useArticlesData = () => {
           throw new Error("Failed to delete article")
         }
       } catch (error) {
-        console.error("Error deleting article:", error)
         throw error
       }
     },
@@ -176,7 +172,6 @@ export const useArticlesData = () => {
           throw new Error("Failed to bulk update articles")
         }
       } catch (error) {
-        console.error("Error bulk updating articles:", error)
         throw error
       }
     },
@@ -221,7 +216,6 @@ export const useSubscribersData = () => {
           throw new Error("Failed to load subscribers")
         }
       } catch (error) {
-        console.error("Error loading subscribers:", error)
         throw error
       } finally {
         setIsLoading(false)
@@ -252,7 +246,6 @@ export const useSubscribersData = () => {
           throw new Error("Failed to update subscriber")
         }
       } catch (error) {
-        console.error("Error updating subscriber:", error)
         throw error
       }
     },
@@ -278,7 +271,6 @@ export const useSubscribersData = () => {
           throw new Error("Failed to delete subscriber")
         }
       } catch (error) {
-        console.error("Error deleting subscriber:", error)
         throw error
       }
     },
@@ -318,7 +310,6 @@ export const useSubscribersData = () => {
           throw new Error("Failed to bulk update subscribers")
         }
       } catch (error) {
-        console.error("Error bulk updating subscribers:", error)
         throw error
       }
     },

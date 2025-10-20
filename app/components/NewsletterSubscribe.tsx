@@ -46,7 +46,6 @@ export default function NewsletterSubscribe() {
         setMessage({ text: data.message, type: 'error' });
       }
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
       setMessage({ 
         text: 'Chyba při přihlašování k odběru. Zkuste to prosím později.', 
         type: 'error' 

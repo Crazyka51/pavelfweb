@@ -76,7 +76,6 @@ async function handleBlobStorageList(year: string | null, month: string | null) 
       media: mediaFiles 
     });
   } catch (error) {
-    console.error('Error listing blob storage:', error);
     return NextResponse.json({ success: false, error: 'Blob storage error' }, { status: 500 });
   }
 }
@@ -219,7 +218,6 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Error listing media:', error);
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
   }
 }

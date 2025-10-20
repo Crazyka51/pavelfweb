@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error verifying user:", error);
     return NextResponse.json({ error: "Chyba při ověřování uživatele" }, { status: 500 });
   }
 }

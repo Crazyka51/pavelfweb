@@ -37,7 +37,6 @@ export async function GET(
 
     return NextResponse.json(articleData, { status: 200 });
   } catch (error) {
-    console.error("Error fetching article:", error);
     return NextResponse.json(
       { error: "Nepodařilo se načíst článek" },
       { status: 500 }

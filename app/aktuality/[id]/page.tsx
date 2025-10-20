@@ -41,7 +41,6 @@ async function getArticle(id: string): Promise<Article | null> {
     );
 
     if (response.status === 404) {
-      console.warn("Článek nebyl nalezen:", id);
       return null;
     }
 
@@ -52,7 +51,6 @@ async function getArticle(id: string): Promise<Article | null> {
     const article: Article = await response.json();
     return article;
   } catch (error) {
-    console.error("Error fetching article:", error);
 
     // Fallback na lokální data
     try {
@@ -66,7 +64,6 @@ async function getArticle(id: string): Promise<Article | null> {
         return articles.find((article) => article.id === id || article.slug === id) || null;
       }
     } catch (fallbackError) {
-      console.error("Error loading fallback data:", fallbackError);
     }
 
     return null;
@@ -242,7 +239,6 @@ export async function generateStaticParams() {
 
     // Ensure articles is an array before mapping
     if (!Array.isArray(articles)) {
-      console.error("Expected articles to be an array, got:", articles);
       return [];
     }
 
@@ -250,7 +246,6 @@ export async function generateStaticParams() {
       id: article.id,
     }));
   } catch (error) {
-    console.error("Error generating static params:", error);
 
     // Fallback na lokální data
     try {
@@ -264,7 +259,6 @@ export async function generateStaticParams() {
 
         // Ensure articles is an array before mapping
         if (!Array.isArray(articles)) {
-          console.error("Expected fallback articles to be an array, got:", articles);
           return [];
         }
 
@@ -273,7 +267,6 @@ export async function generateStaticParams() {
         }));
       }
     } catch (fallbackError) {
-      console.error("Error loading fallback data for static params:", fallbackError);
     }
 
     return [];

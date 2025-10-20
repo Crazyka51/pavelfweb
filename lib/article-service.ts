@@ -57,7 +57,6 @@ export class ArticleService {
       });
       
     } catch (error) {
-      console.error("Error getting articles:", error);
       throw new Error("Failed to fetch articles");
     }
   }
@@ -95,7 +94,6 @@ export class ArticleService {
       });
       
     } catch (error) {
-      console.error("Error getting total article count:", error);
       return 0;
     }
   }
@@ -114,7 +112,6 @@ export class ArticleService {
       });
       
     } catch (error) {
-      console.error(`Error getting article with ID ${id}:`, error);
       return null;
     }
   }
@@ -124,7 +121,6 @@ export class ArticleService {
    */
   async createArticle(input: CreateArticleInput) {
     try {
-      console.log("Creating article with input:", JSON.stringify(input, null, 2));
       
       // Validace vstupních dat
       if (!input.title) throw new Error("Title is required");
@@ -155,12 +151,9 @@ export class ArticleService {
         },
       });
       
-      console.log("Article created successfully:", result);
       return result;
       
     } catch (error) {
-      console.error("Error creating article:", error);
-      console.error("Full error details:", JSON.stringify(error, null, 2));
       
       // Lepší chybové zprávy
       if (error instanceof Error && 'code' in error) {
@@ -190,7 +183,6 @@ export class ArticleService {
       });
       
     } catch (error) {
-      console.error(`Error updating article with ID ${id}:`, error);
       return null;
     }
   }
@@ -200,34 +192,28 @@ export class ArticleService {
    */
   async deleteArticle(id: string): Promise<boolean> {
     try {
-      console.log("ArticleService.deleteArticle called with ID:", id);
       
       // Nejprve zkontrolujme, že článek existuje
       const existingArticle = await prisma.article.findUnique({
         where: { id },
       });
-      console.log("Existing article before deletion:", existingArticle ? `Found article: ${existingArticle.title}` : "Article not found");
       
       if (!existingArticle) {
-        console.log("Cannot delete - article does not exist");
         return false;
       }
 
       const deleteResult = await prisma.article.delete({
         where: { id },
       });
-      console.log("Prisma delete result:", deleteResult);
       
       // Ověříme, že článek byl skutečně smazán
       const verifyDeleted = await prisma.article.findUnique({
         where: { id },
       });
-      console.log("Verification after deletion - article found:", verifyDeleted ? "STILL EXISTS!" : "Successfully deleted");
       
       return true;
       
     } catch (error) {
-      console.error(`Error deleting article with ID ${id}:`, error);
       return false;
     }
   }

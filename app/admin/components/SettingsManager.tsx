@@ -65,10 +65,8 @@ export default function SettingsManager() {
           setLastSaved(new Date(data.updatedAt).toLocaleString("cs-CZ"));
         }
       } else {
-        console.error("Failed to load settings", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading settings:", error);
     }
   };
 
@@ -77,7 +75,6 @@ export default function SettingsManager() {
       // Přidáno ověření autorizace a token
       const token = localStorage.getItem("adminToken");
       if (!token) {
-        console.error("Chybí přihlašovací token pro načtení kategorií");
         return;
       }
 
@@ -94,14 +91,11 @@ export default function SettingsManager() {
         if (data && data.categories) {
           setCategoryOptions(data.categories.map((cat: any) => ({ id: cat.id, name: cat.name })));
         } else {
-          console.warn("Neplatná data kategorií:", data);
           setCategoryOptions([]);
         }
       } else {
-        console.error("Failed to load categories for settings", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading categories for settings:", error);
     }
   };
 
@@ -127,7 +121,6 @@ export default function SettingsManager() {
         alert(`Chyba při ukládání nastavení: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      console.error("Error saving settings:", error);
       alert("Chyba při ukládání nastavení!");
     } finally {
       setIsSaving(false);
@@ -151,7 +144,6 @@ export default function SettingsManager() {
           alert(`Chyba při obnovování nastavení: ${errorData.message || response.statusText}`);
         }
       } catch (error) {
-        console.error("Error resetting settings:", error);
         alert("Chyba při obnovování nastavení!");
       }
     }

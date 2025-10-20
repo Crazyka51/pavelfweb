@@ -30,7 +30,6 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     const result = await sql`SELECT 1 as health_check`;
     return result && result.length > 0;
   } catch (error) {
-    console.error("Database connection failed:", error);
     return false;
   }
 }
@@ -41,10 +40,8 @@ export async function initializeDatabase() {
     // Enable UUID extension
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
-    console.log("Database initialized successfully");
     return true;
   } catch (error) {
-    console.error("Database initialization failed:", error);
     return false;
   }
 }
@@ -66,7 +63,6 @@ export async function tableExists(tableName: string): Promise<boolean> {
     `;
     return !!result[0]?.exists;
   } catch (error) {
-    console.error(`Error checking if table ${tableName} exists:`, error);
     return false;
   }
 }
@@ -90,7 +86,6 @@ export async function columnExists(tableName: string, columnName: string): Promi
     `;
     return !!result[0]?.exists;
   } catch (error) {
-    console.error(`Error checking if column ${columnName} in table ${tableName} exists:`, error);
     return false;
   }
 }

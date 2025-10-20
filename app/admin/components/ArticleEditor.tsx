@@ -174,7 +174,6 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Odesílání formuláře...");
     
     // Přidaná validace
     if (!title.trim()) {
@@ -212,9 +211,6 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
       const url = articleId ? `/api/admin/articles/${articleId}` : "/api/admin/articles";
       const method = articleId ? "PUT" : "POST";
 
-      console.log("Odesílám data:", articleData);
-      console.log("URL:", url);
-      console.log("Metoda:", method);
 
       const response = await fetch(url, {
         method,
@@ -225,9 +221,7 @@ export default function ArticleEditor({ articleId, onSave, onCancel }: ArticleEd
         body: JSON.stringify(articleData),
       });
 
-      console.log("Status:", response.status);
       const result = await response.json();
-      console.log("Odpověď serveru:", result);
 
       if (result.success) {
         toast({ title: articleId ? "Článek úspěšně aktualizován" : "Článek úspěšně vytvořen" });

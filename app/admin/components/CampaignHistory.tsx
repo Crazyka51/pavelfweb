@@ -50,7 +50,6 @@ export default function CampaignHistory({ token, onBack }: CampaignHistoryProps)
       setCampaigns(data.campaigns);
       setError(null);
     } catch (error) {
-      console.error('Error loading campaigns:', error);
       setError('Nepodařilo se načíst historii kampaní');
     } finally {
       setIsLoading(false);

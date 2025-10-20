@@ -80,7 +80,6 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         }
       }
     } catch (error) {
-      console.error('Error fetching years:', error)
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst roky médií',
@@ -107,7 +106,6 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         }
       }
     } catch (error) {
-      console.error('Error fetching months:', error)
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst měsíce médií',
@@ -130,7 +128,6 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         setMediaFiles(data.media)
       }
     } catch (error) {
-      console.error('Error fetching media files:', error)
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se načíst média',
@@ -202,7 +199,6 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         }
       }
     } catch (error) {
-      console.error('Error uploading files:', error)
       toast({ 
         title: 'Chyba', 
         description: 'Nepodařilo se nahrát soubory', 
@@ -242,7 +238,6 @@ export default function MediaManager({ onSelectMedia }: { onSelectMedia?: (url: 
         })
       }
     } catch (error) {
-      console.error('Error deleting file:', error)
       toast({
         title: 'Chyba',
         description: 'Nepodařilo se smazat soubor',

@@ -193,7 +193,6 @@ export const GET = requireAuth(async (request: NextRequest, auth: any) => {
 
     return NextResponse.json(analyticsData);
   } catch (error) {
-    console.error("Error fetching analytics:", error);
     return NextResponse.json(
       {
         message: "Chyba při načítání analytických dat",
@@ -243,7 +242,6 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json({ message: "Událost byla zaznamenána" }, { status: 201 });
   } catch (error) {
-    console.error("Error tracking analytics event:", error);
     return NextResponse.json(
       {
         message: "Chyba při zaznamenávání události",

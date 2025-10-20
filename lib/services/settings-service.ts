@@ -39,7 +39,6 @@ export class SettingsService {
       if (!result || result.length === 0) return null;
       return mapDbSettingsToCMSSettings(result[0]);
     } catch (error) {
-      console.error("Error fetching settings:", error);
       return null;
     }
   }
@@ -58,7 +57,6 @@ export class SettingsService {
         .returning(); // Use a fixed ID or fetch the existing one
       return mapDbSettingsToCMSSettings(updatedSettings);
     } catch (error) {
-      console.error("Error updating settings:", error);
       return null;
     }
   }
@@ -67,7 +65,6 @@ export class SettingsService {
     try {
       const existingSettings = await this.getSettings();
       if (existingSettings) {
-        console.log("Default settings already exist.");
         return existingSettings;
       }
 
@@ -97,10 +94,8 @@ export class SettingsService {
 
       // @ts-expect-error - ignorujeme typové chyby
       const [newSettings] = await db.insert(cmsSettings).values(defaultSettings).returning();
-      console.log("Default settings initialized.");
       return mapDbSettingsToCMSSettings(newSettings);
     } catch (error) {
-      console.error("Error initializing default settings:", error);
       return null;
     }
   }

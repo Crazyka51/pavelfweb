@@ -55,7 +55,6 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
           url: shareUrl
         });
       } catch {
-        console.log('Sharing cancelled');
       }
     } else {
       // Fallback - copy to clipboard

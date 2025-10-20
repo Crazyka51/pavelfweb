@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 async function createAdmin() {
   // Získání uživatelského jména a hesla z argumentů příkazové řádky
-  const username = process.argv[2] || 'admin';
-  const password = process.argv[3] || 'admin123';
+  const username = process.argv[2] || 'PavelFiser';
+  const password = process.argv[3] || '1T:V%uuYemJ';
   const email = process.argv[4] || `${username}@example.com`;
   
   try {

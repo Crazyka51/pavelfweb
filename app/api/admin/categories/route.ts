@@ -17,7 +17,6 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
       },
     });
   } catch (error) {
-    console.error("Categories GET error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -53,7 +52,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       );
     }
 
-    console.log("Creating category with name:", categoryData.name);
     const newCategory = await categoryService.createCategory(categoryData);
 
     return NextResponse.json(
@@ -65,7 +63,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       { status: 201 },
     );
   } catch (error) {
-    console.error("Categories POST error:", error);
     return NextResponse.json(
       {
         success: false,

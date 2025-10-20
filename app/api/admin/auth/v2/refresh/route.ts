@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error: any) {
-    console.error("Refresh token error:", error);
     return NextResponse.json(
       { success: false, message: "Chyba serveru: " + error.message }, 
       { status: 500 }

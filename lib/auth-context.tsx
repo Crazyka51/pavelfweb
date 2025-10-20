@@ -34,7 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(authState.isAuthenticated)
         setUser(authState.user || null)
       } catch (error) {
-        console.error('Auth check failed:', error)
         setIsAuthenticated(false)
         setUser(null)
       } finally {

@@ -9,7 +9,6 @@ export const GET = requireAuth(
       const settings = await settingsService.getSettingsObject();
       return NextResponse.json(settings);
     } catch (error) {
-      console.error("Error fetching settings:", error);
       return NextResponse.json({ message: "Failed to fetch settings" }, { status: 500 });
     }
   },
@@ -24,7 +23,6 @@ export const POST = requireAuth(
       const settings = await settingsService.resetSettings();
       return NextResponse.json({ message: "Settings reset successfully", settings }, { status: 200 });
     } catch (error) {
-      console.error("Error resetting settings:", error);
       return NextResponse.json({ message: "Failed to reset settings" }, { status: 500 });
     }
   },
@@ -42,7 +40,6 @@ export const PUT = requireAuth(
         settings: updatedSettings 
       }, { status: 200 });
     } catch (error) {
-      console.error("Error updating settings:", error);
       return NextResponse.json({ message: "Failed to update settings" }, { status: 500 });
     }
   },

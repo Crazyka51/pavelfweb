@@ -52,7 +52,6 @@ export default function ContactForm() {
         throw new Error('Failed to send email');
       }
     } catch (error) {
-      console.error('Error sending email:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

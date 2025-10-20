@@ -100,7 +100,6 @@ export default function Dashboard({ onCreateNew = () => {}, articles = [], onRef
       // Použijeme authService pro získání tokenu
       const token = localStorage.getItem("adminToken");
       if (!token) {
-        console.error("Chybí přihlašovací token");
         return;
       }
 
@@ -167,7 +166,6 @@ export default function Dashboard({ onCreateNew = () => {}, articles = [], onRef
         setRecentArticles(recent);
       }
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
     } finally {
       setIsLoading(false);
     }

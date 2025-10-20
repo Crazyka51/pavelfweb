@@ -31,7 +31,6 @@ export default function DraftManager({ onLoadDraft, onClose }: DraftManagerProps
         return [draft];
       }
     } catch (error) {
-      console.error('Error loading drafts:', error);
     }
     return [];
   });

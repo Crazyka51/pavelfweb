@@ -81,7 +81,6 @@ export default function NewsPage() {
       setTotalArticles(filteredArticles.length);
       setError(null); // Clear any previous errors
     } catch (error) {
-      console.error('Error loading articles:', error);
       setError('Nepodařilo se načíst články');
       // Zobrazíme prázdný seznam místo mock dat
       setArticles([]);

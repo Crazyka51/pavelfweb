@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
       count: articles.length
     });
   } catch (error) {
-    console.error('Error fetching articles:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch articles' },
       { status: 500 }
@@ -76,7 +75,6 @@ export async function POST(request: NextRequest) {
       data: article
     }, { status: 201 });
   } catch (error) {
-    console.error('Error creating article:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create article' },
       { status: 500 }

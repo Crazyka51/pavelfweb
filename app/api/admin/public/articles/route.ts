@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ articles, total, hasMore }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching public articles:", error);
     // Return an empty array and false for hasMore on error to prevent client crashes
     return NextResponse.json(
       { articles: [], total: 0, hasMore: false, message: "Failed to load articles." },

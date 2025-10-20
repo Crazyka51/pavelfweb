@@ -68,7 +68,6 @@ export class AuthService {
         message: data.message || 'Přihlášení selhalo',
       };
     } catch (error: any) {
-      console.error('Login error:', error);
       return {
         success: false,
         message: `Přihlášení selhalo: ${error.message || 'Neznámá chyba'}`,
@@ -104,7 +103,6 @@ export class AuthService {
         message: data.message || 'Odhlášení proběhlo úspěšně',
       };
     } catch (error: any) {
-      console.error('Logout error:', error);
       return {
         success: false,
         message: `Odhlášení selhalo: ${error.message || 'Neznámá chyba'}`,
@@ -132,7 +130,6 @@ export class AuthService {
         
         // Pouze pokud máme force=true parametr, zastavíme automatické přihlášení
         if (urlSearch.includes('force=true')) {
-          console.log('Vynucené odhlášení - force=true parametr');
           
           // Pouze pro force=true vymažeme token
           localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
@@ -196,7 +193,6 @@ export class AuthService {
       
       return { isAuthenticated: false };
     } catch (error) {
-      console.error('Auth check error:', error);
       // Při chybě odstraníme token z localStorage
       localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
       return { isAuthenticated: false };
@@ -242,7 +238,6 @@ export class AuthService {
       
       return { isAuthenticated: false };
     } catch (error) {
-      console.error('Token refresh error:', error);
       // Při chybě také odstraníme token, aby nedocházelo k opakovaným pokusům
       localStorage.removeItem(AuthService.ACCESS_TOKEN_KEY);
       return { isAuthenticated: false };
@@ -320,7 +315,6 @@ export class AuthService {
       try {
         callback(data);
       } catch (error) {
-        console.error(`Error in event listener for ${event}:`, error);
       }
     });
   }

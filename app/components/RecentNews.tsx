@@ -60,7 +60,6 @@ export default function RecentNews() {
       setArticles((prevArticles) => (pageNumber === 1 ? data.articles : [...prevArticles, ...data.articles]));
       setHasMore(data.hasMore);
     } catch (err: any) {
-      console.error("Error loading articles:", err);
       setError(err.message || "Nepodařilo se načíst nejnovější články.");
     } finally {
       setLoading(false);

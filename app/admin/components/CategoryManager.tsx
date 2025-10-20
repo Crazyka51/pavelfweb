@@ -57,13 +57,10 @@ export default function CategoryManager() {
         if (result.success) {
           setCategories(result.data);
         } else {
-          console.error("Error loading categories: Invalid data format", result);
         }
       } else {
-        console.error("Failed to load categories", response.status, await response.text());
       }
     } catch (error) {
-      console.error("Error loading categories:", error);
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +147,6 @@ export default function CategoryManager() {
         parent_id: ""
       });
     } catch (error) {
-      console.error("Error saving category:", error);
       toast({
         title: "Chyba při ukládání kategorie",
         description: "Došlo k neočekávané chybě při ukládání kategorie",
@@ -196,7 +192,6 @@ export default function CategoryManager() {
           });
         }
       } catch (error) {
-        console.error("Error deleting category:", error);
         toast({
           title: "Chyba při mazání kategorie",
           description: "Došlo k neočekávané chybě při mazání kategorie",

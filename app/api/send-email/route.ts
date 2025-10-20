@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 
     // Kontrola API klíče a konfigurace
     if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY není nastaven');
       return NextResponse.json(
         { error: 'Služba e-mailu není dostupná. Kontaktujte administrátora.' },
         { status: 500 }
@@ -114,7 +113,6 @@ ${message}
       },
     });
 
-    console.log('E-mail úspěšně odeslán:', emailData);
 
     return NextResponse.json(
       { 
@@ -126,7 +124,6 @@ ${message}
     );
 
   } catch (error) {
-    console.error('Chyba při odesílání e-mailu:', error);
 
     // Rozlišení různých typů chyb
     if (error instanceof z.ZodError) {

@@ -156,7 +156,6 @@ export class SettingsService {
         return this.mapToAppFormat(newSetting);
       }
     } catch (error) {
-      console.error(`Error setting setting for key ${key}:`, error);
       return null;
     }
   }
@@ -206,7 +205,6 @@ export class SettingsService {
           : (settings.updated_at || new Date().toISOString()),
       };
     } catch (error) {
-      console.error("Error getting settings object:", error);
       return DEFAULT_SETTINGS;
     }
   }
@@ -279,7 +277,6 @@ export class SettingsService {
         updatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      console.error("Error updating all settings:", error);
       throw error;
     }
   }
@@ -348,7 +345,6 @@ export class SettingsService {
         updatedAt: new Date().toISOString(),
       };
     } catch (error) {
-      console.error("Error resetting settings:", error);
       throw error;
     }
   }

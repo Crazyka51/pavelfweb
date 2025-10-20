@@ -12,7 +12,6 @@ const prisma = new PrismaClient();
 export const GET = requireAuth(async (request: NextRequest, authResult: any) => {
   // Logování pouze v development módu
   if (process.env.NODE_ENV === 'development') {
-    console.log("Auth result in GET /api/admin/articles:", authResult);
   }
 
   try {
@@ -56,7 +55,6 @@ export const GET = requireAuth(async (request: NextRequest, authResult: any) => 
       },
     });
   } catch (error) {
-    console.error("Articles GET error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -82,7 +80,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log("Creating article with author:", authResult.username);
     }
 
     const articleData = await request.json();
@@ -156,7 +153,6 @@ export const POST = requireAuth(async (request: NextRequest, authResult: any) =>
       data: savedArticle,
     });
   } catch (error) {
-    console.error("Articles POST error:", error);
     return NextResponse.json(
       {
         success: false,

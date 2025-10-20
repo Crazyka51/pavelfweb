@@ -36,7 +36,6 @@ export default function AdminPage() {
   // Centralizovaná funkce pro načítání článků
   // API chyba handler
   const handleApiError = (error: any, defaultMessage: string) => {
-    console.error(defaultMessage, error);
     
     // Zajištění, že se zobrazí jen textová zpráva, nikoliv kód
     let errorMessage = defaultMessage;
@@ -147,7 +146,6 @@ export default function AdminPage() {
         alert('Nepodařilo se vytvořit zálohu.');
       }
     } catch (error) {
-      console.error('Chyba při vytváření zálohy:', error);
       alert('Došlo k chybě při vytváření zálohy.');
     }
   };

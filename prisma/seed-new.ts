@@ -5,7 +5,6 @@ import { articles } from '../data/articles-new.json'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log(`Start seeding ...`)
 
   // Create test user
   const hashedPassword = await bcrypt.hash('password123', 10)
@@ -16,7 +15,6 @@ async function main() {
       password: hashedPassword,
     },
   })
-  console.log(`Created user: ${user.name}`)
 
   // Create admin user
   await prisma.admin_users.create({
@@ -27,7 +25,6 @@ async function main() {
       role: 'admin',
     },
   })
-  console.log(`Created admin user`)
 
   // Create categories
   const categories = [
@@ -53,7 +50,6 @@ async function main() {
       },
     })
     categoryMap.set(category.name, newCategory.id)
-    console.log(`Created category '${newCategory.name}'`)
   }
 
   // Create articles
@@ -73,15 +69,12 @@ async function main() {
         imageUrl: article.imageUrl,
       },
     })
-    console.log(`Created article '${newArticle.title}'`)
   }
 
-  console.log(`Seeding finished.`)
 }
 
 main()
   .catch((e) => {
-    console.error(e)
     process.exit(1)
   })
   .finally(async () => {

@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error: any) {
-    console.error("Chyba při diagnostice autentizace:", error);
     return NextResponse.json({
       success: false,
       message: "Interní chyba serveru při diagnostice autentizace",

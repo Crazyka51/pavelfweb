@@ -101,7 +101,6 @@ export default function AnalyticsWidget() {
       // Fallback to mock data if all APIs fail
       setData(getMockData());
     } catch (error) {
-      console.error("Analytics fetch error:", error);
       setData(getMockData());
     } finally {
       setIsLoading(false);

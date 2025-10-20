@@ -51,7 +51,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
     try {
       // Diagnostika autentizačního stavu
       const adminToken = localStorage.getItem('adminToken');
-      console.log("Auth diagnostika - adminToken existuje:", !!adminToken);
       
       if (!adminToken) {
         setApiStatus({status: 'error', message: 'Chybí autentizační token'});
@@ -72,7 +71,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         return false;
       }
     } catch (error) {
-      console.error("API diagnostika selhala:", error);
       setApiStatus({
         status: 'error', 
         message: `API diagnostika selhala: ${error instanceof Error ? error.message : "Neznámá chyba"}`
@@ -84,7 +82,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
   // Funkce pro načítání článků
   const loadArticles = useCallback(async () => {
     try {
-      console.log("loadArticles called");
       setIsLoading(true);
       
       // Použijeme authorizedFetch pro automatické přidání tokenu
@@ -105,8 +102,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
       const result = await response.json();
       if (result.success) {
         // Přidáváme console.log pro vypsání struktury objektů článků z API
-        console.log("Loaded articles from API - total count:", result.data.articles?.length || 0);
-        console.log("Article IDs loaded:", result.data.articles?.map((a: any) => a.id) || []);
         
         // Validace dat článků pro zajištění, že všechny objekty mají požadované vlastnosti
         const articles = result.data.articles || [];
@@ -132,14 +127,11 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
           };
         }).filter(Boolean); // Odstraní null hodnoty
         
-        console.log("Validated articles:", validatedArticles.length);
         setArticles(validatedArticles);
       } else {
-        console.error("Chyba při načítání článků:", result.error);
         alert(`Chyba při načítání článků: ${result.error || "Neznámá chyba"}`);
       }
     } catch (error) {
-      console.error("Chyba při načítání článků:", error);
       
       // Podrobnější diagnostika chyby
       let errorMessage = "Neznámá chyba";
@@ -149,12 +141,10 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         // Detekce typických problémů
         if (error.message.includes('Failed to fetch')) {
           errorMessage = "Nepodařilo se kontaktovat server. Zkontrolujte síťové připojení nebo zda server běží.";
-          console.log("Server je pravděpodobně nedostupný nebo blokován CORS politikou");
         } else if (error.message.includes('NetworkError')) {
           errorMessage = "Síťová chyba. Zkontrolujte připojení k internetu.";
         } else if (error.message.includes('401')) {
           errorMessage = "Nemáte oprávnění k této akci. Zkuste se odhlásit a znovu přihlásit.";
-          console.log("Pravděpodobně vypršela platnost tokenu nebo chybí token");
         } else if (error.message.includes('404')) {
           errorMessage = "API endpoint nebyl nalezen. Zkontrolujte URL.";
         } else if (error.message.includes('500')) {
@@ -174,7 +164,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
     checkApiAccess().catch(console.error);
     
     if (propArticles && propArticles.length > 0) {
-      console.log("ArticleManager: Použití článků z props", propArticles.length);
       setArticles(propArticles);
       setIsLoading(false);
     } else if (onRefresh) {
@@ -290,7 +279,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         setSelectedArticles([]);
         alert("Články byly úspěšně smazány");
       } catch (error) {
-        console.error("Error deleting articles:", error);
         alert(`Chyba při mazání článků: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
       }
     }
@@ -309,14 +297,12 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         
         const result = await response.json();
         if (!result.success) {
-          console.error(`Chyba při publikování článku ${articleId}: ${result.error}`);
         }
       }
       await loadArticles();
       setSelectedArticles([]);
       alert("Články byly úspěšně publikovány");
     } catch (error) {
-      console.error("Error publishing articles:", error);
       alert("Chyba při publikování článků");
     }
   };
@@ -334,24 +320,20 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         
         const result = await response.json();
         if (!result.success) {
-          console.error(`Chyba při převádění na koncept ${articleId}: ${result.error}`);
         }
       }
       await loadArticles();
       setSelectedArticles([]);
       alert("Články byly převedeny na koncepty");
     } catch (error) {
-      console.error("Error unpublishing articles:", error);
       alert("Chyba při převádění na koncepty");
     }
   };
 
   const handleDeleteArticle = async (articleId: string) => {
-    console.log("handleDeleteArticle called for ID:", articleId);
     
     if (confirm("Opravdu chcete smazat tento článek?")) {
       try {
-        console.log("User confirmed deletion, calling API...");
         
         // Použijeme authorizedFetch pro automatické přidání tokenu
         const response = await authorizedFetch(`/api/admin/articles/${articleId}`, {
@@ -359,34 +341,25 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
           debug: true
         });
 
-        console.log("DELETE API response status:", response.status);
-        console.log("DELETE API response headers:", Object.fromEntries(response.headers.entries()));
 
         const result = await response.json();
-        console.log("DELETE API response body:", result);
         
         if (result.success) {
-          console.log("DELETE successful, reloading articles...");
           await loadArticles();
-          console.log("Articles reloaded after deletion");
           alert("Článek byl úspěšně smazán");
         } else {
-          console.log("DELETE failed with result:", result);
           throw new Error(result.error || "Neznámá chyba při mazání článku");
         }
       } catch (error) {
-        console.error("Error deleting article:", error);
         alert(`Chyba při mazání článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
       }
     } else {
-      console.log("User cancelled deletion");
     }
   };
 
   const handleDuplicateArticle = async (article: any) => {
     try {
       // Přidáno logování pro lepší diagnostiku
-      console.log("Duplicating article:", article);
       
       const newArticleData = {
         title: `${article.title} (Kopie)`,
@@ -415,7 +388,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
         throw new Error(result.error || "Chyba při duplikování článku");
       }
     } catch (error) {
-      console.error("Error duplicating article:", error);
       alert(`Chyba při duplikování článku: ${error instanceof Error ? error.message : "Neznámá chyba"}`);
     }
   };
@@ -532,10 +504,8 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
               setIsLoading(true);
               loadArticles()
                 .then(() => {
-                  console.log("Články byly úspěšně obnoveny");
                 })
                 .catch(error => {
-                  console.error("Chyba při obnovování článků:", error);
                 })
                 .finally(() => {
                   setIsLoading(false);
@@ -833,7 +803,6 @@ export default function ArticleManager({ onEditArticle, onCreateNew, articles: p
                                     imageUrl: article.imageUrl,
                                     status: article.status,
                                   };
-                                  console.log("Article to duplicate:", articleToDuplicate);
                                   handleDuplicateArticle(articleToDuplicate);
                                   setShowActions(null);
                                 }}

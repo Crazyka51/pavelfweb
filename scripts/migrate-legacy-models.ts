@@ -13,16 +13,13 @@ const prisma = new PrismaClient();
  * Funkce pro migraci článků z 'articles' do 'Article'
  */
 async function migrateArticles() {
-  console.log("Migrating articles...");
   try {
     // Získání všech článků z legacy modelu
     const legacyArticles = await prisma.articles.findMany();
-    console.log(`Found ${legacyArticles.length} legacy articles.`);
 
     // Získání uživatele pro authorId
     let author = await prisma.user.findFirst();
     if (!author) {
-      console.log("No user found, creating default user...");
       author = await prisma.user.create({
         data: {
           name: "Admin",
@@ -35,7 +32,6 @@ async function migrateArticles() {
     // Získání kategorie pro categoryId
     let category = await prisma.category.findFirst();
     if (!category) {
-      console.log("No category found, creating default category...");
       category = await prisma.category.create({
         data: {
           name: "Aktuality",
@@ -55,7 +51,6 @@ async function migrateArticles() {
       });
 
       if (!existingArticle) {
-        console.log(`Migrating article: ${legacyArticle.title}`);
         
         // Vytvoření nového článku v modelu Article
         await prisma.article.create({
@@ -75,12 +70,9 @@ async function migrateArticles() {
           }
         });
       } else {
-        console.log(`Article "${legacyArticle.title}" already exists in the target model. Skipping.`);
       }
     }
-    console.log("Articles migration completed.");
   } catch (error) {
-    console.error("Error migrating articles:", error);
   }
 }
 
@@ -88,10 +80,8 @@ async function migrateArticles() {
  * Funkce pro migraci odběratelů newsletteru
  */
 async function migrateNewsletterSubscribers() {
-  console.log("Migrating newsletter subscribers...");
   try {
     const legacySubscribers = await prisma.newsletter_subscribers.findMany();
-    console.log(`Found ${legacySubscribers.length} legacy newsletter subscribers.`);
 
     for (const legacySubscriber of legacySubscribers) {
       const existingSubscriber = await prisma.newsletterSubscriber.findFirst({
@@ -101,7 +91,6 @@ async function migrateNewsletterSubscribers() {
       });
 
       if (!existingSubscriber) {
-        console.log(`Migrating subscriber: ${legacySubscriber.email}`);
         await prisma.newsletterSubscriber.create({
           data: {
             id: legacySubscriber.id, // Použijeme stejné ID
@@ -114,12 +103,9 @@ async function migrateNewsletterSubscribers() {
           }
         });
       } else {
-        console.log(`Subscriber "${legacySubscriber.email}" already exists in the target model. Skipping.`);
       }
     }
-    console.log("Newsletter subscribers migration completed.");
   } catch (error) {
-    console.error("Error migrating newsletter subscribers:", error);
   }
 }
 
@@ -127,15 +113,12 @@ async function migrateNewsletterSubscribers() {
  * Funkce pro migraci šablon newsletteru
  */
 async function migrateNewsletterTemplates() {
-  console.log("Migrating newsletter templates...");
   try {
     const legacyTemplates = await prisma.newsletter_templates.findMany();
-    console.log(`Found ${legacyTemplates.length} legacy newsletter templates.`);
 
     // Získání uživatele pro createdById
     let user = await prisma.user.findFirst();
     if (!user) {
-      console.log("No user found, creating default user...");
       user = await prisma.user.create({
         data: {
           name: "Admin",
@@ -153,7 +136,6 @@ async function migrateNewsletterTemplates() {
       });
 
       if (!existingTemplate) {
-        console.log(`Migrating template: ${legacyTemplate.name}`);
         await prisma.newsletterTemplate.create({
           data: {
             id: legacyTemplate.id, // Použijeme stejné ID
@@ -168,12 +150,9 @@ async function migrateNewsletterTemplates() {
           }
         });
       } else {
-        console.log(`Template "${legacyTemplate.name}" already exists in the target model. Skipping.`);
       }
     }
-    console.log("Newsletter templates migration completed.");
   } catch (error) {
-    console.error("Error migrating newsletter templates:", error);
   }
 }
 
@@ -181,15 +160,12 @@ async function migrateNewsletterTemplates() {
  * Funkce pro migraci kampaní newsletteru
  */
 async function migrateNewsletterCampaigns() {
-  console.log("Migrating newsletter campaigns...");
   try {
     const legacyCampaigns = await prisma.newsletter_campaigns.findMany();
-    console.log(`Found ${legacyCampaigns.length} legacy newsletter campaigns.`);
 
     // Získání uživatele pro createdById
     let user = await prisma.user.findFirst();
     if (!user) {
-      console.log("No user found, creating default user...");
       user = await prisma.user.create({
         data: {
           name: "Admin",
@@ -207,7 +183,6 @@ async function migrateNewsletterCampaigns() {
       });
 
       if (!existingCampaign) {
-        console.log(`Migrating campaign: ${legacyCampaign.name}`);
         
         // Převod statusu na enum
         let status: 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'FAILED' = 'DRAFT';
@@ -260,12 +235,9 @@ async function migrateNewsletterCampaigns() {
           }
         });
       } else {
-        console.log(`Campaign "${legacyCampaign.name}" already exists in the target model. Skipping.`);
       }
     }
-    console.log("Newsletter campaigns migration completed.");
   } catch (error) {
-    console.error("Error migrating newsletter campaigns:", error);
   }
 }
 
@@ -274,7 +246,6 @@ async function migrateNewsletterCampaigns() {
  */
 async function runMigration() {
   try {
-    console.log("Starting database model migration...");
     
     // Spustit migraci jednotlivých modelů
     await migrateArticles();
@@ -282,9 +253,7 @@ async function runMigration() {
     await migrateNewsletterTemplates();
     await migrateNewsletterCampaigns();
     
-    console.log("Migration completed successfully!");
   } catch (error) {
-    console.error("Migration failed:", error);
   } finally {
     await prisma.$disconnect();
   }

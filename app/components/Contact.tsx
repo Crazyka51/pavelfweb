@@ -64,7 +64,6 @@ export default function Contact() {
         throw new Error('Failed to send email');
       }
     } catch (error) {
-      console.error('Error sending email:', error);
       setSubmitStatus('error');
       toast({
         title: "Chyba při odesílání",

@@ -192,7 +192,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching Vercel Analytics:', error);
     return NextResponse.json({ 
       success: false, 
       error: 'Server error while fetching analytics' 

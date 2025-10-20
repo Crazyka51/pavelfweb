@@ -21,7 +21,6 @@ export const GET = requireAuth(
 
       return NextResponse.json(category);
     } catch (error) {
-      console.error("Error fetching category:", error);
       return NextResponse.json(
         {
           message: "Chyba při načítání kategorie",
@@ -55,7 +54,6 @@ export const PUT = requireAuth(
         category: updatedCategory,
       });
     } catch (error) {
-      console.error("Error updating category:", error);
       return NextResponse.json(
         {
           message: error instanceof Error ? error.message : "Chyba při aktualizaci kategorie",
@@ -102,7 +100,6 @@ export const DELETE = requireAuth(
         message: "Kategorie byla úspěšně smazána",
       });
     } catch (error) {
-      console.error("Error deleting category:", error);
       return NextResponse.json(
         {
           message: error instanceof Error ? error.message : "Chyba při mazání kategorie",

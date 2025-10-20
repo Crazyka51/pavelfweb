@@ -54,7 +54,6 @@ export class DataManager<T> {
     } catch (error) {
       // Ignorujeme chyby při zálohování pokud původní soubor neexistuje
       if ((error as any).code !== "ENOENT") {
-        console.error("Backup creation failed:", error);
       }
     }
   }
@@ -72,7 +71,6 @@ export class DataManager<T> {
         await fs.unlink(path.join(this.backupDir, file));
       }
     } catch (error) {
-      console.error("Backup cleanup failed:", error);
     }
   }
 

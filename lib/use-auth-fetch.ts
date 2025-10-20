@@ -18,7 +18,6 @@ export function useAuthenticatedFetch() {
     const token = authService.getToken();
     
     if (!token) {
-      console.error('Nelze provést autentizovaný požadavek - chybí token');
       throw new Error('Nejste přihlášeni');
     }
     

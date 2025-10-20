@@ -43,7 +43,6 @@ export async function getArticlesFromBlob(): Promise<Article[]> {
     
     return articles;
   } catch (error) {
-    console.error('Chyba při načítání článků z Blob storage:', error);
     return [];
   }
 }
@@ -60,7 +59,6 @@ export async function saveArticlesToBlob(articles: Article[]): Promise<void> {
     
     // console.log('Články uloženy do Blob storage:', blob.url);
   } catch (error) {
-    console.error('Chyba při ukládání článků do Blob storage:', error);
     throw error;
   }
 }
@@ -83,7 +81,6 @@ export async function getNewsletterSubscribersFromBlob(): Promise<NewsletterSubs
     
     return subscribers;
   } catch (error) {
-    console.error('Chyba při načítání subscribers z Blob storage:', error);
     return [];
   }
 }
@@ -100,7 +97,6 @@ export async function saveNewsletterSubscribersToBlob(subscribers: NewsletterSub
     
     // console.log('Newsletter subscribers uloženi do Blob storage:', blob.url);
   } catch (error) {
-    console.error('Chyba při ukládání subscribers do Blob storage:', error);
     throw error;
   }
 }
@@ -126,6 +122,5 @@ export async function cleanupOldBlobs(prefix: string, keepLatest: number = 5): P
       // console.log('Smazán starý blob:', blob.pathname);
     }
   } catch (error) {
-    console.error('Chyba při čištění starých blobů:', error);
   }
 }

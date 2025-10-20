@@ -146,7 +146,6 @@ export async function POST(request: NextRequest) {
       message: `Zpracováno ${successCount} článků, ${failedCount} chyb`,
     });
   } catch (error) {
-    console.error("Bulk articles operation error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

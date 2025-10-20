@@ -33,7 +33,6 @@ export default function RecentArticles() {
         const data = await response.json();
         setArticles(data.articles || []);
       } catch (err: any) {
-        console.error("Chyba při načítání nedávných článků:", err);
         setError(err.message);
       } finally {
         setLoading(false);

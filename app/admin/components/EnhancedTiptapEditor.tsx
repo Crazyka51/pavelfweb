@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { Link } from '@tiptap/extension-link'
-import { Image } from '@tiptap/extension-image'
-import { Placeholder } from '@tiptap/extension-placeholder'
-import { TextAlign } from '@tiptap/extension-text-align'
-import { Highlight } from '@tiptap/extension-highlight'
-import { Typography } from '@tiptap/extension-typography'
-import Color from '@tiptap/extension-color'
-import { TextStyle } from '@tiptap/extension-text-style'
-import Underline from '@tiptap/extension-underline'
-import { Table } from '@tiptap/extension-table'
-import { TableRow } from '@tiptap/extension-table-row'
-import { TableCell } from '@tiptap/extension-table-cell'
-import { TableHeader } from '@tiptap/extension-table-header'
-import { useCallback, useEffect, useState } from 'react'
-import TiptapToolbar from './TiptapToolbar'
-import { authorizedFetch } from '@/lib/auth-fetch'
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Link } from '@tiptap/extension-link';
+import { Image } from '@tiptap/extension-image';
+import { Placeholder } from '@tiptap/extension-placeholder';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Typography } from '@tiptap/extension-typography';
+import Color from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Underline from '@tiptap/extension-underline';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { useCallback, useEffect, useState } from 'react';
+import TiptapToolbar from './TiptapToolbar';
+import { authorizedFetch } from '@/lib/auth-fetch';
 
 interface EnhancedTiptapEditorProps {
   content: string
@@ -158,7 +158,6 @@ export default function EnhancedTiptapEditor({
         throw new Error(data.error || 'Upload failed')
       }
     } catch (error) {
-      console.error('Error uploading image:', error)
       alert('Nepodařilo se nahrát obrázek. Zkuste to prosím znovu.')
     } finally {
       setUploadingImage(false)
@@ -201,7 +200,6 @@ export default function EnhancedTiptapEditor({
             throw new Error(data.error || 'Upload failed')
           }
         } catch (error) {
-          console.error('Error uploading image:', error)
           alert('Nepodařilo se nahrát obrázek. Zkuste to prosím znovu.')
         } finally {
           setUploadingImage(false)

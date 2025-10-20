@@ -22,8 +22,6 @@ export async function authorizedFetch(url: string, options: AuthFetchOptions = {
   const token = typeof window !== 'undefined' ? localStorage.getItem(tokenKey) : null;
   
   if (debug) {
-    console.log(`[auth-fetch] Requesting: ${url}`);
-    console.log(`[auth-fetch] Token exists: ${!!token}`);
   }
   
   // Vytvoření nových options s Authorization hlavičkou, pokud máme token
@@ -48,10 +46,8 @@ export async function authorizedFetch(url: string, options: AuthFetchOptions = {
     updatedOptions.headers = headersObj;
     
     if (debug) {
-      console.log(`[auth-fetch] Authorization header added`);
     }
   } else if (debug) {
-    console.warn(`[auth-fetch] No token available for authorization`);
   }
   
   // Vždy přidáme credentials: 'include' pro cookie podporu
@@ -62,13 +58,11 @@ export async function authorizedFetch(url: string, options: AuthFetchOptions = {
     const response = await fetch(url, updatedOptions);
     
     if (debug) {
-      console.log(`[auth-fetch] Response: ${response.status} ${response.statusText}`);
     }
     
     return response;
   } catch (error) {
     if (debug) {
-      console.error(`[auth-fetch] Fetch error:`, error);
     }
     throw error;
   }
@@ -129,7 +123,6 @@ export async function checkApiStatus(apiEndpoint: string = '/api/admin/articles'
     
     // Základní kontrola tokenu
     if (!token) {
-      console.warn('[auth-fetch] checkApiStatus: No token found');
       return false;
     }
     
@@ -142,12 +135,10 @@ export async function checkApiStatus(apiEndpoint: string = '/api/admin/articles'
         const now = Math.floor(Date.now() / 1000);
         
         if (expiry < now) {
-          console.warn('[auth-fetch] checkApiStatus: Token is expired');
           return false;
         }
       }
     } catch (e) {
-      console.error('[auth-fetch] checkApiStatus: Error decoding token', e);
     }
     
     // Kontrola dostupnosti API
@@ -158,7 +149,6 @@ export async function checkApiStatus(apiEndpoint: string = '/api/admin/articles'
     
     return response.ok;
   } catch (error) {
-    console.error('[auth-fetch] checkApiStatus: API check failed', error);
     return false;
   }
 }

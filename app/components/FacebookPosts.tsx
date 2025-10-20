@@ -11,7 +11,6 @@ export default function FacebookPosts() {
         await initFacebookSDK();
         parseXFBML();
       } catch (error) {
-        console.error("Nepodařilo se načíst Facebook SDK:", error);
       }
     };
 

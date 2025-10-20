@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log(`Start seeding ...`)
 
   // Vytvoř uživatele
   const salt = await bcrypt.genSalt(10)
@@ -19,7 +18,6 @@ async function main() {
       password: hashedPassword,
     },
   })
-  console.log(`Created user '${user.name}' with id: ${user.id}`)
 
   // Vytvoř kategorie
   const aktuality = await prisma.category.upsert({
@@ -62,15 +60,12 @@ async function main() {
         isFeatured: false,
       },
     })
-    console.log(`Created article '${newArticle.title}'`)
   }
 
-  console.log(`Seeding finished.`)
 }
 
 main()
   .catch((e) => {
-    console.error(e)
     process.exit(1)
   })
   .finally(async () => {

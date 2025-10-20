@@ -46,9 +46,7 @@ function generateColor(name: string): string {
  */
 async function updateCategoriesWithNewFields() {
   try {
-    console.log('Získávání všech kategorií...');
     const categories = await prisma.category.findMany();
-    console.log(`Nalezeno ${categories.length} kategorií.`);
 
     for (const category of categories) {
       // Vygenerujeme slug z názvu
@@ -91,21 +89,15 @@ async function updateCategoriesWithNewFields() {
         } as any
       });
       
-      console.log(`Aktualizována kategorie "${category.name}" se slugem "${slug}" a barvou "${color}"`);
     }
 
     // Přidání unikátního indexu pro slug po naplnění daty
     try {
       // Tento příkaz musíte spustit ručně v databázi, pokud je potřeba
-      console.log('Pro přidání unikátního indexu na sloupec "slug" spusťte SQL příkaz:');
-      console.log('CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");');
     } catch (indexError) {
-      console.error('Chyba při vytváření unikátního indexu:', indexError);
     }
 
-    console.log('Aktualizace kategorií byla úspěšně dokončena.');
   } catch (error) {
-    console.error('Chyba při aktualizaci kategorií:', error);
   } finally {
     await prisma.$disconnect();
   }

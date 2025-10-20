@@ -81,7 +81,6 @@ export async function GET() {
     const appSecret = process.env.FACEBOOK_APP_SECRET;
 
     if (!pageId || !accessToken || !appSecret) {
-      console.log("Facebook API není nakonfigurováno, používám mock data");
       return NextResponse.json({
         data: mockFacebookPosts,
         isMockData: true,
@@ -101,8 +100,6 @@ export async function GET() {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response' } }));
-      console.error("Facebook API chyba:", JSON.stringify(errorData, null, 2));
-      console.log("Používám mock data jako fallback");
       
       return NextResponse.json({
         data: mockFacebookPosts,
@@ -119,7 +116,6 @@ export async function GET() {
       message: "Reálná data z Facebook",
     });
   } catch (error) {
-    console.error("Facebook API error:", error);
 
     // Fallback na mock data
     return NextResponse.json({

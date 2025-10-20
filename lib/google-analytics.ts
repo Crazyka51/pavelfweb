@@ -15,7 +15,6 @@ function getAnalyticsClient() {
         });
       }
     } catch (error) {
-      console.error("Failed to initialize Google Analytics client:", error);
     }
   }
   return analyticsDataClient;
@@ -180,7 +179,6 @@ export async function getAnalyticsData(
       trafficSources,
     };
   } catch (error) {
-    console.error("Error fetching Google Analytics data:", error);
     return getMockAnalyticsData();
   }
 }

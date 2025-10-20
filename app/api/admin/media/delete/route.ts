@@ -41,7 +41,6 @@ export async function DELETE(request: NextRequest) {
           path: mediaPath
         });
       } catch (error) {
-        console.error('Error deleting from blob storage:', error);
         return NextResponse.json({ success: false, error: 'Failed to delete from blob storage' }, { status: 500 });
       }
     }
@@ -70,7 +69,6 @@ export async function DELETE(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Error deleting media:', error);
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
   }
 }

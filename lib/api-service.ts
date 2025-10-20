@@ -131,7 +131,6 @@ export class ApiService {
       const data = await response.json();
       return { isValid: true, user: data.user };
     } catch (error) {
-      console.error('Chyba při ověřování tokenu:', error);
       return { isValid: false, user: null };
     }
   }
@@ -158,7 +157,6 @@ export class ApiService {
       
       return { success: true, user: data.user };
     } catch (error) {
-      console.error('Přihlášení selhalo:', error);
       throw error;
     }
   }
@@ -174,7 +172,6 @@ export class ApiService {
       });
       return true;
     } catch (error) {
-      console.error('Odhlášení selhalo:', error);
       return false;
     }
   }

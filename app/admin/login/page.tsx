@@ -32,15 +32,12 @@ export default function LoginPage() {
         
         // Pouze pokud existuje parametr force, provedeme odhlášení
         if (hasForceParam) {
-          console.log('Detekován force parametr - provádím odhlášení');
           
           // Odhlásit uživatele pouze pokud máme force parametr
           try {
             await logout();
-            console.log('Uživatel byl odhlášen kvůli force parametru');
             setForceLogin(true);
           } catch (e) {
-            console.error('Chyba při odhlašování:', e);
           }
         }
       }
@@ -166,7 +163,6 @@ export default function LoginPage() {
                   // Přesměrovat s force parametrem
                   window.location.href = '/admin/login?force=1&t=' + new Date().getTime();
                 } catch (e) {
-                  console.error('Chyba při vynuceném odhlášení:', e);
                   alert('Chyba při odhlašování. Zkuste obnovit stránku.');
                 }
               }}

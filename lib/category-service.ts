@@ -81,7 +81,6 @@ export class CategoryService {
       return await prisma.category.findMany(queryOptions);
       
     } catch (error) {
-      console.error("Error getting categories:", error);
       throw new Error("Failed to fetch categories");
     }
   }
@@ -99,7 +98,6 @@ export class CategoryService {
       });
       
     } catch (error) {
-      console.error(`Error getting category with ID ${id}:`, error);
       return null;
     }
   }
@@ -133,7 +131,6 @@ export class CategoryService {
       });
       
     } catch (error) {
-      console.error("Error creating category:", error);
       throw new Error("Failed to create category");
     }
   }
@@ -184,7 +181,6 @@ export class CategoryService {
       });
       
     } catch (error) {
-      console.error(`Error updating category with ID ${id}:`, error);
       return null;
     }
   }
@@ -201,7 +197,6 @@ export class CategoryService {
       return true;
       
     } catch (error) {
-      console.error(`Error deleting category with ID ${id}:`, error);
       return false;
     }
   }
@@ -227,7 +222,6 @@ export class CategoryService {
       });
       
     } catch (error) {
-      console.error("Error getting total category count:", error);
       return 0;
     }
   }

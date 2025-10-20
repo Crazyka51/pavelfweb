@@ -37,7 +37,6 @@ export const PUT = requireAuth(async (request: NextRequest, { params }: { params
       data: updatedArticle,
     });
   } catch (error) {
-    console.error(`Articles PUT error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -59,36 +58,28 @@ export const GET = requireAuth(async (request: NextRequest, { params }: { params
     }
     return NextResponse.json({ success: true, data: article });
   } catch (error) {
-    console.error(`Error fetching article:`, error);
     return NextResponse.json({ success: false, error: "Failed to fetch article" }, { status: 500 });
   }
 });
 
 export const DELETE = requireAuth(async (request: NextRequest, authResult: any, { params }: { params: { id: string } }) => {
   try {
-    console.log("DELETE endpoint called with authResult:", authResult);
     
     if (authResult.role !== "admin") {
-      console.log("DELETE failed: insufficient permissions, role:", authResult.role);
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
     }
     
     // Nejprve počkáme na params
     const resolvedParams = await params;
-    console.log("DELETE endpoint attempting to delete article ID:", resolvedParams.id);
     
     const success = await articleService.deleteArticle(resolvedParams.id);
-    console.log("ArticleService.deleteArticle returned:", success);
     
     if (!success) {
-      console.log("DELETE failed: article not found or deletion failed");
       return NextResponse.json({ success: false, error: "Article not found" }, { status: 404 });
     }
     
-    console.log("DELETE successful for article ID:", resolvedParams.id);
     return NextResponse.json({ success: true, message: "Article deleted successfully" });
   } catch (error) {
-    console.error(`Error deleting article:`, error);
     return NextResponse.json({ 
       success: false, 
       error: "Failed to delete article", 
